@@ -1402,6 +1402,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "protocolParam": MessageLookupByLibrary.simpleMessage("Параметр протокола"),
     "protocolVersion": MessageLookupByLibrary.simpleMessage("Версия протокола"),
     "providerInUse": m62,
+    "providerSubscriptionInfo": MessageLookupByLibrary.simpleMessage(
+      "Подписка провайдеров",
+    ),
     "providerUrlTip": MessageLookupByLibrary.simpleMessage(
       "Поддерживаются только удалённые ресурсы",
     ),

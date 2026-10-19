@@ -231,6 +231,7 @@
   "loopback": "Exemption de bouclage UWP",
   "providers": "Ressources externes",
   "proxyProviders": "Fournisseurs de proxys",
+  "providerSubscriptionInfo": "Abonnement du fournisseur",
   "ruleProviders": "Fournisseurs de règles",
   "providerUrlTip": "Seuls les fournisseurs distants sont pris en charge",
   "ruleSetEmptyTip": "Le jeu de règles ne contient aucune entrée exploitable",

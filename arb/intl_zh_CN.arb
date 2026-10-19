@@ -231,6 +231,7 @@
   "loopback": "UWP 回环解锁",
   "providers": "外部资源",
   "proxyProviders": "代理集",
+  "providerSubscriptionInfo": "代理集订阅",
   "ruleProviders": "规则集",
   "providerUrlTip": "仅支持远程资源",
   "ruleSetEmptyTip": "规则集中没有可用的条目",

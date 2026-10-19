@@ -1760,6 +1760,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Provider subscription`
+  String get providerSubscriptionInfo {
+    return Intl.message(
+      'Provider subscription',
+      name: 'providerSubscriptionInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Rule providers`
   String get ruleProviders {
     return Intl.message(

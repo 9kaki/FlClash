@@ -231,6 +231,7 @@
   "loopback": "Снятие ограничения loopback для UWP",
   "providers": "Внешние ресурсы",
   "proxyProviders": "Провайдеры прокси",
+  "providerSubscriptionInfo": "Подписка провайдеров",
   "ruleProviders": "Провайдеры правил",
   "providerUrlTip": "Поддерживаются только удалённые ресурсы",
   "ruleSetEmptyTip": "В наборе правил нет пригодных записей",

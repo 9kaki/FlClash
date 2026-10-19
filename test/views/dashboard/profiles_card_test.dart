@@ -40,14 +40,19 @@ class _IdleSetupAction extends SetupAction {
   void autoApplyProfile() {}
 }
 
-ExternalProvider _provider(String name, String type, int count) =>
-    ExternalProvider(
-      name: name,
-      type: type,
-      count: count,
-      vehicleType: 'HTTP',
-      updateAt: DateTime(2026),
-    );
+ExternalProvider _provider(
+  String name,
+  String type,
+  int count, {
+  SubscriptionInfo? info,
+}) => ExternalProvider(
+  name: name,
+  type: type,
+  count: count,
+  subscriptionInfo: info,
+  vehicleType: 'HTTP',
+  updateAt: DateTime(2026),
+);
 
 Profile _profile(
   int id, {
@@ -520,6 +525,163 @@ void main() {
       ModalRoute.of(tester.element(find.byType(CustomRulesView))),
       isA<PagedSheetRoute<void>>(),
     );
+  });
+
+  testWidgets('a config built from proxy providers shows their summed quota', (
+    tester,
+  ) async {
+    final expiry = DateTime.now().add(const Duration(days: 30, hours: 1));
+    setUpProfiles(
+      [_profile(1)],
+      overrides: [
+        providersProvider.overrideWithBuild(
+          (_, _) => [
+            _provider(
+              'a',
+              'Proxy',
+              5,
+              info: SubscriptionInfo(
+                upload: 11 * _gib,
+                total: 50 * _gib,
+                expire: expiry.millisecondsSinceEpoch ~/ 1000,
+              ),
+            ),
+            _provider(
+              'b',
+              'Proxy',
+              5,
+              info: const SubscriptionInfo(
+                download: 10 * _gib,
+                total: 50 * _gib,
+              ),
+            ),
+            _provider(
+              'ads',
+              'Rule',
+              900,
+              info: const SubscriptionInfo(total: 400 * _gib),
+            ),
+          ],
+        ),
+      ],
+    );
+    await pumpCard(tester);
+
+    expect(find.text('21 GB / 100 GB'), findsOneWidget);
+    expect(find.textContaining('21%', findRichText: true), findsOneWidget);
+    expect(find.textContaining('30 days left'), findsOneWidget);
+    expect(find.byType(SkeletonText), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a profile with its own quota ignores its providers', (
+    tester,
+  ) async {
+    setUpProfiles(
+      [
+        _profile(
+          1,
+          info: const SubscriptionInfo(upload: 2 * _gib, total: 100 * _gib),
+        ),
+      ],
+      overrides: [
+        providersProvider.overrideWithBuild(
+          (_, _) => [
+            _provider(
+              'a',
+              'Proxy',
+              5,
+              info: const SubscriptionInfo(total: 50 * _gib),
+            ),
+          ],
+        ),
+      ],
+    );
+    await pumpCard(tester);
+
+    expect(find.text('2 GB / 100 GB'), findsOneWidget);
+  });
+
+  testWidgets('an unlimited plan keeps its days left without a meter', (
+    tester,
+  ) async {
+    final expiry = DateTime.now().add(const Duration(days: 30, hours: 1));
+    setUpProfiles([
+      _profile(
+        1,
+        info: SubscriptionInfo(expire: expiry.millisecondsSinceEpoch ~/ 1000),
+      ),
+    ]);
+    await pumpDesktopCard(tester);
+
+    expect(find.text('30 days left'), findsOneWidget);
+    expect(find.textContaining('%', findRichText: true), findsNothing);
+  });
+
+  testWidgets('the detail sheet names a provider quota as such', (
+    tester,
+  ) async {
+    await writeAppliedConfig(tester);
+    setUpProfiles(
+      [_profile(1)],
+      overrides: [
+        providersProvider.overrideWithBuild(
+          (_, _) => [
+            _provider(
+              'a',
+              'Proxy',
+              5,
+              info: const SubscriptionInfo(
+                upload: 10 * _gib,
+                total: 100 * _gib,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+    await pumpCard(tester);
+
+    await openDetail(tester);
+
+    expect(find.text('Provider subscription'), findsOneWidget);
+    expect(find.text('10 GB / 100 GB'), findsOneWidget);
+  });
+
+  test('a provider quota ends at the earliest expiry it reports', () {
+    final early = DateTime(2027, 1, 2);
+    final late = DateTime(2027, 6, 1);
+    final quota = profileQuotaOf(_profile(1), [
+      _provider(
+        'a',
+        'Proxy',
+        1,
+        info: SubscriptionInfo(
+          upload: 1,
+          download: 2,
+          total: 10,
+          expire: late.millisecondsSinceEpoch ~/ 1000,
+        ),
+      ),
+      _provider(
+        'b',
+        'Proxy',
+        1,
+        info: SubscriptionInfo(
+          total: 20,
+          expire: early.millisecondsSinceEpoch ~/ 1000,
+        ),
+      ),
+      _provider('c', 'Proxy', 1),
+      _provider('d', 'Rule', 1, info: const SubscriptionInfo(total: 999)),
+    ]);
+
+    expect(quota?.fromProviders, isTrue);
+    expect(quota?.info.upload, 1);
+    expect(quota?.info.download, 2);
+    expect(quota?.info.total, 30);
+    expect(quota?.info.expire, early.millisecondsSinceEpoch ~/ 1000);
+    expect(profileQuotaOf(_profile(1), const []), isNull);
   });
 
   test('counts provider proxies but not provider rules', () {

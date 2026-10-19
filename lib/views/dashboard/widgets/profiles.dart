@@ -19,8 +19,7 @@ import 'profile_detail.dart';
 
 typedef _Usage = ({int used, int total, double share});
 
-_Usage? _usageOf(Profile? profile) {
-  final info = profile?.subscriptionInfo;
+_Usage? _usageOf(SubscriptionInfo? info) {
   if (info == null || info.total <= 0) {
     return null;
   }
@@ -32,8 +31,8 @@ _Usage? _usageOf(Profile? profile) {
   );
 }
 
-DateTime? _expiryOf(Profile? profile) {
-  final expire = profile?.subscriptionInfo?.expire ?? 0;
+DateTime? _expiryOf(SubscriptionInfo? info) {
+  final expire = info?.expire ?? 0;
   return expire > 0 ? DateTime.fromMillisecondsSinceEpoch(expire * 1000) : null;
 }
 
@@ -76,11 +75,13 @@ class ProfilesCard extends ConsumerWidget {
     final compact = density.isCompact;
     final appLocalizations = context.appLocalizations;
     final profile = ref.watch(currentProfileProvider);
+    final providers = ref.watch(providersProvider);
     final switchable = ref.watch(
       profilesProvider.select((profiles) => profiles.length > 1),
     );
-    final usage = _usageOf(profile);
-    final expiry = _expiryOf(profile);
+    final quota = profileQuotaOf(profile, providers);
+    final usage = _usageOf(quota?.info);
+    final expiry = _expiryOf(quota?.info);
     final updatedAt = profile?.lastUpdateDate;
     final label = DashboardText.label(context);
     final figure = mobile

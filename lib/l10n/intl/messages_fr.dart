@@ -1445,6 +1445,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Version du protocole",
     ),
     "providerInUse": m62,
+    "providerSubscriptionInfo": MessageLookupByLibrary.simpleMessage(
+      "Abonnement du fournisseur",
+    ),
     "providerUrlTip": MessageLookupByLibrary.simpleMessage(
       "Seuls les fournisseurs distants sont pris en charge",
     ),
