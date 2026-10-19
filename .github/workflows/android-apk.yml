@@ -1,0 +1,132 @@
+name: android apk
+
+on:
+  workflow_dispatch:
+    inputs:
+      arch:
+        description: 'Target ABI'
+        type: choice
+        default: all
+        options:
+          - all
+          - arm64
+          - arm
+          - amd64
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Keep these in step with .github/workflows/build.yaml.
+  FLUTTER_VERSION: '3.47.6'
+  NDK_VERSION: r28c
+
+jobs:
+  apk:
+    name: Build APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      # Left empty the build falls back to the debug key and the .dev package
+      # id, so a fork's APK sits beside an installed release instead of
+      # replacing it. Set KEYSTORE, KEY_ALIAS, STORE_PASSWORD and KEY_PASSWORD
+      # as repository secrets to sign it as a release build.
+      KEYSTORE: ${{ secrets.KEYSTORE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Setup NDK
+        id: ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: true
+          link-to-sdk: true
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # The Core embeds this bundle and FlClashHttpOverrides.trustCoreRoots
+      # loads it for Dart. Pinned by hash, so a new bundle from
+      # https://curl.se/docs/caextract.html is a reviewed bump.
+      - name: Fetch CA certificates
+        shell: bash
+        env:
+          CA_BUNDLE: cacert-2026-09-25.pem
+          CA_BUNDLE_SHA256: a41b5d356aea97a529fe27e0f7316d2f9d946d75927476cf9cf1b90637d00505
+        run: |
+          bundle=core/Clash.Meta/component/ca/ca-certificates.crt
+          mkdir -p "$(dirname "$bundle")"
+          curl -fsSL --retry 3 -o "$bundle" "https://curl.se/ca/$CA_BUNDLE"
+          echo "$CA_BUNDLE_SHA256  $bundle" | sha256sum -c -
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # setup.dart activates flutter_distributor with pub global; its bin
+      # directory is not on PATH by default.
+      - name: Put pub global executables on PATH
+        run: echo "${PUB_CACHE:-$HOME/.pub-cache}/bin" >> "$GITHUB_PATH"
+
+      - name: Setup Android signing
+        if: env.KEYSTORE != ''
+        run: |
+          echo "$KEYSTORE" | base64 --decode > android/app/keystore.jks
+          {
+            echo "keyAlias=${{ secrets.KEY_ALIAS }}"
+            echo "storePassword=${{ secrets.STORE_PASSWORD }}"
+            echo "keyPassword=${{ secrets.KEY_PASSWORD }}"
+          } >> android/local.properties
+
+      # setup.dart drives the Go core, the Rust library and flutter_distributor,
+      # and writes the APKs to dist/.
+      - name: Build APK
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+          ARCH: ${{ inputs.arch }}
+        run: |
+          args=(android)
+          if [[ -n "$ARCH" && "$ARCH" != 'all' ]]; then
+            args+=(--arch "$ARCH")
+          fi
+          dart setup.dart "${args[@]}"
+
+      - name: Show artifacts
+        run: ls -lh dist && sha256sum dist/*.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlClash-${{ github.sha }}
+          path: dist/*.apk
+          if-no-files-found: error
+          retention-days: 14
