@@ -109,9 +109,11 @@ class ProfilesCard extends ConsumerWidget {
       (final text?, null) => Text(text, maxLines: 1, style: label),
       _ => null,
     };
-    final sync = profile != null && profile.type == ProfileType.url
-        ? _SyncButton(profile: profile)
-        : null;
+    final sync = switch (profile) {
+      Profile(type: ProfileType.url) => _SyncButton(profile: profile),
+      Profile(type: ProfileType.file) => _providersSyncButton(providers),
+      _ => null,
+    };
     final nameRow = Row(
       children: [
         Flexible(
@@ -238,6 +240,66 @@ class _SyncButton extends ConsumerWidget {
       glyph: AppGlyphs.sync,
       tooltip: context.appLocalizations.update,
       onPressed: () => syncProfile(ref, profile),
+    );
+  }
+}
+
+Widget? _providersSyncButton(List<ExternalProvider> providers) {
+  final syncable = [
+    for (final provider in providers)
+      if (provider.type == 'Proxy' && provider.vehicleType == 'HTTP') provider,
+  ];
+  return syncable.isEmpty ? null : _ProvidersSyncButton(providers: syncable);
+}
+
+/// A config built from proxy providers has no subscription of its own to
+/// re-download, so its refresh updates the providers the quota comes from.
+class _ProvidersSyncButton extends ConsumerStatefulWidget {
+  const _ProvidersSyncButton({required this.providers});
+
+  final List<ExternalProvider> providers;
+
+  @override
+  ConsumerState<_ProvidersSyncButton> createState() =>
+      _ProvidersSyncButtonState();
+}
+
+class _ProvidersSyncButtonState extends ConsumerState<_ProvidersSyncButton> {
+  bool _isUpdating = false;
+
+  Future<void> _handleUpdate() async {
+    if (_isUpdating) {
+      return;
+    }
+    final proxiesAction = ref.read(proxiesActionProvider.notifier);
+    setState(() => _isUpdating = true);
+    var messages = <UpdatingMessage>[];
+    try {
+      messages = await proxiesAction.updateProviders(
+        widget.providers,
+        showLoading: true,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isUpdating = false);
+      }
+    }
+    proxiesAction.updateGroupsDebounce();
+    dialogs.showFailures(messages);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isUpdating) {
+      return const SizedBox.square(
+        dimension: 32,
+        child: Center(child: CommonCircleLoading(size: 18)),
+      );
+    }
+    return DashboardIconButton(
+      glyph: AppGlyphs.sync,
+      tooltip: context.appLocalizations.update,
+      onPressed: _handleUpdate,
     );
   }
 }

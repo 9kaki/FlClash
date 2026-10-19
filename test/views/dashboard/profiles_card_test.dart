@@ -45,12 +45,13 @@ ExternalProvider _provider(
   String type,
   int count, {
   SubscriptionInfo? info,
+  String vehicleType = 'HTTP',
 }) => ExternalProvider(
   name: name,
   type: type,
   count: count,
   subscriptionInfo: info,
-  vehicleType: 'HTTP',
+  vehicleType: vehicleType,
   updateAt: DateTime(2026),
 );
 
@@ -457,7 +458,13 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byTooltip('Update'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ProfileDetailSheet),
+        matching: find.byTooltip('Update'),
+      ),
+      findsOneWidget,
+    );
     for (final (title, value) in [
       ('Proxy group', '1'),
       ('Proxies', '7'),
@@ -646,6 +653,46 @@ void main() {
 
     expect(find.text('Provider subscription'), findsOneWidget);
     expect(find.text('10 GB / 100 GB'), findsOneWidget);
+  });
+
+  testWidgets('a config built from proxy providers offers to update them', (
+    tester,
+  ) async {
+    setUpProfiles(
+      [_profile(1)],
+      overrides: [
+        providersProvider.overrideWithBuild(
+          (_, _) => [
+            _provider(
+              'a',
+              'Proxy',
+              5,
+              info: const SubscriptionInfo(total: 100 * _gib),
+            ),
+          ],
+        ),
+      ],
+    );
+    await pumpDesktopCard(tester);
+
+    expect(find.byTooltip('Update'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a proxy provider that only lives in a file is not updatable', (
+    tester,
+  ) async {
+    setUpProfiles(
+      [_profile(1)],
+      overrides: [
+        providersProvider.overrideWithBuild(
+          (_, _) => [_provider('local', 'Proxy', 5, vehicleType: 'File')],
+        ),
+      ],
+    );
+    await pumpDesktopCard(tester);
+
+    expect(find.byTooltip('Update'), findsNothing);
   });
 
   test('a provider quota ends at the earliest expiry it reports', () {
