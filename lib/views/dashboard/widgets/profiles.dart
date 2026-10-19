@@ -19,8 +19,7 @@ import 'profile_detail.dart';
 
 typedef _Usage = ({int used, int total, double share});
 
-_Usage? _usageOf(Profile? profile) {
-  final info = profile?.subscriptionInfo;
+_Usage? _usageOf(SubscriptionInfo? info) {
   if (info == null || info.total <= 0) {
     return null;
   }
@@ -32,8 +31,8 @@ _Usage? _usageOf(Profile? profile) {
   );
 }
 
-DateTime? _expiryOf(Profile? profile) {
-  final expire = profile?.subscriptionInfo?.expire ?? 0;
+DateTime? _expiryOf(SubscriptionInfo? info) {
+  final expire = info?.expire ?? 0;
   return expire > 0 ? DateTime.fromMillisecondsSinceEpoch(expire * 1000) : null;
 }
 
@@ -76,11 +75,13 @@ class ProfilesCard extends ConsumerWidget {
     final compact = density.isCompact;
     final appLocalizations = context.appLocalizations;
     final profile = ref.watch(currentProfileProvider);
+    final providers = ref.watch(providersProvider);
     final switchable = ref.watch(
       profilesProvider.select((profiles) => profiles.length > 1),
     );
-    final usage = _usageOf(profile);
-    final expiry = _expiryOf(profile);
+    final quota = profileQuotaOf(profile, providers);
+    final usage = _usageOf(quota?.info);
+    final expiry = _expiryOf(quota?.info);
     final updatedAt = profile?.lastUpdateDate;
     final label = DashboardText.label(context);
     final figure = mobile
@@ -108,9 +109,11 @@ class ProfilesCard extends ConsumerWidget {
       (final text?, null) => Text(text, maxLines: 1, style: label),
       _ => null,
     };
-    final sync = profile != null && profile.type == ProfileType.url
-        ? _SyncButton(profile: profile)
-        : null;
+    final sync = switch (profile) {
+      Profile(type: ProfileType.url) => _SyncButton(profile: profile),
+      Profile(type: ProfileType.file) => _providersSyncButton(providers),
+      _ => null,
+    };
     final nameRow = Row(
       children: [
         Flexible(
@@ -237,6 +240,66 @@ class _SyncButton extends ConsumerWidget {
       glyph: AppGlyphs.sync,
       tooltip: context.appLocalizations.update,
       onPressed: () => syncProfile(ref, profile),
+    );
+  }
+}
+
+Widget? _providersSyncButton(List<ExternalProvider> providers) {
+  final syncable = [
+    for (final provider in providers)
+      if (provider.type == 'Proxy' && provider.vehicleType == 'HTTP') provider,
+  ];
+  return syncable.isEmpty ? null : _ProvidersSyncButton(providers: syncable);
+}
+
+/// A config built from proxy providers has no subscription of its own to
+/// re-download, so its refresh updates the providers the quota comes from.
+class _ProvidersSyncButton extends ConsumerStatefulWidget {
+  const _ProvidersSyncButton({required this.providers});
+
+  final List<ExternalProvider> providers;
+
+  @override
+  ConsumerState<_ProvidersSyncButton> createState() =>
+      _ProvidersSyncButtonState();
+}
+
+class _ProvidersSyncButtonState extends ConsumerState<_ProvidersSyncButton> {
+  bool _isUpdating = false;
+
+  Future<void> _handleUpdate() async {
+    if (_isUpdating) {
+      return;
+    }
+    final proxiesAction = ref.read(proxiesActionProvider.notifier);
+    setState(() => _isUpdating = true);
+    var messages = <UpdatingMessage>[];
+    try {
+      messages = await proxiesAction.updateProviders(
+        widget.providers,
+        showLoading: true,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isUpdating = false);
+      }
+    }
+    proxiesAction.updateGroupsDebounce();
+    dialogs.showFailures(messages);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isUpdating) {
+      return const SizedBox.square(
+        dimension: 32,
+        child: Center(child: CommonCircleLoading(size: 18)),
+      );
+    }
+    return DashboardIconButton(
+      glyph: AppGlyphs.sync,
+      tooltip: context.appLocalizations.update,
+      onPressed: _handleUpdate,
     );
   }
 }

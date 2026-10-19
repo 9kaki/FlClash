@@ -231,6 +231,7 @@
   "loopback": "UWP loopback exemption",
   "providers": "External resources",
   "proxyProviders": "Proxy providers",
+  "providerSubscriptionInfo": "Provider subscription",
   "ruleProviders": "Rule providers",
   "providerUrlTip": "Only remote providers are supported",
   "ruleSetEmptyTip": "The rule set has no usable entries",

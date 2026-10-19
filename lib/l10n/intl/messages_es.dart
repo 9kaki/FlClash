@@ -1440,6 +1440,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Versión del protocolo",
     ),
     "providerInUse": m62,
+    "providerSubscriptionInfo": MessageLookupByLibrary.simpleMessage(
+      "Suscripción del proveedor",
+    ),
     "providerUrlTip": MessageLookupByLibrary.simpleMessage(
       "Solo se admiten proveedores remotos",
     ),

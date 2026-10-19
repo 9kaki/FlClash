@@ -231,6 +231,7 @@
   "loopback": "UWP ループバック解除",
   "providers": "外部リソース",
   "proxyProviders": "プロキシプロバイダー",
+  "providerSubscriptionInfo": "プロバイダー購読",
   "ruleProviders": "ルールプロバイダー",
   "providerUrlTip": "リモートリソースのみ対応しています",
   "ruleSetEmptyTip": "ルールセットに使用できるエントリがありません",

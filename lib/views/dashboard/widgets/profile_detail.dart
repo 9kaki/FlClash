@@ -39,6 +39,59 @@ void showProfilesSheet(BuildContext context) {
 
 typedef ProfileStats = ({int groups, int proxies, int rules, int providers});
 
+typedef ProfileQuota = ({SubscriptionInfo info, bool fromProviders});
+
+/// A profile's own subscription headers come first. A config built from proxy
+/// providers carries none of its own, so it reports the quota those providers
+/// were fetched with instead, summed because the card shows one meter.
+ProfileQuota? profileQuotaOf(
+  Profile? profile,
+  Iterable<ExternalProvider> providers,
+) {
+  final own = profile?.subscriptionInfo;
+  if (own != null && own.total > 0) {
+    return (info: own, fromProviders: false);
+  }
+  final info = _providersQuota(providers);
+  if (info != null) {
+    return (info: info, fromProviders: true);
+  }
+  // An unlimited plan reports an expiry and no quota.
+  return own != null && own.expire > 0
+      ? (info: own, fromProviders: false)
+      : null;
+}
+
+SubscriptionInfo? _providersQuota(Iterable<ExternalProvider> providers) {
+  var upload = 0;
+  var download = 0;
+  var total = 0;
+  var expire = 0;
+  for (final provider in providers) {
+    final info = provider.type == 'Proxy' ? provider.subscriptionInfo : null;
+    if (info == null || info.total <= 0) {
+      continue;
+    }
+    upload += info.upload;
+    download += info.download;
+    total += info.total;
+    // Providers expire independently; the earliest deadline is the one worth
+    // warning about.
+    if (info.expire > 0 && (expire == 0 || info.expire < expire)) {
+      expire = info.expire;
+    }
+  }
+  if (total <= 0) {
+    return null;
+  }
+  return SubscriptionInfo(
+    upload: upload,
+    download: download,
+    total: total,
+    expire: expire,
+  );
+}
+
 ProfileStats profileStatsOf(
   ConfigCounts counts,
   List<ExternalProvider> providers,
@@ -164,7 +217,7 @@ class _ProfileDetailSheetState extends ConsumerState<ProfileDetailSheet>
     final providers = ref.watch(providersProvider);
     final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
     final appLocalizations = context.appLocalizations;
-    final subscriptionInfo = profile.subscriptionInfo;
+    final quota = profileQuotaOf(profile, providers);
     return CommonScaffold(
       title: profile.realLabel,
       iconActions: [
@@ -198,13 +251,15 @@ class _ProfileDetailSheetState extends ConsumerState<ProfileDetailSheet>
                       },
                       failed: configCountsFailed,
                     ),
-                    if (subscriptionInfo != null && subscriptionInfo.total > 0)
+                    if (quota != null && quota.info.total > 0)
                       generateSection(
-                        title: appLocalizations.subscriptionInfo,
+                        title: quota.fromProviders
+                            ? appLocalizations.providerSubscriptionInfo
+                            : appLocalizations.subscriptionInfo,
                         items: [
                           ListItem(
                             title: SubscriptionInfoView(
-                              subscriptionInfo: subscriptionInfo,
+                              subscriptionInfo: quota.info,
                             ),
                           ),
                         ],

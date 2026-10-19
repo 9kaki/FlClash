@@ -231,6 +231,7 @@
   "loopback": "UWP 루프백 예외",
   "providers": "외부 리소스",
   "proxyProviders": "프록시 공급자",
+  "providerSubscriptionInfo": "프로바이더 구독",
   "ruleProviders": "규칙 공급자",
   "providerUrlTip": "원격 공급자만 지원합니다",
   "ruleSetEmptyTip": "규칙 세트에 사용할 수 있는 항목이 없습니다",
