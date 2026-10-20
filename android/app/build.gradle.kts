@@ -13,14 +13,39 @@ val localProperties = Properties().apply {
     }
 }
 
-val releaseStoreFile = file("keystore.jks")
-val releaseStorePassword = localProperties.getProperty("storePassword")
-val releaseKeyAlias = localProperties.getProperty("keyAlias")
-val releaseKeyPassword = localProperties.getProperty("keyPassword")
+// key.properties is gitignored and is ours alone. local.properties belongs to
+// the Flutter tool, which rewrites it on every build, so anything appended
+// there survives only until the next flutter command.
+val keyProperties = Properties().apply {
+    val keyPropertiesFile = rootProject.file("key.properties")
+    if (keyPropertiesFile.exists()) {
+        keyPropertiesFile.inputStream().use { load(it) }
+    }
+}
+
+val releaseStoreFile = file(
+    keyProperties.getProperty("storeFile")
+        ?: localProperties.getProperty("storeFile")
+        ?: "keystore.jks",
+)
+val releaseStorePassword = keyProperties.getProperty("storePassword")
+    ?: localProperties.getProperty("storePassword")
+val releaseKeyAlias = keyProperties.getProperty("keyAlias")
+    ?: localProperties.getProperty("keyAlias")
+val releaseKeyPassword = keyProperties.getProperty("keyPassword")
+    ?: localProperties.getProperty("keyPassword")
 val hasReleaseSigning = releaseStoreFile.exists() &&
     releaseStorePassword != null &&
     releaseKeyAlias != null &&
     releaseKeyPassword != null
+
+if (releaseStoreFile.exists() && !hasReleaseSigning) {
+    logger.warn(
+        "Found ${releaseStoreFile.name} but not a complete signing config " +
+            "(storePassword/keyAlias/keyPassword); falling back to the debug " +
+            "key and the .dev package id.",
+    )
+}
 
 android {
     namespace = "com.follow.clash"
