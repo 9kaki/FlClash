@@ -138,6 +138,7 @@ jobs:
       # The package id and the signing key decide whether an upgrade installs
       # over the previous build, so print them instead of guessing.
       - name: Verify package id
+        id: package
         env:
           SIGNED: ${{ env.KEYSTORE != '' }}
         run: |
@@ -146,6 +147,11 @@ jobs:
             echo "$apk"
             "$build_tools/aapt" dump badging "$apk" | sed -n '1p'
           done
+          first="$(ls dist/*.apk | head -1)"
+          package="$("$build_tools/aapt" dump badging "$first" |
+            sed -n "1s/^package: name='\([^']*\)'.*/\1/p")"
+          echo "package=$package" >> "$GITHUB_OUTPUT"
+          echo "**Package id:** \`$package\`" >> "$GITHUB_STEP_SUMMARY"
           if [[ "$SIGNED" != 'true' ]]; then
             echo "::warning::Unsigned build: the package id carries the .dev suffix and the key is a throwaway debug key, so this APK cannot upgrade an earlier install. Add KEYSTORE, KEY_ALIAS, STORE_PASSWORD and KEY_PASSWORD to ship com.follow.myclash."
           fi
@@ -156,7 +162,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: FlClash-${{ github.sha }}
+          name: ${{ steps.package.outputs.package }}-${{ github.sha }}
           path: dist/*.apk
           if-no-files-found: error
           retention-days: 14
