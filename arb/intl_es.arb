@@ -922,6 +922,7 @@
   "profileUpdatedAt": "Actualizado {time}",
   "profileExpiresIn": "Vence el {date}, {days, plural, =1{queda 1 día} other{quedan {days} días}}",
   "profileDaysLeft": "{days, plural, =1{Queda 1 día} other{Quedan {days} días}}",
+  "profileShortestDaysLeft": "{days, plural, =1{Queda 1 día como mínimo} other{Quedan {days} días como mínimo}}",
   "target": "Destino",
   "outboundExit": "Salida",
   "duration": "Duración",

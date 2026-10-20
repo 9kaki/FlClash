@@ -922,6 +922,7 @@
   "profileUpdatedAt": "{time} 업데이트",
   "profileExpiresIn": "{date} 만료, {days, plural, other{{days}일}} 남음",
   "profileDaysLeft": "{days, plural, other{{days}일 남음}}",
+  "profileShortestDaysLeft": "최소 {days}일 남음",
   "target": "대상",
   "outboundExit": "출구",
   "duration": "소요 시간",

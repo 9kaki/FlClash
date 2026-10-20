@@ -922,6 +922,7 @@
   "profileUpdatedAt": "{time}に更新",
   "profileExpiresIn": "{date} に期限切れ、残り {days} 日",
   "profileDaysLeft": "残り {days} 日",
+  "profileShortestDaysLeft": "最短残り {days} 日",
   "target": "宛先",
   "outboundExit": "出口",
   "duration": "経過時間",

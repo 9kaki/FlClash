@@ -296,6 +296,7 @@ class _ExternalProviderItem extends StatelessWidget {
       title: ChipTitle(
         title: provider.name,
         expire: provider.subscriptionInfo?.expireDate,
+        permanent: provider.type == 'Proxy',
       ),
       subtitle: Text(switch (provider.type) {
         'Proxy' => appLocalizations.proxiesCount(count, count.compact),
