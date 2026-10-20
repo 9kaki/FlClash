@@ -52,6 +52,18 @@ jobs:
         with:
           submodules: recursive
 
+      # Written straight after checkout, as the upstream release pipeline does,
+      # so nothing between here and the build can drop them.
+      - name: Setup Android signing
+        if: env.KEYSTORE != ''
+        run: |
+          echo "$KEYSTORE" | base64 --decode > android/app/keystore.jks
+          {
+            echo "keyAlias=${{ secrets.KEY_ALIAS }}"
+            echo "storePassword=${{ secrets.STORE_PASSWORD }}"
+            echo "keyPassword=${{ secrets.KEY_PASSWORD }}"
+          } >> android/local.properties
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -104,28 +116,65 @@ jobs:
       - name: Put pub global executables on PATH
         run: echo "${PUB_CACHE:-$HOME/.pub-cache}/bin" >> "$GITHUB_PATH"
 
-      - name: Setup Android signing
-        if: env.KEYSTORE != ''
-        run: |
-          echo "$KEYSTORE" | base64 --decode > android/app/keystore.jks
-          {
-            echo "keyAlias=${{ secrets.KEY_ALIAS }}"
-            echo "storePassword=${{ secrets.STORE_PASSWORD }}"
-            echo "keyPassword=${{ secrets.KEY_PASSWORD }}"
-          } >> android/local.properties
-
       # Gradle reads these at configuration time; when it cannot, it silently
-      # falls back to the debug key and the .dev package id.
-      - name: Show signing inputs
+      # falls back to the debug key and the .dev package id. Restore anything
+      # a step in between dropped, then report what is actually there.
+      - name: Reassert signing inputs
         if: env.KEYSTORE != ''
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [[ -f android/app/keystore.jks ]]; then
-            echo "keystore: $(wc -c < android/app/keystore.jks) bytes"
-          else
-            echo "keystore: MISSING"
+          if [[ ! -s android/app/keystore.jks ]]; then
+            echo "restoring android/app/keystore.jks"
+            echo "$KEYSTORE" | base64 --decode > android/app/keystore.jks
           fi
+          if ! grep -q '^keyAlias=' android/local.properties 2>/dev/null; then
+            echo "restoring android/local.properties"
+            {
+              echo "keyAlias=$KEY_ALIAS"
+              echo "storePassword=$STORE_PASSWORD"
+              echo "keyPassword=$KEY_PASSWORD"
+            } >> android/local.properties
+          fi
+          echo "keystore: $(wc -c < android/app/keystore.jks) bytes"
           echo "local.properties:"
           sed -E 's/=.*/=<set>/' android/local.properties || echo "(none)"
+
+      # Ask Gradle itself what it resolved, since the files being present is
+      # not the same as the release build type picking them up. The probe is
+      # installed as an init script, so the real build's own configuration
+      # phase prints the answer into its log.
+      - name: Install a Gradle probe
+        if: env.KEYSTORE != ''
+        run: |
+          cat > probe.gradle <<'EOF'
+          gradle.projectsEvaluated {
+            def app = gradle.rootProject.findProject(':app')
+            if (app == null) {
+              println "PROBE app project not found"
+            } else {
+              def store = new File(app.projectDir, 'keystore.jks')
+              def props = new java.util.Properties()
+              def lp = new File(gradle.rootProject.projectDir, 'local.properties')
+              if (lp.exists()) { lp.withInputStream { props.load(it) } }
+              println "PROBE keystoreExists=${store.exists()} bytes=${store.exists() ? store.length() : -1}"
+              println "PROBE localProps=${new TreeSet(props.stringPropertyNames())}"
+              try {
+                def release = app.android.buildTypes.getByName('release')
+                println "PROBE releaseSigning=${release.signingConfig?.name} releaseSuffix=${release.applicationIdSuffix}"
+              } catch (Throwable t) {
+                println "PROBE androidExtensionFailed ${t.class.name}: ${t.message}"
+              }
+            }
+          }
+          EOF
+          for d in "${GRADLE_USER_HOME:-$HOME/.gradle}" "$HOME/.gradle"; do
+            mkdir -p "$d/init.d"
+            cp probe.gradle "$d/init.d/probe.gradle"
+          done
+          rm probe.gradle
 
       # setup.dart drives the Go core, the Rust library and flutter_distributor,
       # and writes the APKs to dist/. A tag without a prerelease suffix is a
