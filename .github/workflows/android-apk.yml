@@ -114,6 +114,19 @@ jobs:
             echo "keyPassword=${{ secrets.KEY_PASSWORD }}"
           } >> android/local.properties
 
+      # Gradle reads these at configuration time; when it cannot, it silently
+      # falls back to the debug key and the .dev package id.
+      - name: Show signing inputs
+        if: env.KEYSTORE != ''
+        run: |
+          if [[ -f android/app/keystore.jks ]]; then
+            echo "keystore: $(wc -c < android/app/keystore.jks) bytes"
+          else
+            echo "keystore: MISSING"
+          fi
+          echo "local.properties:"
+          sed -E 's/=.*/=<set>/' android/local.properties || echo "(none)"
+
       # setup.dart drives the Go core, the Rust library and flutter_distributor,
       # and writes the APKs to dist/. A tag without a prerelease suffix is a
       # stable build, which is what drops the PRE banner.
@@ -150,8 +163,14 @@ jobs:
           first="$(ls dist/*.apk | head -1)"
           package="$("$build_tools/aapt" dump badging "$first" |
             sed -n "1s/^package: name='\([^']*\)'.*/\1/p")"
+          "$build_tools/apksigner" verify --print-certs "$first" |
+            grep -E "certificate DN|SHA-256" | head -2
           echo "package=$package" >> "$GITHUB_OUTPUT"
           echo "**Package id:** \`$package\`" >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$SIGNED" == 'true' && "$package" == *.dev ]]; then
+            echo "::error::Signing secrets are set but the apk still ships $package. Gradle did not pick up the release signing config."
+            exit 1
+          fi
           if [[ "$SIGNED" != 'true' ]]; then
             echo "::warning::Unsigned build: the package id carries the .dev suffix and the key is a throwaway debug key, so this APK cannot upgrade an earlier install. Add KEYSTORE, KEY_ALIAS, STORE_PASSWORD and KEY_PASSWORD to ship com.follow.myclash."
           fi
