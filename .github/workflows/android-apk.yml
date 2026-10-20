@@ -135,6 +135,16 @@ jobs:
           echo "building for $app_env"
           dart setup.dart "${args[@]}"
 
+      # The package id and the signing key decide whether an upgrade installs
+      # over the previous build, so print them instead of guessing.
+      - name: Verify package id
+        run: |
+          build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          for apk in dist/*.apk; do
+            echo "$apk"
+            "$build_tools/aapt" dump badging "$apk" | sed -n '1p'
+          done
+
       - name: Show artifacts
         run: ls -lh dist && sha256sum dist/*.apk
 
