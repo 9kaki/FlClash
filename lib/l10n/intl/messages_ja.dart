@@ -962,7 +962,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "logs": MessageLookupByLibrary.simpleMessage("ログ"),
     "logsAndDiagnostics": MessageLookupByLibrary.simpleMessage("ログと診断"),
     "logsTest": MessageLookupByLibrary.simpleMessage("ログテスト"),
-    "longTermSubscription": MessageLookupByLibrary.simpleMessage("長期購読"),
     "loopback": MessageLookupByLibrary.simpleMessage("UWP ループバック解除"),
     "loose": MessageLookupByLibrary.simpleMessage("ゆったり"),
     "matchCase": MessageLookupByLibrary.simpleMessage("大文字と小文字を区別"),

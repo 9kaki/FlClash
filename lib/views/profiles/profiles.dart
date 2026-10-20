@@ -543,7 +543,6 @@ class _ProfileCardTitle extends StatelessWidget {
           title: profile.realLabel,
           expire: expire,
           permanent: permanent,
-          permanentLabel: context.appLocalizations.longTermSubscription,
           style: AppTextStyle.headline.of(context),
         ),
         const SizedBox(height: _infoGap),

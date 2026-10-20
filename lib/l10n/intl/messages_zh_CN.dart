@@ -875,7 +875,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "logs": MessageLookupByLibrary.simpleMessage("日志"),
     "logsAndDiagnostics": MessageLookupByLibrary.simpleMessage("日志与诊断"),
     "logsTest": MessageLookupByLibrary.simpleMessage("日志测试"),
-    "longTermSubscription": MessageLookupByLibrary.simpleMessage("长期订阅"),
     "loopback": MessageLookupByLibrary.simpleMessage("UWP 回环解锁"),
     "loose": MessageLookupByLibrary.simpleMessage("宽松"),
     "matchCase": MessageLookupByLibrary.simpleMessage("区分大小写"),

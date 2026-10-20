@@ -1201,9 +1201,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Journaux et diagnostic",
     ),
     "logsTest": MessageLookupByLibrary.simpleMessage("Test des journaux"),
-    "longTermSubscription": MessageLookupByLibrary.simpleMessage(
-      "Sans expiration",
-    ),
     "loopback": MessageLookupByLibrary.simpleMessage(
       "Exemption de bouclage UWP",
     ),

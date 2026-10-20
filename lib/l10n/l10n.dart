@@ -7710,16 +7710,6 @@ class AppLocalizations {
     );
   }
 
-  /// `No expiry`
-  String get longTermSubscription {
-    return Intl.message(
-      'No expiry',
-      name: 'longTermSubscription',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Target`
   String get target {
     return Intl.message('Target', name: 'target', desc: '', args: []);
