@@ -234,6 +234,7 @@ jobs:
           if [[ -n "$ARCH" && "$ARCH" != 'all' ]]; then
             args+=(--arch "$ARCH")
           fi
+          echo "APP_ENV=$app_env" >> "$GITHUB_ENV"
           echo "building for $app_env"
           dart setup.dart "${args[@]}"
 
@@ -254,8 +255,19 @@ jobs:
             sed -n "1s/^package: name='\([^']*\)'.*/\1/p")"
           "$build_tools/apksigner" verify --print-certs "$first" |
             grep -E "certificate DN|SHA-256" | head -2
+
+          # dist/ names each apk FlClash-<version>-android-<abi>.apk, so the
+          # artifact can carry the same shape plus what tells two runs apart.
+          base="$(basename "$first" .apk)"
+          if [[ "$(ls dist/*.apk | wc -l)" != '1' ]]; then
+            base="$(printf '%s' "$base" | sed -E 's/-android-.*$/-android-all-abi/')"
+          fi
+          artifact="$base-${APP_ENV}-$(printf '%s' "$GITHUB_SHA" | cut -c1-7).apk"
+
           echo "package=$package" >> "$GITHUB_OUTPUT"
+          echo "artifact=$artifact" >> "$GITHUB_OUTPUT"
           echo "**Package id:** \`$package\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Artifact:** \`$artifact\`" >> "$GITHUB_STEP_SUMMARY"
           if [[ "$SIGNED" == 'true' && "$package" == *.dev ]]; then
             echo "::error::Signing secrets are set but the apk still ships $package, so Gradle never saw android/key.properties or android/app/keystore.jks. Check the PROBE lines above for what it resolved."
             exit 1
@@ -270,7 +282,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.package.outputs.package }}-${{ github.sha }}
+          name: ${{ steps.package.outputs.artifact }}
           path: dist/*.apk
           if-no-files-found: error
           retention-days: 14
