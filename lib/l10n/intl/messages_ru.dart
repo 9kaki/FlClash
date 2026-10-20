@@ -1161,6 +1161,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Логи и диагностика",
     ),
     "logsTest": MessageLookupByLibrary.simpleMessage("Тест логов"),
+    "longTermSubscription": MessageLookupByLibrary.simpleMessage("Без срока"),
     "loopback": MessageLookupByLibrary.simpleMessage(
       "Снятие ограничения loopback для UWP",
     ),

@@ -923,6 +923,7 @@
   "profileExpiresIn": "{date} 到期，剩余 {days} 天",
   "profileDaysLeft": "剩余 {days} 天",
   "profileShortestDaysLeft": "最短剩余 {days} 天",
+  "longTermSubscription": "长期订阅",
   "target": "目标",
   "outboundExit": "出口",
   "duration": "时长",

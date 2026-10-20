@@ -947,6 +947,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "logs": MessageLookupByLibrary.simpleMessage("로그"),
     "logsAndDiagnostics": MessageLookupByLibrary.simpleMessage("로그 및 진단"),
     "logsTest": MessageLookupByLibrary.simpleMessage("로그 테스트"),
+    "longTermSubscription": MessageLookupByLibrary.simpleMessage("장기 구독"),
     "loopback": MessageLookupByLibrary.simpleMessage("UWP 루프백 예외"),
     "loose": MessageLookupByLibrary.simpleMessage("넓게"),
     "matchCase": MessageLookupByLibrary.simpleMessage("대/소문자 구분"),

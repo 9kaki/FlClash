@@ -923,6 +923,7 @@
   "profileExpiresIn": "Истекает {date}, осталось дней: {days}",
   "profileDaysLeft": "Осталось дней: {days}",
   "profileShortestDaysLeft": "Осталось минимум дней: {days}",
+  "longTermSubscription": "Без срока",
   "target": "Цель",
   "outboundExit": "Выход",
   "duration": "Длительность",

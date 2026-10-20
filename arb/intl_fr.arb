@@ -923,6 +923,7 @@
   "profileExpiresIn": "Expire le {date}, {days, plural, =1{1 jour restant} other{{days} jours restants}}",
   "profileDaysLeft": "{days, plural, =1{1 jour restant} other{{days} jours restants}}",
   "profileShortestDaysLeft": "{days, plural, =1{Au plus tôt 1 jour restant} other{Au plus tôt {days} jours restants}}",
+  "longTermSubscription": "Sans expiration",
   "target": "Cible",
   "outboundExit": "Sortie",
   "duration": "Durée",
