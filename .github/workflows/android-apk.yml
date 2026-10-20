@@ -19,6 +19,13 @@ on:
         options:
           - pre
           - stable
+      sign:
+        description: 'required fails fast when a signing secret is missing, auto builds unsigned'
+        type: choice
+        default: required
+        options:
+          - required
+          - auto
   push:
     tags:
       - 'v*'
@@ -46,6 +53,7 @@ jobs:
       # replacing it. Set KEYSTORE, KEY_ALIAS, STORE_PASSWORD and KEY_PASSWORD
       # as repository secrets to sign it as a release build.
       KEYSTORE: ${{ secrets.KEYSTORE }}
+      SIGN_INPUT: ${{ inputs.sign }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,13 +61,30 @@ jobs:
           submodules: recursive
 
       # Say which of the two package ids this run will produce before spending
-      # an hour building, instead of only finding out from the artifact name.
+      # an hour building. Print character counts, not "is it set": a secret that
+      # resolves to an empty string looks identical to a set one from here.
       - name: Report signing mode
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [[ -n "${KEYSTORE:-}" ]]; then
-            echo "Signed build: the apk carries com.follow.myclash and can upgrade an earlier install."
+          echo "KEYSTORE:       ${#KEYSTORE} chars"
+          echo "KEY_ALIAS:      ${#KEY_ALIAS} chars"
+          echo "STORE_PASSWORD: ${#STORE_PASSWORD} chars"
+          echo "KEY_PASSWORD:   ${#KEY_PASSWORD} chars"
+          missing=()
+          for name in KEYSTORE KEY_ALIAS STORE_PASSWORD KEY_PASSWORD; do
+            [[ -n "${!name:-}" ]] || missing+=("$name")
+          done
+          if [[ "${#missing[@]}" -gt 0 ]]; then
+            if [[ "${SIGN_INPUT:-required}" == 'required' ]]; then
+              echo "::error::${missing[*]} resolve to empty strings, so Gradle would fall back to the debug key and the com.follow.myclash.dev package id. Add them under Settings -> Secrets and variables -> Actions -> Repository secrets; secrets stored in an Environment are not visible to this job. Or run with sign=auto to build unsigned anyway."
+              exit 1
+            fi
+            echo "::warning::${missing[*]} resolve to empty strings. This run ships com.follow.myclash.dev and cannot upgrade an earlier install."
           else
-            echo "::warning::No KEYSTORE secret on this run, so Gradle falls back to the debug key and the com.follow.myclash.dev package id. Add KEYSTORE, KEY_ALIAS, STORE_PASSWORD and KEY_PASSWORD under Settings -> Secrets and variables -> Actions -> New repository secret."
+            echo "Signed build: the apk carries com.follow.myclash and can upgrade an earlier install."
           fi
 
       # Written straight after checkout, since checkout cleans the tree, and
@@ -82,7 +107,7 @@ jobs:
           } > android/key.properties
           echo "keystore: $(wc -c < android/app/keystore.jks) bytes"
           echo "key.properties:"
-          sed -E 's/=.*/=<set>/' android/key.properties
+          awk -F= '{printf "  %s=%d chars\n", $1, length($2)}' android/key.properties
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -176,8 +201,9 @@ jobs:
               println "PROBE keystoreExists=${store.exists()} bytes=${store.exists() ? store.length() : -1}"
               println "PROBE signingKeys=[${props.stringPropertyNames().findAll { it in ['storeFile', 'storePassword', 'keyAlias', 'keyPassword'] }.sort().join(', ')}]"
               try {
-                def release = app.android.buildTypes.getByName('release')
-                println "PROBE releaseSigning=${release.signingConfig?.name} releaseSuffix=${release.applicationIdSuffix}"
+                app.android.buildTypes.each { bt ->
+                  println "PROBE buildType=${bt.name} signing=${bt.signingConfig?.name} suffix=${bt.applicationIdSuffix}"
+                }
               } catch (Throwable t) {
                 println "PROBE androidExtensionFailed ${t.class.name}: ${t.message}"
               }
@@ -208,6 +234,7 @@ jobs:
           if [[ -n "$ARCH" && "$ARCH" != 'all' ]]; then
             args+=(--arch "$ARCH")
           fi
+          echo "APP_ENV=$app_env" >> "$GITHUB_ENV"
           echo "building for $app_env"
           dart setup.dart "${args[@]}"
 
@@ -228,8 +255,19 @@ jobs:
             sed -n "1s/^package: name='\([^']*\)'.*/\1/p")"
           "$build_tools/apksigner" verify --print-certs "$first" |
             grep -E "certificate DN|SHA-256" | head -2
+
+          # dist/ names each apk FlClash-<version>-android-<abi>.apk, so the
+          # artifact can carry the same shape plus what tells two runs apart.
+          base="$(basename "$first" .apk)"
+          if [[ "$(ls dist/*.apk | wc -l)" != '1' ]]; then
+            base="$(printf '%s' "$base" | sed -E 's/-android-.*$/-android-all-abi/')"
+          fi
+          artifact="$base-${APP_ENV}-$(printf '%s' "$GITHUB_SHA" | cut -c1-7).apk"
+
           echo "package=$package" >> "$GITHUB_OUTPUT"
+          echo "artifact=$artifact" >> "$GITHUB_OUTPUT"
           echo "**Package id:** \`$package\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Artifact:** \`$artifact\`" >> "$GITHUB_STEP_SUMMARY"
           if [[ "$SIGNED" == 'true' && "$package" == *.dev ]]; then
             echo "::error::Signing secrets are set but the apk still ships $package, so Gradle never saw android/key.properties or android/app/keystore.jks. Check the PROBE lines above for what it resolved."
             exit 1
@@ -244,7 +282,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.package.outputs.package }}-${{ github.sha }}
+          name: ${{ steps.package.outputs.artifact }}
           path: dist/*.apk
           if-no-files-found: error
           retention-days: 14
