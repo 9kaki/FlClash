@@ -625,6 +625,44 @@ void main() {
     expect(find.textContaining('%', findRichText: true), findsNothing);
   });
 
+  testWidgets('the card counts to the provider that ends first', (
+    tester,
+  ) async {
+    final soon = DateTime.now().add(const Duration(days: 26, hours: 1));
+    final late = DateTime.now().add(const Duration(days: 90));
+    setUpProfiles(
+      [_profile(1)],
+      overrides: [
+        providersProvider.overrideWithBuild(
+          (_, _) => [
+            _provider(
+              'a',
+              'Proxy',
+              5,
+              info: SubscriptionInfo(
+                upload: 10 * _gib,
+                total: 100 * _gib,
+                expire: late.millisecondsSinceEpoch ~/ 1000,
+              ),
+            ),
+            _provider(
+              'b',
+              'Proxy',
+              5,
+              info: SubscriptionInfo(
+                total: 100 * _gib,
+                expire: soon.millisecondsSinceEpoch ~/ 1000,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+    await pumpDesktopCard(tester);
+
+    expect(find.text('26 days left at the earliest'), findsOneWidget);
+  });
+
   testWidgets('the detail sheet names a provider quota as such', (
     tester,
   ) async {
@@ -652,7 +690,86 @@ void main() {
     await openDetail(tester);
 
     expect(find.text('Provider subscription'), findsOneWidget);
-    expect(find.text('10 GB / 100 GB'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ProfileDetailSheet),
+        matching: find.text('10GB / 100GB'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the sheet gives each provider its own quota and expiry', (
+    tester,
+  ) async {
+    await writeAppliedConfig(tester);
+    final soon = DateTime.now().add(const Duration(days: 40));
+    setUpProfiles(
+      [_profile(1)],
+      overrides: [
+        providersProvider.overrideWithBuild(
+          (_, _) => [
+            _provider(
+              'alpha',
+              'Proxy',
+              5,
+              info: SubscriptionInfo(
+                upload: 10 * _gib,
+                total: 100 * _gib,
+                expire: soon.millisecondsSinceEpoch ~/ 1000,
+              ),
+            ),
+            _provider(
+              'beta',
+              'Proxy',
+              5,
+              info: const SubscriptionInfo(
+                upload: 20 * _gib,
+                total: 200 * _gib,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+    await pumpCard(tester);
+
+    await openDetail(tester);
+
+    Finder inSheet(String text) => find.descendant(
+      of: find.byType(ProfileDetailSheet),
+      matching: find.text(text),
+    );
+    expect(inSheet('10GB / 100GB'), findsOneWidget);
+    expect(inSheet('20GB / 200GB'), findsOneWidget);
+    final expiring = tester.getTopLeft(inSheet('10GB / 100GB')).dy;
+    final permanent = tester.getTopLeft(inSheet('20GB / 200GB')).dy;
+    expect(expiring, lessThan(permanent));
+    expect(inSheet('Never expires'), findsWidgets);
+  });
+
+  testWidgets('a provider quota with no expiry reads as long term', (
+    tester,
+  ) async {
+    setUpProfiles(
+      [_profile(1)],
+      overrides: [
+        providersProvider.overrideWithBuild(
+          (_, _) => [
+            _provider(
+              'a',
+              'Proxy',
+              5,
+              info: const SubscriptionInfo(total: 100 * _gib),
+            ),
+          ],
+        ),
+      ],
+    );
+    await pumpDesktopCard(tester);
+
+    expect(find.text('Never expires'), findsOneWidget);
+    expect(find.textContaining('%', findRichText: true), findsOneWidget);
   });
 
   testWidgets('a config built from proxy providers offers to update them', (
@@ -693,6 +810,39 @@ void main() {
     await pumpDesktopCard(tester);
 
     expect(find.byTooltip('Update'), findsNothing);
+  });
+
+  test('provider quotas come soonest first and long term last', () {
+    final soon = DateTime(2027, 1, 2);
+    final late = DateTime(2027, 6, 1);
+    final quotas = providerQuotasOf([
+      _provider('long', 'Proxy', 1, info: const SubscriptionInfo(total: 10)),
+      _provider(
+        'late',
+        'Proxy',
+        1,
+        info: SubscriptionInfo(
+          total: 10,
+          expire: late.millisecondsSinceEpoch ~/ 1000,
+        ),
+      ),
+      _provider(
+        'soon',
+        'Proxy',
+        1,
+        info: SubscriptionInfo(
+          total: 10,
+          expire: soon.millisecondsSinceEpoch ~/ 1000,
+        ),
+      ),
+      _provider('rules', 'Rule', 1, info: const SubscriptionInfo(total: 10)),
+    ]);
+
+    expect(quotas.map((quota) => quota.provider.name), [
+      'soon',
+      'late',
+      'long',
+    ]);
   });
 
   test('a provider quota ends at the earliest expiry it reports', () {

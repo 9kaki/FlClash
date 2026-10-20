@@ -922,6 +922,7 @@
   "profileUpdatedAt": "Обновлено {time}",
   "profileExpiresIn": "Истекает {date}, осталось дней: {days}",
   "profileDaysLeft": "Осталось дней: {days}",
+  "profileShortestDaysLeft": "Осталось минимум дней: {days}",
   "target": "Цель",
   "outboundExit": "Выход",
   "duration": "Длительность",

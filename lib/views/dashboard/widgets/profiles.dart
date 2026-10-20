@@ -90,9 +90,15 @@ class ProfilesCard extends ConsumerWidget {
     final name = mobile || !compact
         ? AppTextStyle.headline
         : AppTextStyle.callout;
-    final endText = switch ((profile, expiry)) {
-      (_, final expiry?) => appLocalizations.profileDaysLeft(_daysLeft(expiry)),
-      (final profile?, null) => _sourceOf(context, profile.type),
+    final fromProviders = quota?.fromProviders ?? false;
+    final endText = switch ((profile, expiry, fromProviders)) {
+      (_, final expiry?, _) =>
+        fromProviders
+            ? appLocalizations.profileShortestDaysLeft(_daysLeft(expiry))
+            : appLocalizations.profileDaysLeft(_daysLeft(expiry)),
+      // Providers that never expire still end a config that has no expiry.
+      (_, null, true) => appLocalizations.infiniteTime,
+      (final profile?, null, false) => _sourceOf(context, profile.type),
       _ => null,
     };
     final Widget? end = switch ((endText, expiry)) {
@@ -101,12 +107,18 @@ class ProfilesCard extends ConsumerWidget {
         child: Text(
           text,
           maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: _daysLeft(expiry) <= _soonDays
               ? label.copyWith(color: DashboardColors.of(context).warn)
               : label,
         ),
       ),
-      (final text?, null) => Text(text, maxLines: 1, style: label),
+      (final text?, null) => Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: label,
+      ),
       _ => null,
     };
     final sync = switch (profile) {
@@ -188,18 +200,28 @@ class ProfilesCard extends ConsumerWidget {
                             _rowGap +
                             _widthOf(endText ?? '', label) <=
                         constraints.maxWidth;
+                // A long day count gives way to the update time beside it.
+                final updatedText = (fits ? updated : time) ?? '';
+                final endWidth = math.max(
+                  0.0,
+                  constraints.maxWidth - _rowGap - _widthOf(updatedText, label),
+                );
                 return Row(
                   spacing: _rowGap,
                   children: [
                     Expanded(
                       child: Text(
-                        (fits ? updated : time) ?? '',
+                        updatedText,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: label,
                       ),
                     ),
-                    ?end,
+                    if (end != null)
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: endWidth),
+                        child: end,
+                      ),
                   ],
                 );
               },
