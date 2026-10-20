@@ -12,12 +12,19 @@ on:
           - arm64
           - arm
           - amd64
+      app_env:
+        description: 'App environment (pre shows the banner, stable does not)'
+        type: choice
+        default: pre
+        options:
+          - pre
+          - stable
   push:
     tags:
       - 'v*'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -108,17 +115,40 @@ jobs:
           } >> android/local.properties
 
       # setup.dart drives the Go core, the Rust library and flutter_distributor,
-      # and writes the APKs to dist/.
+      # and writes the APKs to dist/. A tag without a prerelease suffix is a
+      # stable build, which is what drops the PRE banner.
       - name: Build APK
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
           ARCH: ${{ inputs.arch }}
+          ENV_INPUT: ${{ inputs.app_env }}
         run: |
-          args=(android)
+          if [[ "$GITHUB_REF" == refs/tags/v* && "$GITHUB_REF_NAME" != *-* ]]; then
+            app_env=stable
+          else
+            app_env="${ENV_INPUT:-pre}"
+          fi
+          args=(android --env "$app_env")
           if [[ -n "$ARCH" && "$ARCH" != 'all' ]]; then
             args+=(--arch "$ARCH")
           fi
+          echo "building for $app_env"
           dart setup.dart "${args[@]}"
+
+      # The package id and the signing key decide whether an upgrade installs
+      # over the previous build, so print them instead of guessing.
+      - name: Verify package id
+        env:
+          SIGNED: ${{ env.KEYSTORE != '' }}
+        run: |
+          build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          for apk in dist/*.apk; do
+            echo "$apk"
+            "$build_tools/aapt" dump badging "$apk" | sed -n '1p'
+          done
+          if [[ "$SIGNED" != 'true' ]]; then
+            echo "::warning::Unsigned build: the package id carries the .dev suffix and the key is a throwaway debug key, so this APK cannot upgrade an earlier install. Add KEYSTORE, KEY_ALIAS, STORE_PASSWORD and KEY_PASSWORD to ship com.follow.myclash."
+          fi
 
       - name: Show artifacts
         run: ls -lh dist && sha256sum dist/*.apk
@@ -130,3 +160,12 @@ jobs:
           path: dist/*.apk
           if-no-files-found: error
           retention-days: 14
+
+      # Only a signed build is worth publishing; an unsigned one carries the
+      # debug key and the .dev package id.
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v') && env.KEYSTORE != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.apk
+          prerelease: ${{ contains(github.ref_name, '-') }}
