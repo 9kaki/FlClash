@@ -138,12 +138,17 @@ jobs:
       # The package id and the signing key decide whether an upgrade installs
       # over the previous build, so print them instead of guessing.
       - name: Verify package id
+        env:
+          SIGNED: ${{ env.KEYSTORE != '' }}
         run: |
           build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
           for apk in dist/*.apk; do
             echo "$apk"
             "$build_tools/aapt" dump badging "$apk" | sed -n '1p'
           done
+          if [[ "$SIGNED" != 'true' ]]; then
+            echo "::warning::Unsigned build: the package id carries the .dev suffix and the key is a throwaway debug key, so this APK cannot upgrade an earlier install. Add KEYSTORE, KEY_ALIAS, STORE_PASSWORD and KEY_PASSWORD to ship com.follow.myclash."
+          fi
 
       - name: Show artifacts
         run: ls -lh dist && sha256sum dist/*.apk
