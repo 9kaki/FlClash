@@ -194,37 +194,39 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m69(count, label) =>
       "${Intl.plural(count, one: '${label} группа прокси', few: '${label} группы прокси', many: '${label} групп прокси', other: '${label} группы прокси')}";
 
-  static String m70(count, label) =>
+  static String m70(label) => "Объявлено в ${label}";
+
+  static String m71(count, label) =>
       "${Intl.plural(count, one: '${label} правило', few: '${label} правила', many: '${label} правил', other: '${label} правила')}";
 
-  static String m71(appName) => "${appName} (Безопасный режим)";
+  static String m72(appName) => "${appName} (Безопасный режим)";
 
-  static String m72(count) =>
+  static String m73(count) =>
       "${Intl.plural(count, one: '${count} секунда', few: '${count} секунды', many: '${count} секунд', other: '${count} секунды')}";
 
-  static String m73(count) => "Действуют: ${count}";
+  static String m74(count) => "Действуют: ${count}";
 
-  static String m74(count) => "Проблем: ${count}";
+  static String m75(count) => "Проблем: ${count}";
 
-  static String m75(time) => "Проверено в ${time}";
+  static String m76(time) => "Проверено в ${time}";
 
-  static String m76(count) =>
+  static String m77(count) =>
       "${Intl.plural(count, one: '${count} настройка', few: '${count} настройки', many: '${count} настроек', other: '${count} настройки')}";
 
-  static String m77(link) => "Не удалось прочитать прокси из ${link}";
+  static String m78(link) => "Не удалось прочитать прокси из ${link}";
 
-  static String m78(label) => "«${label}» — только одно значение";
+  static String m79(label) => "«${label}» — только одно значение";
 
-  static String m79(value) => "Пик ${value}";
+  static String m80(value) => "Пик ${value}";
 
-  static String m80(value) => "Всего ${value}";
+  static String m81(value) => "Всего ${value}";
 
-  static String m81(label) => "Значение «${label}» должно быть URL";
-
-  static String m82(count) =>
-      "${Intl.plural(count, one: '${count} год назад', few: '${count} года назад', many: '${count} лет назад', other: '${count} года назад')}";
+  static String m82(label) => "Значение «${label}» должно быть URL";
 
   static String m83(count) =>
+      "${Intl.plural(count, one: '${count} год назад', few: '${count} года назад', many: '${count} лет назад', other: '${count} года назад')}";
+
+  static String m84(count) =>
       "${Intl.plural(count, one: '${count} г. назад', few: '${count} г. назад', many: '${count} л. назад', other: '${count} г. назад')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -1632,6 +1634,30 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleListInvalid": MessageLookupByLibrary.simpleMessage(
       "Правила должны быть YAML-списком, по одному правилу в элементе, например - DOMAIN,example.com,DIRECT",
     ),
+    "ruleOptions": MessageLookupByLibrary.simpleMessage("Переключатели правил"),
+    "ruleOptionsEmpty": MessageLookupByLibrary.simpleMessage(
+      "Этот скрипт не объявляет переключателей",
+    ),
+    "ruleOptionsEmptyDesc": MessageLookupByLibrary.simpleMessage(
+      "Скрипт объявляет переключатели в ruleOptionsEnable; менять здесь можно только их.",
+    ),
+    "ruleOptionsFailed": MessageLookupByLibrary.simpleMessage(
+      "Не удалось прочитать переключатели скрипта",
+    ),
+    "ruleOptionsFromScript": m70,
+    "ruleOptionsGroups": MessageLookupByLibrary.simpleMessage("Группы политик"),
+    "ruleOptionsNoScript": MessageLookupByLibrary.simpleMessage(
+      "В этом профиле не используется скрипт",
+    ),
+    "ruleOptionsNoScriptDesc": MessageLookupByLibrary.simpleMessage(
+      "Выберите скрипт как расширение профиля, и объявленные им переключатели появятся здесь.",
+    ),
+    "ruleOptionsOthers": MessageLookupByLibrary.simpleMessage(
+      "Другие параметры",
+    ),
+    "ruleOptionsRejected": MessageLookupByLibrary.simpleMessage(
+      "Скрипт отклонил эти переключатели, они восстановлены",
+    ),
     "rulePresetBittorrentDirect": MessageLookupByLibrary.simpleMessage(
       "BitTorrent напрямую",
     ),
@@ -1669,14 +1695,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "Правило должно начинаться с поддерживаемого типа, например DOMAIN,example.com,DIRECT",
     ),
     "rules": MessageLookupByLibrary.simpleMessage("Правила"),
-    "rulesCount": m70,
+    "rulesCount": m71,
     "runTime": MessageLookupByLibrary.simpleMessage("Время работы"),
     "running": MessageLookupByLibrary.simpleMessage("Работает"),
     "runtimeConfig": MessageLookupByLibrary.simpleMessage(
       "Конфигурация выполнения",
     ),
     "safeMode": MessageLookupByLibrary.simpleMessage("Безопасный режим"),
-    "safeModeAppTitle": m71,
+    "safeModeAppTitle": m72,
     "saturation": MessageLookupByLibrary.simpleMessage("Насыщенность"),
     "save": MessageLookupByLibrary.simpleMessage("Сохранить"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("Сохранить изменения?"),
@@ -1689,9 +1715,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "search": MessageLookupByLibrary.simpleMessage("Поиск"),
     "seconds": MessageLookupByLibrary.simpleMessage("секунд"),
-    "secondsCount": m72,
+    "secondsCount": m73,
     "secretKey": MessageLookupByLibrary.simpleMessage("Ключ"),
-    "sectionsInEffect": m73,
+    "sectionsInEffect": m74,
     "selectAll": MessageLookupByLibrary.simpleMessage("Выбрать всё"),
     "selectRuleSet": MessageLookupByLibrary.simpleMessage(
       "Выберите набор правил",
@@ -1701,13 +1727,13 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "selected": MessageLookupByLibrary.simpleMessage("Выбрано"),
     "server": MessageLookupByLibrary.simpleMessage("Сервер"),
-    "serviceAbnormalCount": m74,
+    "serviceAbnormalCount": m75,
     "serviceAllAvailable": MessageLookupByLibrary.simpleMessage("Все доступны"),
     "serviceAvailable": MessageLookupByLibrary.simpleMessage("Доступен"),
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("Заблокировано"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("Проверить"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("Проверить все"),
-    "serviceCheckedAt": m75,
+    "serviceCheckedAt": m76,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("Скоро появится"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage(
       "Недопустимый провайдер",
@@ -1733,8 +1759,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "settingEntries": MessageLookupByLibrary.simpleMessage("параметры"),
     "settings": MessageLookupByLibrary.simpleMessage("Настройки"),
-    "settingsCount": m76,
-    "shareLinkUnreadable": m77,
+    "settingsCount": m77,
+    "shareLinkUnreadable": m78,
     "shareLinksInvalid": MessageLookupByLibrary.simpleMessage(
       "Не удалось прочитать прокси из ссылок",
     ),
@@ -1760,7 +1786,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "singleShareLinkOnly": MessageLookupByLibrary.simpleMessage(
       "Здесь укажите одну ссылку, несколько можно задать в быстром редактировании списка",
     ),
-    "singleValueTip": m78,
+    "singleValueTip": m79,
     "size": MessageLookupByLibrary.simpleMessage("Размер"),
     "skipCertVerify": MessageLookupByLibrary.simpleMessage(
       "Пропускать проверку сертификата",
@@ -1878,8 +1904,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "totalUpload": MessageLookupByLibrary.simpleMessage("Отдано"),
     "tproxyPort": MessageLookupByLibrary.simpleMessage("Порт TProxy"),
     "traffic": MessageLookupByLibrary.simpleMessage("Трафик"),
-    "trafficPeak": m79,
-    "trafficTotal": m80,
+    "trafficPeak": m80,
+    "trafficTotal": m81,
     "trafficUsage": MessageLookupByLibrary.simpleMessage("Статистика трафика"),
     "transport": MessageLookupByLibrary.simpleMessage("Транспорт"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
@@ -1915,7 +1941,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("Отдача"),
     "uploadBandwidth": MessageLookupByLibrary.simpleMessage("Скорость отдачи"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
-    "urlTip": m81,
+    "urlTip": m82,
     "useHosts": MessageLookupByLibrary.simpleMessage("Использовать hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage(
       "Использовать системный hosts",
@@ -1948,8 +1974,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "writeToSystemDesc": MessageLookupByLibrary.simpleMessage(
       "«Записывать в систему» также устанавливает системные часы; Android это игнорирует.",
     ),
-    "yearsAgo": m82,
-    "yearsAgoShort": m83,
+    "yearsAgo": m83,
+    "yearsAgoShort": m84,
     "yes": MessageLookupByLibrary.simpleMessage("Да"),
     "zhCN": MessageLookupByLibrary.simpleMessage("Упрощённый китайский"),
   };

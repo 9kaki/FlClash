@@ -7858,6 +7858,106 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Custom rule switches`
+  String get ruleOptions {
+    return Intl.message(
+      'Custom rule switches',
+      name: 'ruleOptions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Declared by {label}`
+  String ruleOptionsFromScript(Object label) {
+    return Intl.message(
+      'Declared by $label',
+      name: 'ruleOptionsFromScript',
+      desc: '',
+      args: [label],
+    );
+  }
+
+  /// `Policy groups`
+  String get ruleOptionsGroups {
+    return Intl.message(
+      'Policy groups',
+      name: 'ruleOptionsGroups',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Other options`
+  String get ruleOptionsOthers {
+    return Intl.message(
+      'Other options',
+      name: 'ruleOptionsOthers',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This profile runs no script`
+  String get ruleOptionsNoScript {
+    return Intl.message(
+      'This profile runs no script',
+      name: 'ruleOptionsNoScript',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pick a script as the profile's extension, and the switches it declares show up here.`
+  String get ruleOptionsNoScriptDesc {
+    return Intl.message(
+      'Pick a script as the profile\'s extension, and the switches it declares show up here.',
+      name: 'ruleOptionsNoScriptDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This script declares no switches`
+  String get ruleOptionsEmpty {
+    return Intl.message(
+      'This script declares no switches',
+      name: 'ruleOptionsEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A script lists its switches in ruleOptionsEnable; only those can be toggled here.`
+  String get ruleOptionsEmptyDesc {
+    return Intl.message(
+      'A script lists its switches in ruleOptionsEnable; only those can be toggled here.',
+      name: 'ruleOptionsEmptyDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not read the script's switches`
+  String get ruleOptionsFailed {
+    return Intl.message(
+      'Could not read the script\'s switches',
+      name: 'ruleOptionsFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The script rejected these switches, so they were put back`
+  String get ruleOptionsRejected {
+    return Intl.message(
+      'The script rejected these switches, so they were put back',
+      name: 'ruleOptionsRejected',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

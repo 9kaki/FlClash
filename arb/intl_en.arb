@@ -941,5 +941,15 @@
   "customImportDroppedSubRules": "{count, plural, =1{1 SUB-RULE rule was dropped, since custom profiles do not support sub-rules} other{{label} SUB-RULE rules were dropped, since custom profiles do not support sub-rules}}",
   "autoInclude": "Auto-include",
   "allReferencedProxies": "All referenced proxies",
-  "allReferencedProxyProviders": "All referenced proxy providers"
+  "allReferencedProxyProviders": "All referenced proxy providers",
+  "ruleOptions": "Custom rule switches",
+  "ruleOptionsFromScript": "Declared by {label}",
+  "ruleOptionsGroups": "Policy groups",
+  "ruleOptionsOthers": "Other options",
+  "ruleOptionsNoScript": "This profile runs no script",
+  "ruleOptionsNoScriptDesc": "Pick a script as the profile's extension, and the switches it declares show up here.",
+  "ruleOptionsEmpty": "This script declares no switches",
+  "ruleOptionsEmptyDesc": "A script lists its switches in ruleOptionsEnable; only those can be toggled here.",
+  "ruleOptionsFailed": "Could not read the script's switches",
+  "ruleOptionsRejected": "The script rejected these switches, so they were put back"
 }

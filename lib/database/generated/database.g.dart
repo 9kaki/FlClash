@@ -1055,8 +1055,26 @@ class $ScriptsTable extends Scripts with TableInfo<$ScriptsTable, RawScript> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _customOptionsMeta = const VerificationMeta(
+    'customOptions',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, label, lastUpdateTime, url, order];
+  late final GeneratedColumn<String> customOptions = GeneratedColumn<String>(
+    'custom_options',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    label,
+    lastUpdateTime,
+    url,
+    order,
+    customOptions,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1103,6 +1121,15 @@ class $ScriptsTable extends Scripts with TableInfo<$ScriptsTable, RawScript> {
         order.isAcceptableOrUnknown(data['order']!, _orderMeta),
       );
     }
+    if (data.containsKey('custom_options')) {
+      context.handle(
+        _customOptionsMeta,
+        customOptions.isAcceptableOrUnknown(
+          data['custom_options']!,
+          _customOptionsMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1132,6 +1159,10 @@ class $ScriptsTable extends Scripts with TableInfo<$ScriptsTable, RawScript> {
         DriftSqlType.int,
         data['${effectivePrefix}order'],
       ),
+      customOptions: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_options'],
+      ),
     );
   }
 
@@ -1147,12 +1178,18 @@ class RawScript extends DataClass implements Insertable<RawScript> {
   final DateTime lastUpdateTime;
   final String? url;
   final int? order;
+
+  /// The reader's rule switches as a JSON object of name to bool. Null means
+  /// the script has never been edited from the sheet, not that it has no
+  /// options.
+  final String? customOptions;
   const RawScript({
     required this.id,
     required this.label,
     required this.lastUpdateTime,
     this.url,
     this.order,
+    this.customOptions,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1166,6 +1203,9 @@ class RawScript extends DataClass implements Insertable<RawScript> {
     if (!nullToAbsent || order != null) {
       map['order'] = Variable<int>(order);
     }
+    if (!nullToAbsent || customOptions != null) {
+      map['custom_options'] = Variable<String>(customOptions);
+    }
     return map;
   }
 
@@ -1178,6 +1218,9 @@ class RawScript extends DataClass implements Insertable<RawScript> {
       order: order == null && nullToAbsent
           ? const Value.absent()
           : Value(order),
+      customOptions: customOptions == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customOptions),
     );
   }
 
@@ -1192,6 +1235,7 @@ class RawScript extends DataClass implements Insertable<RawScript> {
       lastUpdateTime: serializer.fromJson<DateTime>(json['lastUpdateTime']),
       url: serializer.fromJson<String?>(json['url']),
       order: serializer.fromJson<int?>(json['order']),
+      customOptions: serializer.fromJson<String?>(json['customOptions']),
     );
   }
   @override
@@ -1203,6 +1247,7 @@ class RawScript extends DataClass implements Insertable<RawScript> {
       'lastUpdateTime': serializer.toJson<DateTime>(lastUpdateTime),
       'url': serializer.toJson<String?>(url),
       'order': serializer.toJson<int?>(order),
+      'customOptions': serializer.toJson<String?>(customOptions),
     };
   }
 
@@ -1212,12 +1257,16 @@ class RawScript extends DataClass implements Insertable<RawScript> {
     DateTime? lastUpdateTime,
     Value<String?> url = const Value.absent(),
     Value<int?> order = const Value.absent(),
+    Value<String?> customOptions = const Value.absent(),
   }) => RawScript(
     id: id ?? this.id,
     label: label ?? this.label,
     lastUpdateTime: lastUpdateTime ?? this.lastUpdateTime,
     url: url.present ? url.value : this.url,
     order: order.present ? order.value : this.order,
+    customOptions: customOptions.present
+        ? customOptions.value
+        : this.customOptions,
   );
   RawScript copyWithCompanion(ScriptsCompanion data) {
     return RawScript(
@@ -1228,6 +1277,9 @@ class RawScript extends DataClass implements Insertable<RawScript> {
           : this.lastUpdateTime,
       url: data.url.present ? data.url.value : this.url,
       order: data.order.present ? data.order.value : this.order,
+      customOptions: data.customOptions.present
+          ? data.customOptions.value
+          : this.customOptions,
     );
   }
 
@@ -1238,13 +1290,15 @@ class RawScript extends DataClass implements Insertable<RawScript> {
           ..write('label: $label, ')
           ..write('lastUpdateTime: $lastUpdateTime, ')
           ..write('url: $url, ')
-          ..write('order: $order')
+          ..write('order: $order, ')
+          ..write('customOptions: $customOptions')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, label, lastUpdateTime, url, order);
+  int get hashCode =>
+      Object.hash(id, label, lastUpdateTime, url, order, customOptions);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1253,7 +1307,8 @@ class RawScript extends DataClass implements Insertable<RawScript> {
           other.label == this.label &&
           other.lastUpdateTime == this.lastUpdateTime &&
           other.url == this.url &&
-          other.order == this.order);
+          other.order == this.order &&
+          other.customOptions == this.customOptions);
 }
 
 class ScriptsCompanion extends UpdateCompanion<RawScript> {
@@ -1262,12 +1317,14 @@ class ScriptsCompanion extends UpdateCompanion<RawScript> {
   final Value<DateTime> lastUpdateTime;
   final Value<String?> url;
   final Value<int?> order;
+  final Value<String?> customOptions;
   const ScriptsCompanion({
     this.id = const Value.absent(),
     this.label = const Value.absent(),
     this.lastUpdateTime = const Value.absent(),
     this.url = const Value.absent(),
     this.order = const Value.absent(),
+    this.customOptions = const Value.absent(),
   });
   ScriptsCompanion.insert({
     this.id = const Value.absent(),
@@ -1275,6 +1332,7 @@ class ScriptsCompanion extends UpdateCompanion<RawScript> {
     required DateTime lastUpdateTime,
     this.url = const Value.absent(),
     this.order = const Value.absent(),
+    this.customOptions = const Value.absent(),
   }) : label = Value(label),
        lastUpdateTime = Value(lastUpdateTime);
   static Insertable<RawScript> custom({
@@ -1283,6 +1341,7 @@ class ScriptsCompanion extends UpdateCompanion<RawScript> {
     Expression<DateTime>? lastUpdateTime,
     Expression<String>? url,
     Expression<int>? order,
+    Expression<String>? customOptions,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1290,6 +1349,7 @@ class ScriptsCompanion extends UpdateCompanion<RawScript> {
       if (lastUpdateTime != null) 'last_update_time': lastUpdateTime,
       if (url != null) 'url': url,
       if (order != null) 'order': order,
+      if (customOptions != null) 'custom_options': customOptions,
     });
   }
 
@@ -1299,6 +1359,7 @@ class ScriptsCompanion extends UpdateCompanion<RawScript> {
     Value<DateTime>? lastUpdateTime,
     Value<String?>? url,
     Value<int?>? order,
+    Value<String?>? customOptions,
   }) {
     return ScriptsCompanion(
       id: id ?? this.id,
@@ -1306,6 +1367,7 @@ class ScriptsCompanion extends UpdateCompanion<RawScript> {
       lastUpdateTime: lastUpdateTime ?? this.lastUpdateTime,
       url: url ?? this.url,
       order: order ?? this.order,
+      customOptions: customOptions ?? this.customOptions,
     );
   }
 
@@ -1327,6 +1389,9 @@ class ScriptsCompanion extends UpdateCompanion<RawScript> {
     if (order.present) {
       map['order'] = Variable<int>(order.value);
     }
+    if (customOptions.present) {
+      map['custom_options'] = Variable<String>(customOptions.value);
+    }
     return map;
   }
 
@@ -1337,7 +1402,8 @@ class ScriptsCompanion extends UpdateCompanion<RawScript> {
           ..write('label: $label, ')
           ..write('lastUpdateTime: $lastUpdateTime, ')
           ..write('url: $url, ')
-          ..write('order: $order')
+          ..write('order: $order, ')
+          ..write('customOptions: $customOptions')
           ..write(')'))
         .toString();
   }
@@ -5297,6 +5363,7 @@ typedef $$ScriptsTableCreateCompanionBuilder =
       required DateTime lastUpdateTime,
       Value<String?> url,
       Value<int?> order,
+      Value<String?> customOptions,
     });
 typedef $$ScriptsTableUpdateCompanionBuilder =
     ScriptsCompanion Function({
@@ -5305,6 +5372,7 @@ typedef $$ScriptsTableUpdateCompanionBuilder =
       Value<DateTime> lastUpdateTime,
       Value<String?> url,
       Value<int?> order,
+      Value<String?> customOptions,
     });
 
 class $$ScriptsTableFilterComposer extends Composer<_$Database, $ScriptsTable> {
@@ -5337,6 +5405,11 @@ class $$ScriptsTableFilterComposer extends Composer<_$Database, $ScriptsTable> {
 
   ColumnFilters<int> get order => $composableBuilder(
     column: $table.order,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customOptions => $composableBuilder(
+    column: $table.customOptions,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -5374,6 +5447,11 @@ class $$ScriptsTableOrderingComposer
     column: $table.order,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get customOptions => $composableBuilder(
+    column: $table.customOptions,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ScriptsTableAnnotationComposer
@@ -5401,6 +5479,11 @@ class $$ScriptsTableAnnotationComposer
 
   GeneratedColumn<int> get order =>
       $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumn<String> get customOptions => $composableBuilder(
+    column: $table.customOptions,
+    builder: (column) => column,
+  );
 }
 
 class $$ScriptsTableTableManager
@@ -5436,12 +5519,14 @@ class $$ScriptsTableTableManager
                 Value<DateTime> lastUpdateTime = const Value.absent(),
                 Value<String?> url = const Value.absent(),
                 Value<int?> order = const Value.absent(),
+                Value<String?> customOptions = const Value.absent(),
               }) => ScriptsCompanion(
                 id: id,
                 label: label,
                 lastUpdateTime: lastUpdateTime,
                 url: url,
                 order: order,
+                customOptions: customOptions,
               ),
           createCompanionCallback:
               ({
@@ -5450,12 +5535,14 @@ class $$ScriptsTableTableManager
                 required DateTime lastUpdateTime,
                 Value<String?> url = const Value.absent(),
                 Value<int?> order = const Value.absent(),
+                Value<String?> customOptions = const Value.absent(),
               }) => ScriptsCompanion.insert(
                 id: id,
                 label: label,
                 lastUpdateTime: lastUpdateTime,
                 url: url,
                 order: order,
+                customOptions: customOptions,
               ),
           withReferenceMapper: (p0) => p0
               .map(

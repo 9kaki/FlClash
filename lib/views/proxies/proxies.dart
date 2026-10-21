@@ -7,6 +7,7 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'rule_options.dart';
 import 'setting.dart';
 import 'tab.dart';
 
@@ -32,6 +33,13 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   List<CommonPopupMenuItem> _buildMenuItems(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     return [
+      CommonPopupMenuItem(
+        glyph: AppGlyphs.toggle,
+        label: appLocalizations.ruleOptions,
+        onPressed: () {
+          showRuleOptionsSheet(context);
+        },
+      ),
       CommonPopupMenuItem(
         glyph: AppGlyphs.sliders,
         label: appLocalizations.settings,

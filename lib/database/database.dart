@@ -50,7 +50,7 @@ class Database extends _$Database {
   Database([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
   static LazyDatabase _openConnection() {
     return LazyDatabase(() async {
@@ -110,6 +110,9 @@ class Database extends _$Database {
             customProxies,
             customProxies.emptyOptions,
           );
+        }
+        if (from < 21) {
+          await _addColumnIfMissing(m, scripts, scripts.customOptions);
         }
       }),
       beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
