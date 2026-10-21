@@ -941,5 +941,14 @@
   "customImportDroppedSubRules": "{count, plural, =1{1 règle SUB-RULE a été abandonnée, car les profils personnalisés ne prennent pas en charge les sous-règles} other{{label} règles SUB-RULE ont été abandonnées, car les profils personnalisés ne prennent pas en charge les sous-règles}}",
   "autoInclude": "Inclure automatiquement",
   "allReferencedProxies": "Tous les proxys référencés",
-  "allReferencedProxyProviders": "Tous les fournisseurs de proxys référencés"
+  "allReferencedProxyProviders": "Tous les fournisseurs de proxys référencés",
+  "ruleOptions": "Interrupteurs de règles",
+  "ruleOptionsGroups": "Groupes de politiques",
+  "ruleOptionsOthers": "Autres options",
+  "ruleOptionsEmpty": "Ce script ne déclare aucun interrupteur",
+  "ruleOptionsEmptyDesc": "Un script déclare ses interrupteurs dans ruleOptionsEnable ; seuls ceux-là peuvent être modifiés ici.",
+  "ruleOptionsFailed": "Impossible de lire les interrupteurs du script",
+  "ruleOptionsLockedGroup": "La règle finale pointe ici, il reste donc actif",
+  "ruleOptionsRejected": "Le script a refusé ces interrupteurs, ils ont été rétablis"
+
 }
