@@ -235,6 +235,8 @@ void main() {
         'proxies': [
           {'name': 'A', 'type': 'ss'},
           {'name': 'B', 'type': 'ss'},
+          {'name': 'C', 'type': 'ss', 'dialer-proxy': 'AdBlock'},
+          {'name': 'D', 'type': 'ss', 'dialer-proxy': 'A'},
         ],
         'proxy-groups': [
           {
@@ -283,6 +285,12 @@ void main() {
     expect(members['Fallback'], ['B']);
     expect(config['rules'], ['MATCH,Fallback']);
     expect(result.counts.groups, 2);
+    final dialers = {
+      for (final proxy in config['proxies'] as List)
+        (proxy as Map)['name']: proxy['dialer-proxy'],
+    };
+    expect(dialers['C'], isNull);
+    expect(dialers['D'], 'A');
   });
 
   test('lastMatchTarget reads the last MATCH rule that names a target', () {

@@ -191,7 +191,6 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
 
   String? _failure;
   bool _isLoading = true;
-  bool _isApplying = false;
 
   /// Saves run one at a time and in order, so a burst of switches cannot have
   /// an earlier value win over a later one on its way to the database.
@@ -294,38 +293,27 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
     if (mapEquals(next, _saved)) {
       return;
     }
-    if (mounted) {
-      setState(() => _isApplying = true);
-    }
-    try {
-      switch (switches) {
-        case ScriptRuleSwitches():
-          final failure = await _validateScript(switches, next);
-          if (failure != null) {
-            _handleRejected(failure);
-            return;
-          }
-          _scriptsAction.putScript(
-            switches.script.copyWith(customOptions: next),
-          );
-          _saved = next;
-        case GroupRuleSwitches():
-          _profilesAction.updateProfile(
-            switches.profileId,
-            (profile) => profile.copyWith(
-              disabledGroups: {
-                for (final entry in next.entries)
-                  if (!entry.value) entry.key,
-              },
-            ),
-          );
-          _setupAction.applyProfileDebounce(silence: true);
-          _saved = next;
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isApplying = false);
-      }
+    switch (switches) {
+      case ScriptRuleSwitches():
+        final failure = await _validateScript(switches, next);
+        if (failure != null) {
+          _handleRejected(failure);
+          return;
+        }
+        _scriptsAction.putScript(switches.script.copyWith(customOptions: next));
+        _saved = next;
+      case GroupRuleSwitches():
+        _profilesAction.updateProfile(
+          switches.profileId,
+          (profile) => profile.copyWith(
+            disabledGroups: {
+              for (final entry in next.entries)
+                if (!entry.value) entry.key,
+            },
+          ),
+        );
+        _setupAction.applyProfileDebounce(silence: true);
+        _saved = next;
     }
   }
 
@@ -429,7 +417,7 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
   Widget build(BuildContext context) {
     return CommonScaffold(
       title: context.appLocalizations.ruleOptions,
-      isLoading: _isLoading || _isApplying,
+      isLoading: _isLoading,
       body: NullStatusSwitcher(
         isLoading: _isLoading,
         isEmpty: false,

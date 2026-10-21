@@ -441,6 +441,15 @@ void _dropDisabledGroups(Map<dynamic, dynamic> config, Set<String> disabled) {
           rule,
     ];
   }
+  final proxies = config['proxies'];
+  if (proxies is List) {
+    for (var i = 0; i < proxies.length; i++) {
+      final proxy = proxies[i];
+      if (proxy is Map && removed.contains(proxy['dialer-proxy'])) {
+        proxies[i] = Map<Object?, Object?>.from(proxy)..remove('dialer-proxy');
+      }
+    }
+  }
 }
 
 typedef ShakingStoreArgs = ({
