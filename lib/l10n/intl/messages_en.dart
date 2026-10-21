@@ -1584,6 +1584,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleOptionsNoScriptDesc": MessageLookupByLibrary.simpleMessage(
       "Pick a script as the profile\'s extension, and the switches it declares show up here.",
     ),
+    "ruleOptionsOpenExtend": MessageLookupByLibrary.simpleMessage(
+      "Open extension settings",
+    ),
     "ruleOptionsOthers": MessageLookupByLibrary.simpleMessage("Other options"),
     "ruleOptionsRejected": MessageLookupByLibrary.simpleMessage(
       "The script rejected these switches, so they were put back",

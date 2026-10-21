@@ -952,4 +952,6 @@
   "ruleOptionsEmptyDesc": "スイッチは ruleOptionsEnable で宣言する必要があり、そこにあるものだけを切り替えられます。",
   "ruleOptionsFailed": "スクリプトのスイッチを読み取れませんでした",
   "ruleOptionsRejected": "スクリプトがこれらのスイッチを拒否したため、元に戻しました"
+,
+  "ruleOptionsOpenExtend": "拡張設定を開く"
 }

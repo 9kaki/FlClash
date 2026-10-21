@@ -952,4 +952,6 @@
   "ruleOptionsEmptyDesc": "Скрипт объявляет переключатели в ruleOptionsEnable; менять здесь можно только их.",
   "ruleOptionsFailed": "Не удалось прочитать переключатели скрипта",
   "ruleOptionsRejected": "Скрипт отклонил эти переключатели, они восстановлены"
+,
+  "ruleOptionsOpenExtend": "Открыть настройки расширения"
 }

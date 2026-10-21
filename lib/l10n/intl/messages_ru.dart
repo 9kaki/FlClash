@@ -1652,6 +1652,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleOptionsNoScriptDesc": MessageLookupByLibrary.simpleMessage(
       "Выберите скрипт как расширение профиля, и объявленные им переключатели появятся здесь.",
     ),
+    "ruleOptionsOpenExtend": MessageLookupByLibrary.simpleMessage(
+      "Открыть настройки расширения",
+    ),
     "ruleOptionsOthers": MessageLookupByLibrary.simpleMessage(
       "Другие параметры",
     ),

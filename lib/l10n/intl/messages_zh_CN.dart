@@ -1230,6 +1230,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleOptionsNoScriptDesc": MessageLookupByLibrary.simpleMessage(
       "把配置的扩展方式设为脚本并选好脚本，它声明的开关就会出现在这里。",
     ),
+    "ruleOptionsOpenExtend": MessageLookupByLibrary.simpleMessage("打开扩展设置"),
     "ruleOptionsOthers": MessageLookupByLibrary.simpleMessage("其他设置"),
     "ruleOptionsRejected": MessageLookupByLibrary.simpleMessage(
       "脚本拒绝了这些开关，已还原",

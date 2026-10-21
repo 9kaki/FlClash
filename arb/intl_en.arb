@@ -952,4 +952,6 @@
   "ruleOptionsEmptyDesc": "A script lists its switches in ruleOptionsEnable; only those can be toggled here.",
   "ruleOptionsFailed": "Could not read the script's switches",
   "ruleOptionsRejected": "The script rejected these switches, so they were put back"
+,
+  "ruleOptionsOpenExtend": "Open extension settings"
 }

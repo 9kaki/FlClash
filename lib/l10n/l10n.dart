@@ -7958,6 +7958,16 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Open extension settings`
+  String get ruleOptionsOpenExtend {
+    return Intl.message(
+      'Open extension settings',
+      name: 'ruleOptionsOpenExtend',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

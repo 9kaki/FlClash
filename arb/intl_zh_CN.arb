@@ -952,4 +952,6 @@
   "ruleOptionsEmptyDesc": "脚本需要声明 ruleOptionsEnable，其中的选项才能在这里显示。",
   "ruleOptionsFailed": "无法读取脚本开关",
   "ruleOptionsRejected": "脚本拒绝了这些开关，已还原"
+,
+  "ruleOptionsOpenExtend": "打开扩展设置"
 }

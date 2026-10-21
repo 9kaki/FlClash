@@ -1332,6 +1332,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleOptionsNoScriptDesc": MessageLookupByLibrary.simpleMessage(
       "프로필 확장 방식에서 스크립트를 선택하면 스크립트가 선언한 스위치가 여기에 표시됩니다.",
     ),
+    "ruleOptionsOpenExtend": MessageLookupByLibrary.simpleMessage("확장 설정 열기"),
     "ruleOptionsOthers": MessageLookupByLibrary.simpleMessage("기타 옵션"),
     "ruleOptionsRejected": MessageLookupByLibrary.simpleMessage(
       "스크립트가 이 스위치를 거부하여 되돌렸습니다",

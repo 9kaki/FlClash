@@ -1359,6 +1359,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleOptionsNoScriptDesc": MessageLookupByLibrary.simpleMessage(
       "プロファイルの拡張方法でスクリプトを選ぶと、そのスクリプトが宣言したスイッチがここに表示されます。",
     ),
+    "ruleOptionsOpenExtend": MessageLookupByLibrary.simpleMessage("拡張設定を開く"),
     "ruleOptionsOthers": MessageLookupByLibrary.simpleMessage("その他のオプション"),
     "ruleOptionsRejected": MessageLookupByLibrary.simpleMessage(
       "スクリプトがこれらのスイッチを拒否したため、元に戻しました",

@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/database/database.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/config/scripts.dart';
+import 'package:fl_clash/views/profiles/extend/extend.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,6 +62,7 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
 
   Future<void> _load() async {
     final profile = ref.read(currentProfileProvider);
+    _profileId = profile?.id;
     final usesScript =
         profile != null &&
         profile.type != ProfileType.custom &&
@@ -73,49 +75,82 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
       });
       return;
     }
-    _profileId = profile.id;
-    // The list is a stream, so a sheet opened before it settled would otherwise
-    // report the script as missing.
-    final scripts = await ref.read(scriptsProvider.future);
-    if (!mounted) {
-      return;
-    }
-    final script = scripts.get(profile.scriptId);
-    final content = await script?.content;
-    if (!mounted) {
-      return;
-    }
-    if (script == null || content == null || content.trim().isEmpty) {
+    try {
+      // One row, read here rather than through `scriptsProvider`: that list is
+      // auto-disposed once nobody listens, and a sheet is nobody.
+      final script = await database.scriptsDao
+          .get(profile.scriptId!)
+          .getSingleOrNull();
+      final content = await script?.content;
+      if (!mounted) {
+        return;
+      }
+      if (script == null || content == null || content.trim().isEmpty) {
+        setState(() {
+          _hasScript = true;
+          _isLoading = false;
+        });
+        return;
+      }
+      final declared = await extractRuleOptions(content);
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _hasScript = true;
+        _script = script;
+        _content = content;
+        _declared = declared;
+        _values = {
+          for (final entry in declared.options.entries)
+            entry.key: script.customOptions[entry.key] ?? entry.value,
+        };
+        _saved = Map<String, bool>.of(_values);
+        _loadFailure = declared.error;
         _isLoading = false;
       });
+      unawaited(
+        precacheTargetIcons(
+          declared.icons.values.where(
+            (src) => src.startsWith('http://') || src.startsWith('https://'),
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _hasScript = true;
+        _loadFailure = '$error';
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// The switches only exist once the profile extends a script, so the empty
+  /// state leads to the page that sets that up. The script list would not do:
+  /// every tap there opens an editor.
+  Future<void> _handleOpenExtend() async {
+    final profileId = _profileId;
+    if (profileId == null) {
       return;
     }
-    final declared = await extractRuleOptions(content);
+    await BaseNavigator.push(context, ExtendView(profileId: profileId));
     if (!mounted) {
       return;
     }
     setState(() {
-      _hasScript = true;
-      _script = script;
-      _content = content;
-      _declared = declared;
-      _values = {
-        for (final entry in declared.options.entries)
-          entry.key: script.customOptions[entry.key] ?? entry.value,
-      };
-      _saved = Map<String, bool>.of(_values);
-      _loadFailure = declared.error;
-      _isLoading = false;
+      _hasScript = false;
+      _script = null;
+      _content = null;
+      _declared = null;
+      _values = {};
+      _saved = {};
+      _loadFailure = null;
+      _isLoading = true;
     });
-    unawaited(
-      precacheTargetIcons(
-        declared.icons.values.where(
-          (src) => src.startsWith('http://') || src.startsWith('https://'),
-        ),
-      ),
-    );
+    await _load();
   }
 
   void _handleChanged(String name, bool value) {
@@ -252,24 +287,24 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
     final script = _script;
     final declared = _declared;
     if (script == null || declared == null) {
+      final failure = _loadFailure;
       return NullStatus(
         illustration: NullStatusIllustration.scripts,
-        label: _hasScript
+        label: failure != null
+            ? appLocalizations.ruleOptionsFailed
+            : _hasScript
             ? appLocalizations.ruleOptionsEmpty
             : appLocalizations.ruleOptionsNoScript,
-        description: _hasScript
-            ? appLocalizations.ruleOptionsEmptyDesc
-            : appLocalizations.ruleOptionsNoScriptDesc,
+        description:
+            failure ??
+            (_hasScript
+                ? appLocalizations.ruleOptionsEmptyDesc
+                : appLocalizations.ruleOptionsNoScriptDesc),
         action: _hasScript
             ? null
             : FilledButton.tonal(
-                onPressed: () {
-                  showInSheet<void>(
-                    context,
-                    builder: (_) => const ScriptsView(),
-                  );
-                },
-                child: Text(appLocalizations.goToConfigureScript),
+                onPressed: _handleOpenExtend,
+                child: Text(appLocalizations.ruleOptionsOpenExtend),
               ),
       );
     }

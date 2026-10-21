@@ -1702,6 +1702,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleOptionsNoScriptDesc": MessageLookupByLibrary.simpleMessage(
       "Choisissez un script comme extension du profil et les interrupteurs qu\'il déclare apparaîtront ici.",
     ),
+    "ruleOptionsOpenExtend": MessageLookupByLibrary.simpleMessage(
+      "Ouvrir les réglages d’extension",
+    ),
     "ruleOptionsOthers": MessageLookupByLibrary.simpleMessage("Autres options"),
     "ruleOptionsRejected": MessageLookupByLibrary.simpleMessage(
       "Le script a refusé ces interrupteurs, ils ont été rétablis",

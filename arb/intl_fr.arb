@@ -952,4 +952,6 @@
   "ruleOptionsEmptyDesc": "Un script déclare ses interrupteurs dans ruleOptionsEnable ; seuls ceux-là peuvent être modifiés ici.",
   "ruleOptionsFailed": "Impossible de lire les interrupteurs du script",
   "ruleOptionsRejected": "Le script a refusé ces interrupteurs, ils ont été rétablis"
+,
+  "ruleOptionsOpenExtend": "Ouvrir les réglages d’extension"
 }
