@@ -280,12 +280,19 @@ jobs:
           if [[ "$(ls dist/*.apk | wc -l)" != '1' ]]; then
             base="$(printf '%s' "$base" | sed -E 's/-android-.*$/-android-all-abi/')"
           fi
-          artifact="$base-${APP_ENV}-$(printf '%s' "$GITHUB_SHA" | cut -c1-7).apk"
+          # An artifact always downloads as a zip that carries the artifact's
+          # name, so ending that name in .apk hands out a zip the phone happily
+          # offers to install, and Android answers "package is corrupt". End it
+          # in -apk and say what the zip holds.
+          artifact="$base-${APP_ENV}-$(printf '%s' "$GITHUB_SHA" | cut -c1-7)-apk"
+          apk_name="$(basename "$first")"
+          apk_sha="$(sha256sum "$first" | cut -d' ' -f1)"
 
           echo "package=$package" >> "$GITHUB_OUTPUT"
           echo "artifact=$artifact" >> "$GITHUB_OUTPUT"
           echo "**Package id:** \`$package\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Artifact:** \`$artifact\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Download:** \`$artifact.zip\`, holding \`$apk_name\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**apk sha256:** \`$apk_sha\`" >> "$GITHUB_STEP_SUMMARY"
           if [[ "$SIGNED" == 'true' && "$package" == *.dev ]]; then
             echo "::error::Signing secrets are set but the apk still ships $package, so Gradle never saw android/key.properties or android/app/keystore.jks. Check the PROBE lines above for what it resolved."
             exit 1
