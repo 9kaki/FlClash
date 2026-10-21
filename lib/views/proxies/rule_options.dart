@@ -74,9 +74,13 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
       return;
     }
     _profileId = profile.id;
-    final script = (ref.read(scriptsProvider).value ?? const <Script>[]).get(
-      profile.scriptId,
-    );
+    // The list is a stream, so a sheet opened before it settled would otherwise
+    // report the script as missing.
+    final scripts = await ref.read(scriptsProvider.future);
+    if (!mounted) {
+      return;
+    }
+    final script = scripts.get(profile.scriptId);
     final content = await script?.content;
     if (!mounted) {
       return;
