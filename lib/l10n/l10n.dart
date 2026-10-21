@@ -7869,16 +7869,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Declared by {label}`
-  String ruleOptionsFromScript(Object label) {
-    return Intl.message(
-      'Declared by $label',
-      name: 'ruleOptionsFromScript',
-      desc: '',
-      args: [label],
-    );
-  }
-
   /// `Policy groups`
   String get ruleOptionsGroups {
     return Intl.message(
@@ -7894,26 +7884,6 @@ class AppLocalizations {
     return Intl.message(
       'Other options',
       name: 'ruleOptionsOthers',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `This profile runs no script`
-  String get ruleOptionsNoScript {
-    return Intl.message(
-      'This profile runs no script',
-      name: 'ruleOptionsNoScript',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Pick a script as the profile's extension, and the switches it declares show up here.`
-  String get ruleOptionsNoScriptDesc {
-    return Intl.message(
-      'Pick a script as the profile\'s extension, and the switches it declares show up here.',
-      name: 'ruleOptionsNoScriptDesc',
       desc: '',
       args: [],
     );
@@ -7949,21 +7919,21 @@ class AppLocalizations {
     );
   }
 
-  /// `The script rejected these switches, so they were put back`
-  String get ruleOptionsRejected {
+  /// `The fallback rule points here, so it stays on`
+  String get ruleOptionsLockedGroup {
     return Intl.message(
-      'The script rejected these switches, so they were put back',
-      name: 'ruleOptionsRejected',
+      'The fallback rule points here, so it stays on',
+      name: 'ruleOptionsLockedGroup',
       desc: '',
       args: [],
     );
   }
 
-  /// `Open extension settings`
-  String get ruleOptionsOpenExtend {
+  /// `The script rejected these switches, so they were put back`
+  String get ruleOptionsRejected {
     return Intl.message(
-      'Open extension settings',
-      name: 'ruleOptionsOpenExtend',
+      'The script rejected these switches, so they were put back',
+      name: 'ruleOptionsRejected',
       desc: '',
       args: [],
     );

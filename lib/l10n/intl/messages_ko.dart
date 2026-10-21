@@ -175,36 +175,34 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m69(count, label) =>
       "${Intl.plural(count, other: '프록시 그룹 ${label}개')}";
 
-  static String m70(label) => "${label}에서 선언";
-
-  static String m71(count, label) =>
+  static String m70(count, label) =>
       "${Intl.plural(count, other: '규칙 ${label}개')}";
 
-  static String m72(appName) => "${appName} (안전 모드)";
+  static String m71(appName) => "${appName} (안전 모드)";
 
-  static String m73(count) => "${Intl.plural(count, other: '${count}초')}";
+  static String m72(count) => "${Intl.plural(count, other: '${count}초')}";
 
-  static String m74(count) => "${count}개 적용 중";
+  static String m73(count) => "${count}개 적용 중";
 
-  static String m75(count) => "${Intl.plural(count, other: '문제 ${count}건')}";
+  static String m74(count) => "${Intl.plural(count, other: '문제 ${count}건')}";
 
-  static String m76(time) => "확인 시각: ${time}";
+  static String m75(time) => "확인 시각: ${time}";
 
-  static String m77(count) => "${Intl.plural(count, other: '설정 ${count}개')}";
+  static String m76(count) => "${Intl.plural(count, other: '설정 ${count}개')}";
 
-  static String m78(link) => "읽을 수 있는 프록시가 없습니다: ${link}";
+  static String m77(link) => "읽을 수 있는 프록시가 없습니다: ${link}";
 
-  static String m79(label) => "${label}은(는) 하나만 입력해야 합니다";
+  static String m78(label) => "${label}은(는) 하나만 입력해야 합니다";
 
-  static String m80(value) => "최고 ${value}";
+  static String m79(value) => "최고 ${value}";
 
-  static String m81(value) => "합계 ${value}";
+  static String m80(value) => "합계 ${value}";
 
-  static String m82(label) => "${label}은(는) URL이어야 합니다";
+  static String m81(label) => "${label}은(는) URL이어야 합니다";
+
+  static String m82(count) => "${Intl.plural(count, other: '${count}년 전')}";
 
   static String m83(count) => "${Intl.plural(count, other: '${count}년 전')}";
-
-  static String m84(count) => "${Intl.plural(count, other: '${count}년 전')}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1324,15 +1322,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleOptionsFailed": MessageLookupByLibrary.simpleMessage(
       "스크립트 스위치를 읽을 수 없습니다",
     ),
-    "ruleOptionsFromScript": m70,
     "ruleOptionsGroups": MessageLookupByLibrary.simpleMessage("정책 그룹"),
-    "ruleOptionsNoScript": MessageLookupByLibrary.simpleMessage(
-      "이 프로필은 스크립트를 사용하지 않습니다",
+    "ruleOptionsLockedGroup": MessageLookupByLibrary.simpleMessage(
+      "마지막 규칙이 이 그룹을 가리키므로 끌 수 없습니다",
     ),
-    "ruleOptionsNoScriptDesc": MessageLookupByLibrary.simpleMessage(
-      "프로필 확장 방식에서 스크립트를 선택하면 스크립트가 선언한 스위치가 여기에 표시됩니다.",
-    ),
-    "ruleOptionsOpenExtend": MessageLookupByLibrary.simpleMessage("확장 설정 열기"),
     "ruleOptionsOthers": MessageLookupByLibrary.simpleMessage("기타 옵션"),
     "ruleOptionsRejected": MessageLookupByLibrary.simpleMessage(
       "스크립트가 이 스위치를 거부하여 되돌렸습니다",
@@ -1368,12 +1361,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "규칙은 DOMAIN,example.com,DIRECT처럼 지원하는 유형으로 시작해야 합니다",
     ),
     "rules": MessageLookupByLibrary.simpleMessage("규칙"),
-    "rulesCount": m71,
+    "rulesCount": m70,
     "runTime": MessageLookupByLibrary.simpleMessage("실행 시간"),
     "running": MessageLookupByLibrary.simpleMessage("실행 중"),
     "runtimeConfig": MessageLookupByLibrary.simpleMessage("런타임 구성"),
     "safeMode": MessageLookupByLibrary.simpleMessage("안전 모드"),
-    "safeModeAppTitle": m72,
+    "safeModeAppTitle": m71,
     "saturation": MessageLookupByLibrary.simpleMessage("채도"),
     "save": MessageLookupByLibrary.simpleMessage("저장"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("변경 사항을 저장하시겠습니까?"),
@@ -1384,21 +1377,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "scrollToSelected": MessageLookupByLibrary.simpleMessage("선택 항목으로 스크롤"),
     "search": MessageLookupByLibrary.simpleMessage("검색"),
     "seconds": MessageLookupByLibrary.simpleMessage("초"),
-    "secondsCount": m73,
+    "secondsCount": m72,
     "secretKey": MessageLookupByLibrary.simpleMessage("키"),
-    "sectionsInEffect": m74,
+    "sectionsInEffect": m73,
     "selectAll": MessageLookupByLibrary.simpleMessage("모두 선택"),
     "selectRuleSet": MessageLookupByLibrary.simpleMessage("규칙 세트를 선택하세요"),
     "selectSplitStrategy": MessageLookupByLibrary.simpleMessage("분할 전략을 선택하세요"),
     "selected": MessageLookupByLibrary.simpleMessage("선택됨"),
     "server": MessageLookupByLibrary.simpleMessage("서버"),
-    "serviceAbnormalCount": m75,
+    "serviceAbnormalCount": m74,
     "serviceAllAvailable": MessageLookupByLibrary.simpleMessage("모두 사용 가능"),
     "serviceAvailable": MessageLookupByLibrary.simpleMessage("사용 가능"),
     "serviceBlocked": MessageLookupByLibrary.simpleMessage("차단됨"),
     "serviceCheck": MessageLookupByLibrary.simpleMessage("확인"),
     "serviceCheckAll": MessageLookupByLibrary.simpleMessage("모두 확인"),
-    "serviceCheckedAt": m76,
+    "serviceCheckedAt": m75,
     "serviceComingSoon": MessageLookupByLibrary.simpleMessage("출시 예정"),
     "serviceDisallowedIsp": MessageLookupByLibrary.simpleMessage("허용되지 않는 ISP"),
     "serviceFailed": MessageLookupByLibrary.simpleMessage("확인 실패"),
@@ -1416,8 +1409,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "settingEntries": MessageLookupByLibrary.simpleMessage("설정"),
     "settings": MessageLookupByLibrary.simpleMessage("설정"),
-    "settingsCount": m77,
-    "shareLinkUnreadable": m78,
+    "settingsCount": m76,
+    "shareLinkUnreadable": m77,
     "shareLinksInvalid": MessageLookupByLibrary.simpleMessage(
       "링크에서 읽을 수 있는 프록시가 없습니다",
     ),
@@ -1441,7 +1434,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "singleShareLinkOnly": MessageLookupByLibrary.simpleMessage(
       "여기에는 링크를 하나만 입력하세요. 여러 개는 목록의 빠른 편집에서 편집하세요",
     ),
-    "singleValueTip": m79,
+    "singleValueTip": m78,
     "size": MessageLookupByLibrary.simpleMessage("크기"),
     "skipCertVerify": MessageLookupByLibrary.simpleMessage("인증서 검증 건너뛰기"),
     "skipDomain": MessageLookupByLibrary.simpleMessage("건너뛸 도메인"),
@@ -1535,8 +1528,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "totalUpload": MessageLookupByLibrary.simpleMessage("업로드량"),
     "tproxyPort": MessageLookupByLibrary.simpleMessage("TProxy 포트"),
     "traffic": MessageLookupByLibrary.simpleMessage("트래픽"),
-    "trafficPeak": m80,
-    "trafficTotal": m81,
+    "trafficPeak": m79,
+    "trafficTotal": m80,
     "trafficUsage": MessageLookupByLibrary.simpleMessage("트래픽 사용량"),
     "transport": MessageLookupByLibrary.simpleMessage("전송"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
@@ -1568,7 +1561,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("업로드"),
     "uploadBandwidth": MessageLookupByLibrary.simpleMessage("업로드 대역폭"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
-    "urlTip": m82,
+    "urlTip": m81,
     "useHosts": MessageLookupByLibrary.simpleMessage("hosts 사용"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("시스템 hosts 사용"),
     "usedShort": MessageLookupByLibrary.simpleMessage("사용"),
@@ -1591,8 +1584,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "writeToSystemDesc": MessageLookupByLibrary.simpleMessage(
       "시스템에 기록하면 시스템 시계도 설정합니다. Android에서는 무시됩니다.",
     ),
-    "yearsAgo": m83,
-    "yearsAgoShort": m84,
+    "yearsAgo": m82,
+    "yearsAgoShort": m83,
     "yes": MessageLookupByLibrary.simpleMessage("예"),
     "zhCN": MessageLookupByLibrary.simpleMessage("중국어 간체"),
   };

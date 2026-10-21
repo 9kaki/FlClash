@@ -943,15 +943,12 @@
   "allReferencedProxies": "参照されているすべてのプロキシ",
   "allReferencedProxyProviders": "参照されているすべてのプロキシプロバイダー",
   "ruleOptions": "カスタムルールスイッチ",
-  "ruleOptionsFromScript": "{label} による宣言",
   "ruleOptionsGroups": "ポリシーグループ",
   "ruleOptionsOthers": "その他のオプション",
-  "ruleOptionsNoScript": "このプロファイルはスクリプトを使っていません",
-  "ruleOptionsNoScriptDesc": "プロファイルの拡張方法でスクリプトを選ぶと、そのスクリプトが宣言したスイッチがここに表示されます。",
   "ruleOptionsEmpty": "このスクリプトには切り替えられるスイッチがありません",
   "ruleOptionsEmptyDesc": "スイッチは ruleOptionsEnable で宣言する必要があり、そこにあるものだけを切り替えられます。",
   "ruleOptionsFailed": "スクリプトのスイッチを読み取れませんでした",
+  "ruleOptionsLockedGroup": "最終規則がここを指しているため、オフにできません",
   "ruleOptionsRejected": "スクリプトがこれらのスイッチを拒否したため、元に戻しました"
-,
-  "ruleOptionsOpenExtend": "拡張設定を開く"
+
 }

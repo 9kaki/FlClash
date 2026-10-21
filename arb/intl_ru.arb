@@ -943,15 +943,12 @@
   "allReferencedProxies": "Все используемые прокси",
   "allReferencedProxyProviders": "Все используемые провайдеры прокси",
   "ruleOptions": "Переключатели правил",
-  "ruleOptionsFromScript": "Объявлено в {label}",
   "ruleOptionsGroups": "Группы политик",
   "ruleOptionsOthers": "Другие параметры",
-  "ruleOptionsNoScript": "В этом профиле не используется скрипт",
-  "ruleOptionsNoScriptDesc": "Выберите скрипт как расширение профиля, и объявленные им переключатели появятся здесь.",
   "ruleOptionsEmpty": "Этот скрипт не объявляет переключателей",
   "ruleOptionsEmptyDesc": "Скрипт объявляет переключатели в ruleOptionsEnable; менять здесь можно только их.",
   "ruleOptionsFailed": "Не удалось прочитать переключатели скрипта",
+  "ruleOptionsLockedGroup": "Последнее правило указывает сюда, поэтому группу нельзя отключить",
   "ruleOptionsRejected": "Скрипт отклонил эти переключатели, они восстановлены"
-,
-  "ruleOptionsOpenExtend": "Открыть настройки расширения"
+
 }

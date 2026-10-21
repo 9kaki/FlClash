@@ -943,15 +943,12 @@
   "allReferencedProxies": "Todos los proxies referenciados",
   "allReferencedProxyProviders": "Todos los proveedores de proxies referenciados",
   "ruleOptions": "Interruptores de reglas",
-  "ruleOptionsFromScript": "Declarados por {label}",
   "ruleOptionsGroups": "Grupos de políticas",
   "ruleOptionsOthers": "Otras opciones",
-  "ruleOptionsNoScript": "Este perfil no ejecuta ningún script",
-  "ruleOptionsNoScriptDesc": "Elige un script como extensión del perfil y los interruptores que declara aparecerán aquí.",
   "ruleOptionsEmpty": "Este script no declara interruptores",
   "ruleOptionsEmptyDesc": "Un script declara sus interruptores en ruleOptionsEnable; solo esos se pueden cambiar aquí.",
   "ruleOptionsFailed": "No se pudieron leer los interruptores del script",
+  "ruleOptionsLockedGroup": "La regla final apunta aquí, así que sigue activo",
   "ruleOptionsRejected": "El script rechazó estos interruptores y se han restaurado"
-,
-  "ruleOptionsOpenExtend": "Abrir ajustes de extensión"
+
 }

@@ -477,6 +477,13 @@ class SetupAction extends _$SetupAction {
       );
     }
     final directory = await appPath.profilesPath;
+    // A script builds its own groups from its switches, so the YAML switches
+    // only speak for a profile whose groups come straight from the file.
+    final disabledGroups =
+        setupState.profileType != ProfileType.custom &&
+            setupState.extendType == ExtendType.standard
+        ? setupState.disabledGroups
+        : const <String>{};
     final injected = await _resolveInjectedProviders(
       setupState,
       proxyGroups: proxyGroups,
@@ -499,6 +506,7 @@ class SetupAction extends _$SetupAction {
         addedRules: setupState.addedRules,
         defaultUA: defaultUA,
         authentication: networkSetting.authentication.credentials,
+        disabledGroups: disabledGroups,
         matchTarget:
             profileBase == null ||
                 setupState.matchTarget?.trim().isNotEmpty == true

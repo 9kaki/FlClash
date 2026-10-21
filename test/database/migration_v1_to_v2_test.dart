@@ -89,8 +89,15 @@ void _downgradeToV7(Database raw) {
   raw.execute('PRAGMA user_version = 7');
 }
 
+/// Schema version 21 had no `disabled_groups` on `profiles`.
+void _downgradeToV21(Database raw) {
+  raw.execute('ALTER TABLE profiles DROP COLUMN disabled_groups');
+  raw.execute('PRAGMA user_version = 21');
+}
+
 /// Schema version 20 had no `custom_options` on `scripts`.
 void _downgradeToV20(Database raw) {
+  _downgradeToV21(raw);
   raw.execute('ALTER TABLE scripts DROP COLUMN custom_options');
   raw.execute('PRAGMA user_version = 20');
 }
@@ -904,6 +911,26 @@ void main() {
     expect(_userVersion(raw), _schemaVersion);
     expect(
       (await database.scriptsDao.query().get()).single.customOptions,
+      isEmpty,
+    );
+  });
+
+  test('the v22 upgrade adds disabled_groups to profiles', () async {
+    _downgradeToV21(raw);
+    raw.execute(
+      'INSERT INTO profiles (id, type, label, url, extend_type, '
+      'auto_update_duration_millis, auto_update, selected_map, unfold_set) '
+      "VALUES (4, 'url', 'Sub', 'https://example.com/sub', 'standard', 0, 0, "
+      "'{}', '[]')",
+    );
+    expect(_columnsOf(raw, 'profiles'), isNot(contains('disabled_groups')));
+
+    final database = await openAndMigrate();
+
+    expect(_columnsOf(raw, 'profiles'), contains('disabled_groups'));
+    expect(_userVersion(raw), _schemaVersion);
+    expect(
+      (await database.profilesDao.query().get()).single.disabledGroups,
       isEmpty,
     );
   });
