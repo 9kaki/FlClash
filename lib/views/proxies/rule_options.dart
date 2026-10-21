@@ -417,7 +417,6 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
   Widget build(BuildContext context) {
     return CommonScaffold(
       title: context.appLocalizations.ruleOptions,
-      isLoading: _isLoading,
       body: NullStatusSwitcher(
         isLoading: _isLoading,
         isEmpty: false,
