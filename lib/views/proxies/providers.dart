@@ -196,35 +196,8 @@ class _ProviderItemState extends ConsumerState<ProviderItem> {
     );
   }
 
-  void _handleShowSubscriptionInfo() {
-    unawaited(
-      dialogs.showCommonDialog<void>(
-        child: Builder(
-          builder: (context) {
-            return CommonDialog(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              title: context.appLocalizations.subscriptionInfo,
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(context.appLocalizations.confirm),
-                ),
-              ],
-              child: SubscriptionInfoDetailView(
-                subscriptionInfo: provider.subscriptionInfo!,
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   List<CommonPopupMenuItem> _menuItems(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final subscriptionInfo = provider.subscriptionInfo;
     return [
       if (_file == _ProviderFile.text)
         CommonPopupMenuItem(
@@ -256,12 +229,6 @@ class _ProviderItemState extends ConsumerState<ProviderItem> {
           onPressed: () {
             _handleUpdateProvider();
           },
-        ),
-      if (subscriptionInfo != null && subscriptionInfo.total > 0)
-        CommonPopupMenuItem(
-          glyph: AppGlyphs.dataUsage,
-          label: appLocalizations.subscriptionInfo,
-          onPressed: _handleShowSubscriptionInfo,
         ),
     ];
   }
