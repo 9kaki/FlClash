@@ -74,6 +74,10 @@ class CommonScaffold extends StatefulWidget {
   final bool? resizeToAvoidBottomInset;
   final VoidCallback? backAction;
 
+  /// Draws the close glyph rather than a back arrow, for a page that answers
+  /// with a save instead of drilling down.
+  final bool useCloseIcon;
+
   /// Puts the toggle of the sort mode in the bar.
   final bool canSort;
 
@@ -97,6 +101,7 @@ class CommonScaffold extends StatefulWidget {
     this.confirmationAction,
     this.onKeywordsUpdate,
     this.resizeToAvoidBottomInset,
+    this.useCloseIcon = false,
     this.canSort = false,
   });
 
@@ -525,6 +530,9 @@ class CommonScaffoldState extends State<CommonScaffold>
       return pop.atFoot
           ? null
           : _buildSheetPopButton(backAction, useCloseIcon: pop.useCloseIcon);
+    }
+    if (widget.useCloseIcon) {
+      return _buildSheetPopButton(backAction, useCloseIcon: true);
     }
     if (backAction != null) {
       return BackButton(

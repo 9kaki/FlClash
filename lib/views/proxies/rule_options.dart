@@ -13,10 +13,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 Future<void> showRuleOptionsSheet(BuildContext context) {
-  return showSheet<void>(
-    context: context,
+  return showExtend<void>(
+    context,
     builder: (_) => const RuleOptionsSheet(),
-    props: const SheetProps(detents: [1.0]),
   );
 }
 
@@ -433,12 +432,9 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // The sheet covers the page, so the bar an apply raises there is shown
-    // here instead.
-    final isApplying = ref.watch(loadingProvider(LoadingTag.proxies));
     return CommonScaffold(
       title: context.appLocalizations.ruleOptions,
-      isLoading: isApplying,
+      useCloseIcon: true,
       confirmationAction: _hasChanges || _isSaving
           ? IconButtonData(
               glyph: AppGlyphs.check,
