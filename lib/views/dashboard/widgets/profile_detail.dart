@@ -239,9 +239,6 @@ class _ProfileDetailSheetState extends ConsumerState<ProfileDetailSheet>
     final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
     final appLocalizations = context.appLocalizations;
     final quota = profileQuotaOf(profile, providers);
-    final providerQuotas = quota?.fromProviders ?? false
-        ? providerQuotasOf(providers)
-        : const <ProviderQuota>[];
     return CommonScaffold(
       title: profile.realLabel,
       iconActions: [
@@ -261,9 +258,10 @@ class _ProfileDetailSheetState extends ConsumerState<ProfileDetailSheet>
       body: CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ).copyWith(top: context.contentTopPadding, bottom: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+              top: context.contentTopPadding,
+              bottom: 20 + context.bottomInset,
+            ),
             sliver: SliverMainAxisGroup(
               slivers: [
                 SliverList.list(
@@ -286,14 +284,6 @@ class _ProfileDetailSheetState extends ConsumerState<ProfileDetailSheet>
                               subscriptionInfo: quota.info,
                             ),
                           ),
-                        ],
-                      ),
-                    if (providerQuotas.isNotEmpty)
-                      generateSection(
-                        title: appLocalizations.providerSubscriptionInfo,
-                        items: [
-                          for (final providerQuota in providerQuotas)
-                            _ProviderQuotaItem(quota: providerQuota),
                         ],
                       ),
                     generateSection(
@@ -430,27 +420,6 @@ class _InfoRow extends StatelessWidget {
             .of(context)
             .copyWith(color: context.colorScheme.onSurfaceVariant),
         child: value,
-      ),
-    );
-  }
-}
-
-class _ProviderQuotaItem extends StatelessWidget {
-  const _ProviderQuotaItem({required this.quota});
-
-  final ProviderQuota quota;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListItem(
-      title: ChipTitle(
-        title: quota.provider.name,
-        expire: quota.info.expireDate,
-        permanent: true,
-      ),
-      subtitle: SubscriptionInfoView(
-        subscriptionInfo: quota.info,
-        showExpire: false,
       ),
     );
   }
