@@ -312,7 +312,9 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
             },
           ),
         );
-        _setupAction.applyProfileDebounce(silence: true);
+        // Rebuilding the profile takes a while, and the proxies page shows a
+        // bar for it, as switching a profile does.
+        _setupAction.applyProfileDebounce();
         _saved = next;
     }
   }
@@ -414,8 +416,12 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    // The sheet covers the page, so the bar an apply raises there is shown
+    // here instead.
+    final isApplying = ref.watch(loadingProvider(LoadingTag.proxies));
     return CommonScaffold(
       title: context.appLocalizations.ruleOptions,
+      isLoading: isApplying,
       body: NullStatusSwitcher(
         isLoading: _isLoading,
         isEmpty: false,
@@ -428,9 +434,9 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
 /// Rows arrive one after another, so a long list reads as a list rather than
 /// appearing all at once with the sheet.
 class _RuleOptionEntry extends StatelessWidget {
-  static const _duration = Duration(milliseconds: 420);
-  static const _step = 0.045;
-  static const _run = 0.5;
+  static const _duration = Duration(milliseconds: 260);
+  static const _step = 0.03;
+  static const _run = 0.6;
 
   final int index;
   final Widget child;

@@ -8144,6 +8144,16 @@ class AppLocalizations {
       args: [name],
     );
   }
+
+  /// `Long term`
+  String get longTermSubscription {
+    return Intl.message(
+      'Long term',
+      name: 'longTermSubscription',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

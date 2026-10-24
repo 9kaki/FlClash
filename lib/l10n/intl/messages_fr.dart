@@ -1215,6 +1215,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Journaux et diagnostic",
     ),
     "logsTest": MessageLookupByLibrary.simpleMessage("Test des journaux"),
+    "longTermSubscription": MessageLookupByLibrary.simpleMessage(
+      "Longue durée",
+    ),
     "loopback": MessageLookupByLibrary.simpleMessage(
       "Exemption de bouclage UWP",
     ),
@@ -1495,7 +1498,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "proxyGroupsCount": m72,
     "proxyProviders": MessageLookupByLibrary.simpleMessage(
-      "Fournisseurs de proxys",
+      "Fournisseurs de proxy",
     ),
     "proxyType": MessageLookupByLibrary.simpleMessage("Type de proxy"),
     "pruneCache": MessageLookupByLibrary.simpleMessage("Nettoyer le cache"),

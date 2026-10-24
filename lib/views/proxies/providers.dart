@@ -20,7 +20,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class ExternalProvidersSliver extends ConsumerStatefulWidget {
   final List<ExternalProvider> providers;
 
-  const ExternalProvidersSliver({super.key, required this.providers});
+  /// Names the section, for a caller that keeps proxy providers apart.
+  final String? title;
+
+  const ExternalProvidersSliver({
+    super.key,
+    required this.providers,
+    this.title,
+  });
 
   @override
   ConsumerState<ExternalProvidersSliver> createState() =>
@@ -57,7 +64,7 @@ class _ExternalProvidersSliverState
       slivers: [
         SliverToBoxAdapter(
           child: ListHeader(
-            title: appLocalizations.providers,
+            title: widget.title ?? appLocalizations.providers,
             actions: [
               IconButtonData(
                 glyph: AppGlyphs.sync,
