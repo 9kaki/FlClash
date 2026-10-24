@@ -663,9 +663,7 @@ void main() {
     expect(find.text('26 days left at the earliest'), findsOneWidget);
   });
 
-  testWidgets('the detail sheet names a provider quota as such', (
-    tester,
-  ) async {
+  testWidgets('the detail sheet shows a provider quota once', (tester) async {
     await writeAppliedConfig(tester);
     setUpProfiles(
       [_profile(1)],
@@ -689,7 +687,7 @@ void main() {
 
     await openDetail(tester);
 
-    expect(find.text('Provider subscription'), findsOneWidget);
+    expect(find.text('External resources'), findsWidgets);
     expect(
       find.descendant(
         of: find.byType(ProfileDetailSheet),

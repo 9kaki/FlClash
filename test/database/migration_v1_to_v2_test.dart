@@ -89,16 +89,23 @@ void _downgradeToV7(Database raw) {
   raw.execute('PRAGMA user_version = 7');
 }
 
-/// Schema version 21 had no `disabled_groups` on `profiles`.
-void _downgradeToV21(Database raw) {
+/// Schema version 22 had no `disabled_groups` on `profiles`.
+void _downgradeToV22(Database raw) {
   raw.execute('ALTER TABLE profiles DROP COLUMN disabled_groups');
+  raw.execute('PRAGMA user_version = 22');
+}
+
+/// Schema version 21 had no `custom_options` on `scripts`.
+void _downgradeToV21(Database raw) {
+  _downgradeToV22(raw);
+  raw.execute('ALTER TABLE scripts DROP COLUMN custom_options');
   raw.execute('PRAGMA user_version = 21');
 }
 
-/// Schema version 20 had no `custom_options` on `scripts`.
+/// Schema version 20 had no `ip_qualities`.
 void _downgradeToV20(Database raw) {
   _downgradeToV21(raw);
-  raw.execute('ALTER TABLE scripts DROP COLUMN custom_options');
+  raw.execute('DROP TABLE IF EXISTS ip_qualities');
   raw.execute('PRAGMA user_version = 20');
 }
 
@@ -897,8 +904,19 @@ void main() {
     );
   });
 
-  test('the v21 upgrade adds custom_options to scripts', () async {
+  test('the v21 upgrade creates ip_qualities', () async {
     _downgradeToV20(raw);
+    expect(_hasTable(raw, 'ip_qualities'), isFalse);
+
+    final database = await openAndMigrate();
+
+    expect(_hasTable(raw, 'ip_qualities'), isTrue);
+    expect(_userVersion(raw), _schemaVersion);
+    expect(await database.ipQualities.count.getSingle(), 0);
+  });
+
+  test('the v22 upgrade adds custom_options to scripts', () async {
+    _downgradeToV21(raw);
     raw.execute(
       'INSERT INTO scripts (id, label, last_update_time) '
       "VALUES (2, 'MyClash', 0)",
@@ -915,8 +933,8 @@ void main() {
     );
   });
 
-  test('the v22 upgrade adds disabled_groups to profiles', () async {
-    _downgradeToV21(raw);
+  test('the v23 upgrade adds disabled_groups to profiles', () async {
+    _downgradeToV22(raw);
     raw.execute(
       'INSERT INTO profiles (id, type, label, url, extend_type, '
       'auto_update_duration_millis, auto_update, selected_map, unfold_set) '

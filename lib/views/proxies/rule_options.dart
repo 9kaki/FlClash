@@ -323,11 +323,10 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
     }
     setState(() => _values = Map<String, bool>.of(_saved));
     unawaited(
-      dialogs.showMessage(
+      dialogs.showAlert(
         message: TextSpan(
           text: '${context.appLocalizations.ruleOptionsRejected}\n\n$failure',
         ),
-        cancelable: false,
       ),
     );
   }
