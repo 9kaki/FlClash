@@ -311,7 +311,9 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
           );
       }
       _saved = next;
-      await _setupAction.applyProfile();
+      // The page closes when this returns, so a bar on the page behind it
+      // would only flash after the groups are already there.
+      await _setupAction.applyProfile(silence: true);
     } catch (error) {
       commonPrint.log('rule switches were not applied: $error');
     } finally {
