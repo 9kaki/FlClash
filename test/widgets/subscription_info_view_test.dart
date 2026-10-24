@@ -84,41 +84,4 @@ void main() {
       findsNWidgets(2),
     );
   });
-
-  testWidgets('shows full subscription details in information rows', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          AppUiLocalizations.delegate,
-          ...GlobalMaterialLocalizations.delegates,
-        ],
-        supportedLocales: AppLocalizations.delegate.supportedLocales,
-        builder: (context, child) {
-          return wrapAppScopes(context, child!);
-        },
-        home: const Scaffold(
-          body: SubscriptionInfoDetailView(
-            subscriptionInfo: SubscriptionInfo(
-              upload: 1024,
-              download: 2048,
-              total: 1073741824,
-              expire: 4102444800,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    final appLocalizations = AppLocalizations.current;
-    expect(find.text(appLocalizations.trafficUsage), findsOneWidget);
-    expect(find.text(appLocalizations.usedTraffic), findsOneWidget);
-    expect(find.text(appLocalizations.totalTraffic), findsOneWidget);
-    expect(find.text(appLocalizations.expireTime), findsOneWidget);
-    expect(find.text('3KB'), findsOneWidget);
-    expect(find.text('1GB'), findsOneWidget);
-    expect(find.byType(DecorationListItem), findsNWidgets(3));
-  });
 }

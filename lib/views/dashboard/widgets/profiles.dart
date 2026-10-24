@@ -96,7 +96,11 @@ class ProfilesCard extends ConsumerWidget {
             ? appLocalizations.profileShortestDaysLeft(_daysLeft(expiry))
             : appLocalizations.profileDaysLeft(_daysLeft(expiry)),
       // Providers that never expire still end a config that has no expiry.
-      (_, null, true) => appLocalizations.infiniteTime,
+      (_, null, true) => appLocalizations.longTermSubscription,
+      // Bought once with no expiry: a subscription, not a local file.
+      (final profile?, null, false)
+          when (profile.subscriptionInfo?.total ?? 0) > 0 =>
+        appLocalizations.longTermSubscription,
       (final profile?, null, false) => _sourceOf(context, profile.type),
       _ => null,
     };

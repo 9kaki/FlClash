@@ -221,7 +221,7 @@ void main() {
       ],
     );
 
-    expect(find.text(l.infiniteTime), findsOneWidget);
+    expect(find.text(l.longTermSubscription), findsOneWidget);
   });
 
   testWidgets('a custom card counts its groups in place of an update time', (

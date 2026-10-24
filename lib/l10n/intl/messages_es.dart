@@ -1214,6 +1214,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Registros y diagnóstico",
     ),
     "logsTest": MessageLookupByLibrary.simpleMessage("Prueba de registros"),
+    "longTermSubscription": MessageLookupByLibrary.simpleMessage("Largo plazo"),
     "loopback": MessageLookupByLibrary.simpleMessage(
       "Exención de loopback de UWP",
     ),
@@ -1494,7 +1495,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "proxyGroupsCount": m72,
     "proxyProviders": MessageLookupByLibrary.simpleMessage(
-      "Proveedores de proxies",
+      "Proveedores de proxy",
     ),
     "proxyType": MessageLookupByLibrary.simpleMessage("Tipo de proxy"),
     "pruneCache": MessageLookupByLibrary.simpleMessage("Depurar caché"),

@@ -5,6 +5,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/ui/ui.dart';
 import 'package:fl_clash/views/dashboard/layout.dart';
 import 'package:fl_clash/views/dashboard/style.dart';
 import 'package:fl_clash/views/dashboard/widgets/profile_detail.dart';
@@ -13,7 +14,6 @@ import 'package:fl_clash/views/profiles/profiles.dart';
 import 'package:fl_clash/views/profiles/custom/custom.dart';
 import 'package:fl_clash/views/profiles/custom/rules.dart';
 import 'package:fl_clash/views/proxies/providers.dart';
-import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -219,6 +219,19 @@ void main() {
     expect(find.textContaining('%', findRichText: true), findsNothing);
     expect(find.byTooltip('Update'), findsNothing);
     expect(find.byTooltip('Switch profile'), findsNothing);
+  });
+
+  testWidgets('a subscription without an expiry reads as a long term one', (
+    tester,
+  ) async {
+    setUpProfiles([
+      _profile(1, info: const SubscriptionInfo(total: 100 * _gib)),
+    ]);
+    await pumpDesktopCard(tester);
+
+    expect(find.text('Long term'), findsOneWidget);
+    expect(find.text('Local'), findsNothing);
+    expect(find.text('Remote'), findsNothing);
   });
 
   testWidgets('the button beside the name switches the profile in a sheet', (
@@ -663,7 +676,7 @@ void main() {
     expect(find.text('26 days left at the earliest'), findsOneWidget);
   });
 
-  testWidgets('the detail sheet shows a provider quota once', (tester) async {
+  testWidgets('the sheet shows a provider quota once', (tester) async {
     await writeAppliedConfig(tester);
     setUpProfiles(
       [_profile(1)],
@@ -679,6 +692,7 @@ void main() {
                 total: 100 * _gib,
               ),
             ),
+            _provider('rules', 'Rule', 7),
           ],
         ),
       ],
@@ -687,13 +701,21 @@ void main() {
 
     await openDetail(tester);
 
-    expect(find.text('External resources'), findsWidgets);
+    final proxyHeader = find.widgetWithText(ListHeader, 'Proxy providers');
+    final resourceHeader = find.widgetWithText(ListHeader, 'External resources');
+    expect(proxyHeader, findsOneWidget);
+    expect(resourceHeader, findsOneWidget);
     expect(
-      find.descendant(
-        of: find.byType(ProfileDetailSheet),
-        matching: find.text('10GB / 100GB'),
-      ),
-      findsOneWidget,
+      tester.getTopLeft(proxyHeader).dy,
+      lessThan(tester.getTopLeft(resourceHeader).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('10GB / 100GB')).dy,
+      lessThan(tester.getTopLeft(resourceHeader).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('rules')).dy,
+      greaterThan(tester.getTopLeft(proxyHeader).dy),
     );
   });
 
@@ -743,7 +765,7 @@ void main() {
     final expiring = tester.getTopLeft(inSheet('10GB / 100GB')).dy;
     final permanent = tester.getTopLeft(inSheet('20GB / 200GB')).dy;
     expect(expiring, lessThan(permanent));
-    expect(inSheet('Never expires'), findsWidgets);
+    expect(inSheet('Long term'), findsWidgets);
   });
 
   testWidgets('a provider quota with no expiry reads as long term', (
@@ -766,7 +788,7 @@ void main() {
     );
     await pumpDesktopCard(tester);
 
-    expect(find.text('Never expires'), findsOneWidget);
+    expect(find.text('Long term'), findsOneWidget);
     expect(find.textContaining('%', findRichText: true), findsOneWidget);
   });
 

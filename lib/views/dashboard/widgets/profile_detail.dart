@@ -236,6 +236,14 @@ class _ProfileDetailSheetState extends ConsumerState<ProfileDetailSheet>
       return const SizedBox.shrink();
     }
     final providers = ref.watch(providersProvider);
+    final proxyProviders = [
+      for (final provider in providers)
+        if (provider.type == 'Proxy') provider,
+    ];
+    final otherProviders = [
+      for (final provider in providers)
+        if (provider.type != 'Proxy') provider,
+    ];
     final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
     final appLocalizations = context.appLocalizations;
     final quota = profileQuotaOf(profile, providers);
@@ -286,6 +294,15 @@ class _ProfileDetailSheetState extends ConsumerState<ProfileDetailSheet>
                           ),
                         ],
                       ),
+                  ],
+                ),
+                if (proxyProviders.isNotEmpty)
+                  ExternalProvidersSliver(
+                    providers: proxyProviders,
+                    title: appLocalizations.proxyProviders,
+                  ),
+                SliverList.list(
+                  children: [
                     generateSection(
                       title: appLocalizations.profile,
                       items: [
@@ -306,8 +323,8 @@ class _ProfileDetailSheetState extends ConsumerState<ProfileDetailSheet>
                     ),
                   ],
                 ),
-                if (providers.isNotEmpty)
-                  ExternalProvidersSliver(providers: providers),
+                if (otherProviders.isNotEmpty)
+                  ExternalProvidersSliver(providers: otherProviders),
               ],
             ),
           ),

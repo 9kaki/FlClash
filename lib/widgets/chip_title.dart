@@ -8,15 +8,26 @@ class ExpireChip extends StatelessWidget {
   /// Null stands for a provider that never expires.
   final DateTime? expire;
 
-  const ExpireChip({super.key, this.expire});
+  /// The wording for a subscription that has no expiry to show.
+  final String? label;
+
+  const ExpireChip({super.key, this.expire, this.label});
 
   static const _padding = EdgeInsets.symmetric(horizontal: 8, vertical: 2);
 
-  static String _labelOf(BuildContext context, DateTime? expire) =>
-      expire?.show ?? context.appLocalizations.infiniteTime;
+  static String _labelOf(
+    BuildContext context,
+    DateTime? expire,
+    String? label,
+  ) => expire?.show ?? label ?? context.appLocalizations.infiniteTime;
 
-  static double widthOf(BuildContext context, DateTime? expire) =>
-      chipLabelWidth(context, _labelOf(context, expire)) + _padding.horizontal;
+  static double widthOf(
+    BuildContext context,
+    DateTime? expire, [
+    String? label,
+  ]) =>
+      chipLabelWidth(context, _labelOf(context, expire, label)) +
+      _padding.horizontal;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +46,7 @@ class ExpireChip extends StatelessWidget {
         child: Padding(
           padding: _padding,
           child: Text(
-            _labelOf(context, expire),
+            _labelOf(context, expire, label),
             maxLines: 1,
             style: AppTextStyle.caption1
                 .of(context, emphasized: true)
@@ -73,6 +84,11 @@ class ChipTitle extends StatelessWidget {
 
   bool get _showsExpiry => expire != null || permanent;
 
+  String? _longTermLabel(BuildContext context) =>
+      permanent && expire == null
+      ? context.appLocalizations.longTermSubscription
+      : null;
+
   bool _fitsExpire(BuildContext context, double maxWidth, DateTime? expire) {
     final chip = this.chip;
     final titleWidth = MeasureScope.of(context)
@@ -82,7 +98,7 @@ class ChipTitle extends StatelessWidget {
         .width;
     final chipsWidth =
         (chip == null ? 0 : TonalChip.widthOf(context, chip) + _gap) +
-        ExpireChip.widthOf(context, expire) +
+        ExpireChip.widthOf(context, expire, _longTermLabel(context)) +
         _gap;
     return maxWidth - chipsWidth >= min(titleWidth, maxWidth / 2);
   }
@@ -117,7 +133,8 @@ class ChipTitle extends StatelessWidget {
             color: context.raisedSurfaceLevel.colorOf(colorScheme),
             foregroundColor: colorScheme.onSurfaceVariant,
           ),
-        if (showExpire) ExpireChip(expire: expire),
+        if (showExpire)
+          ExpireChip(expire: expire, label: _longTermLabel(context)),
       ],
     );
     if (!_showsExpiry) {

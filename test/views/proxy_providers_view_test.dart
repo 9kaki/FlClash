@@ -389,53 +389,6 @@ void main() {
     expect(find.text(l10n.sync), findsNothing);
   });
 
-  testWidgets('offers subscription info only when the provider has one', (
-    tester,
-  ) async {
-    final container = containerFor(tester, [
-      _provider(
-        'with-subscription',
-        subscriptionInfo: const SubscriptionInfo(
-          upload: 1,
-          download: 2,
-          total: 100,
-        ),
-      ),
-      _provider('without-subscription'),
-    ]);
-    await pump(tester, container);
-
-    final l10n = currentAppLocalizations;
-    await openMenu(tester, 'with-subscription');
-    expect(find.text(l10n.subscriptionInfo), findsOne);
-    await closeMenu(tester);
-
-    await openMenu(tester, 'without-subscription');
-    expect(find.text(l10n.subscriptionInfo), findsNothing);
-  });
-
-  testWidgets('the subscription info item opens the usage dialog', (
-    tester,
-  ) async {
-    final container = containerFor(tester, [
-      _provider(
-        'with-subscription',
-        subscriptionInfo: const SubscriptionInfo(
-          upload: 1,
-          download: 2,
-          total: 100,
-        ),
-      ),
-    ]);
-    await pump(tester, container);
-
-    await openMenu(tester, 'with-subscription');
-    await tester.tap(find.text(currentAppLocalizations.subscriptionInfo));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(SubscriptionInfoDetailView), findsOne);
-  });
-
   testWidgets('shows a spinner and holds back the menu while updating', (
     tester,
   ) async {

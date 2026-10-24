@@ -6,14 +6,15 @@ import 'package:fl_clash/database/database.dart' hide Profiles;
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 Future<void> showRuleOptionsSheet(BuildContext context) {
-  return showSheet<void>(
-    context: context,
+  return showExtend<void>(
+    context,
     builder: (_) => const RuleOptionsSheet(),
   );
 }
@@ -191,13 +192,8 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
 
   String? _failure;
   bool _isLoading = true;
+  bool _isSaving = false;
 
-  /// Saves run one at a time and in order, so a burst of switches cannot have
-  /// an earlier value win over a later one on its way to the database.
-  Future<void> _saves = Future.value();
-
-  /// Held here because a save started before the sheet closed still has to
-  /// reach the database, and `ref` is gone by then.
   late final ScriptsAction _scriptsAction;
   late final Profiles _profilesAction;
   late final SetupAction _setupAction;
@@ -242,12 +238,10 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
     }
   }
 
+  bool get _hasChanges => _switches != null && !mapEquals(_values, _saved);
+
   void _handleChanged(String name, bool value) {
     setState(() => _values[name] = value);
-    // A save that throws must not leave the queue waiting on a dead future.
-    _saves = _saves.then((_) => _save()).catchError((Object error) {
-      commonPrint.log('rule switches were not stored: $error');
-    });
   }
 
   /// Proves script switches against the profile on disk before they are
@@ -284,37 +278,63 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
     }
   }
 
-  Future<void> _save() async {
+  Future<void> _handleSave() async {
     final switches = _switches;
-    if (switches == null) {
+    if (switches == null || _isSaving) {
       return;
     }
     final next = Map<String, bool>.of(_values);
     if (mapEquals(next, _saved)) {
       return;
     }
-    switch (switches) {
-      case ScriptRuleSwitches():
-        final failure = await _validateScript(switches, next);
-        if (failure != null) {
-          _handleRejected(failure);
-          return;
-        }
-        _scriptsAction.putScript(switches.script.copyWith(customOptions: next));
-        _saved = next;
-      case GroupRuleSwitches():
-        _profilesAction.updateProfile(
-          switches.profileId,
-          (profile) => profile.copyWith(
-            disabledGroups: {
-              for (final entry in next.entries)
-                if (!entry.value) entry.key,
-            },
-          ),
-        );
-        _setupAction.applyProfileDebounce(silence: true);
-        _saved = next;
+    setState(() => _isSaving = true);
+    try {
+      switch (switches) {
+        case ScriptRuleSwitches():
+          final failure = await _validateScript(switches, next);
+          if (failure != null) {
+            _handleRejected(failure);
+            return;
+          }
+          _scriptsAction.putScript(
+            switches.script.copyWith(customOptions: next),
+          );
+        case GroupRuleSwitches():
+          _profilesAction.updateProfile(
+            switches.profileId,
+            (profile) => profile.copyWith(
+              disabledGroups: {
+                for (final entry in next.entries)
+                  if (!entry.value) entry.key,
+              },
+            ),
+          );
+      }
+      _saved = next;
+      // The page closes when this returns, so a bar on the page behind it
+      // would only flash after the groups are already there.
+      await _setupAction.applyProfile(silence: true);
+    } catch (error) {
+      commonPrint.log('rule switches were not applied: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
+    if (mounted) {
+      _close();
+    }
+  }
+
+  /// The sheet's own way out; popping here would only close a page pushed
+  /// inside it.
+  void _close() {
+    final onClose = SheetProvider.of(context)?.onClose;
+    if (onClose != null) {
+      onClose();
+      return;
+    }
+    Navigator.of(context).pop();
   }
 
   void _handleRejected(String failure) {
@@ -416,6 +436,15 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
   Widget build(BuildContext context) {
     return CommonScaffold(
       title: context.appLocalizations.ruleOptions,
+      useCloseIcon: true,
+      confirmationAction: _hasChanges || _isSaving
+          ? IconButtonData(
+              glyph: AppGlyphs.check,
+              tooltip: context.appLocalizations.save,
+              isLoading: _isSaving,
+              onPressed: _isSaving ? null : () => unawaited(_handleSave()),
+            )
+          : null,
       body: NullStatusSwitcher(
         isLoading: _isLoading,
         isEmpty: false,
@@ -428,9 +457,9 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
 /// Rows arrive one after another, so a long list reads as a list rather than
 /// appearing all at once with the sheet.
 class _RuleOptionEntry extends StatelessWidget {
-  static const _duration = Duration(milliseconds: 420);
-  static const _step = 0.045;
-  static const _run = 0.5;
+  static const _duration = Duration(milliseconds: 260);
+  static const _step = 0.03;
+  static const _run = 0.6;
 
   final int index;
   final Widget child;

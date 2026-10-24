@@ -20,7 +20,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class ExternalProvidersSliver extends ConsumerStatefulWidget {
   final List<ExternalProvider> providers;
 
-  const ExternalProvidersSliver({super.key, required this.providers});
+  /// Names the section, for a caller that keeps proxy providers apart.
+  final String? title;
+
+  const ExternalProvidersSliver({
+    super.key,
+    required this.providers,
+    this.title,
+  });
 
   @override
   ConsumerState<ExternalProvidersSliver> createState() =>
@@ -57,7 +64,7 @@ class _ExternalProvidersSliverState
       slivers: [
         SliverToBoxAdapter(
           child: ListHeader(
-            title: appLocalizations.providers,
+            title: widget.title ?? appLocalizations.providers,
             actions: [
               IconButtonData(
                 glyph: AppGlyphs.sync,
@@ -189,35 +196,8 @@ class _ProviderItemState extends ConsumerState<ProviderItem> {
     );
   }
 
-  void _handleShowSubscriptionInfo() {
-    unawaited(
-      dialogs.showCommonDialog<void>(
-        child: Builder(
-          builder: (context) {
-            return CommonDialog(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              title: context.appLocalizations.subscriptionInfo,
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(context.appLocalizations.confirm),
-                ),
-              ],
-              child: SubscriptionInfoDetailView(
-                subscriptionInfo: provider.subscriptionInfo!,
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   List<CommonPopupMenuItem> _menuItems(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final subscriptionInfo = provider.subscriptionInfo;
     return [
       if (_file == _ProviderFile.text)
         CommonPopupMenuItem(
@@ -249,12 +229,6 @@ class _ProviderItemState extends ConsumerState<ProviderItem> {
           onPressed: () {
             _handleUpdateProvider();
           },
-        ),
-      if (subscriptionInfo != null && subscriptionInfo.total > 0)
-        CommonPopupMenuItem(
-          glyph: AppGlyphs.dataUsage,
-          label: appLocalizations.subscriptionInfo,
-          onPressed: _handleShowSubscriptionInfo,
         ),
     ];
   }
