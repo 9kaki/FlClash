@@ -9,7 +9,7 @@ import 'package:fl_clash/ui/ui.dart';
 import 'package:fl_clash/views/proxies/rule_options.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/widgets.dart';
 
 import '../helpers/app_paths.dart';
 import '../helpers/test_app.dart';
@@ -68,7 +68,7 @@ proxy-groups:
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const TestApp(child: Scaffold(body: RuleOptionsSheet())),
+        child: const TestApp(child: RuleOptionsSheet()),
       ),
     );
     for (var i = 0; i < 40; i++) {
@@ -90,7 +90,7 @@ proxy-groups:
     expect(find.text('Group A'), findsOneWidget);
     expect(find.byTooltip(currentAppLocalizations.save), findsNothing);
 
-    await tester.tap(find.byType(CommonSwitch).first);
+    await tester.tap(find.byType(Switch).first);
     await tester.pumpAndSettle();
 
     expect(find.byTooltip(currentAppLocalizations.save), findsOneWidget);
@@ -100,9 +100,9 @@ proxy-groups:
   testWidgets('turning a switch back leaves nothing to save', (tester) async {
     await pumpSheet(tester);
 
-    await tester.tap(find.byType(CommonSwitch).first);
+    await tester.tap(find.byType(Switch).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(CommonSwitch).first);
+    await tester.tap(find.byType(Switch).first);
     await tester.pumpAndSettle();
 
     expect(find.byTooltip(currentAppLocalizations.save), findsNothing);

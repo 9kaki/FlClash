@@ -1,7 +1,7 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/ui/ui.dart';
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/widgets.dart';
 
 const _expireGap = 12.0;
 
@@ -83,6 +83,54 @@ class SubscriptionInfoView extends StatelessWidget {
           backgroundColor: context.colorScheme.primary.opacity15,
         ),
       ],
+    );
+  }
+}
+
+class SubscriptionInfoDetailView extends StatelessWidget {
+  final SubscriptionInfo subscriptionInfo;
+
+  const SubscriptionInfoDetailView({super.key, required this.subscriptionInfo});
+
+  Widget _buildItem({String? label, required String value}) {
+    return DecorationListItem(
+      title: Text(label ?? value),
+      subtitle: label == null ? null : TooltipLabel(value),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    final used = subscriptionInfo.upload + subscriptionInfo.download;
+    final expire = subscriptionInfo.expire != 0
+        ? DateTime.fromMillisecondsSinceEpoch(
+            subscriptionInfo.expire * 1000,
+          ).show
+        : appLocalizations.infiniteTime;
+    return SelectionArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          generateSection(
+            title: appLocalizations.trafficUsage,
+            items: [
+              _buildItem(
+                label: appLocalizations.usedTraffic,
+                value: used.traffic.show,
+              ),
+              _buildItem(
+                label: appLocalizations.totalTraffic,
+                value: subscriptionInfo.total.traffic.show,
+              ),
+            ],
+          ),
+          generateSection(
+            title: appLocalizations.expireTime,
+            items: [_buildItem(value: expire)],
+          ),
+        ],
+      ),
     );
   }
 }

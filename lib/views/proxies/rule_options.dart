@@ -9,14 +9,11 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/foundation.dart' show mapEquals;
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_ui/material_ui.dart';
 
 Future<void> showRuleOptionsSheet(BuildContext context) {
-  return showExtend<void>(
-    context,
-    builder: (_) => const RuleOptionsSheet(),
-  );
+  return showExtend<void>(context, builder: (_) => const RuleOptionsSheet());
 }
 
 /// What the current profile offers to switch, or null when it offers nothing.
@@ -382,18 +379,8 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(RuleSwitches switches) {
     final appLocalizations = context.appLocalizations;
-    final switches = _switches;
-    if (switches == null) {
-      return NullStatus(
-        illustration: NullStatusIllustration.scripts,
-        label: _failure == null
-            ? appLocalizations.ruleOptionsEmpty
-            : appLocalizations.ruleOptionsFailed,
-        description: _failure ?? appLocalizations.ruleOptionsEmptyDesc,
-      );
-    }
     final groups = {
       for (final name in switches.groups)
         if (_values.containsKey(name)) name,
@@ -434,21 +421,31 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return CommonScaffold(
-      title: context.appLocalizations.ruleOptions,
-      useCloseIcon: true,
+    final appLocalizations = context.appLocalizations;
+    final switches = _switches;
+    return Scaffold(
+      title: appLocalizations.ruleOptions,
       confirmationAction: _hasChanges || _isSaving
           ? IconButtonData(
               glyph: AppGlyphs.check,
-              tooltip: context.appLocalizations.save,
+              tooltip: appLocalizations.save,
               isLoading: _isSaving,
               onPressed: _isSaving ? null : () => unawaited(_handleSave()),
             )
           : null,
       body: NullStatusSwitcher(
         isLoading: _isLoading,
-        isEmpty: false,
-        child: _buildContent(),
+        isEmpty: switches == null,
+        nullStatus: NullStatus(
+          label: _failure == null
+              ? appLocalizations.ruleOptionsEmpty
+              : appLocalizations.ruleOptionsFailed,
+          description: _failure ?? appLocalizations.ruleOptionsEmptyDesc,
+          illustration: NullStatusIllustration.scripts,
+        ),
+        child: switches == null
+            ? const SizedBox.shrink()
+            : _buildContent(switches),
       ),
     );
   }
