@@ -89,16 +89,29 @@ void _downgradeToV7(Database raw) {
   raw.execute('PRAGMA user_version = 7');
 }
 
-/// Schema version 22 had no `disabled_groups` on `profiles`.
-void _downgradeToV22(Database raw) {
+/// Schema version 24 had no `disabled_groups` on `profiles`.
+void _downgradeToV24(Database raw) {
   raw.execute('ALTER TABLE profiles DROP COLUMN disabled_groups');
+  raw.execute('PRAGMA user_version = 24');
+}
+
+/// Schema version 23 had no `custom_options` on `scripts`.
+void _downgradeToV23(Database raw) {
+  _downgradeToV24(raw);
+  raw.execute('ALTER TABLE scripts DROP COLUMN custom_options');
+  raw.execute('PRAGMA user_version = 23');
+}
+
+/// Schema version 22 had no `mitm_modules`.
+void _downgradeToV22(Database raw) {
+  _downgradeToV23(raw);
   raw.execute('PRAGMA user_version = 22');
 }
 
-/// Schema version 21 had no `custom_options` on `scripts`.
+/// Schema version 21 had no `ip_qualities`.
 void _downgradeToV21(Database raw) {
   _downgradeToV22(raw);
-  raw.execute('ALTER TABLE scripts DROP COLUMN custom_options');
+  raw.execute('DROP TABLE IF EXISTS mitm_modules');
   raw.execute('PRAGMA user_version = 21');
 }
 
@@ -915,44 +928,6 @@ void main() {
     expect(await database.ipQualities.count.getSingle(), 0);
   });
 
-  test('the v22 upgrade adds custom_options to scripts', () async {
-    _downgradeToV21(raw);
-    raw.execute(
-      'INSERT INTO scripts (id, label, last_update_time) '
-      "VALUES (2, 'MyClash', 0)",
-    );
-    expect(_columnsOf(raw, 'scripts'), isNot(contains('custom_options')));
-
-    final database = await openAndMigrate();
-
-    expect(_columnsOf(raw, 'scripts'), contains('custom_options'));
-    expect(_userVersion(raw), _schemaVersion);
-    expect(
-      (await database.scriptsDao.query().get()).single.customOptions,
-      isEmpty,
-    );
-  });
-
-  test('the v23 upgrade adds disabled_groups to profiles', () async {
-    _downgradeToV22(raw);
-    raw.execute(
-      'INSERT INTO profiles (id, type, label, url, extend_type, '
-      'auto_update_duration_millis, auto_update, selected_map, unfold_set) '
-      "VALUES (4, 'url', 'Sub', 'https://example.com/sub', 'standard', 0, 0, "
-      "'{}', '[]')",
-    );
-    expect(_columnsOf(raw, 'profiles'), isNot(contains('disabled_groups')));
-
-    final database = await openAndMigrate();
-
-    expect(_columnsOf(raw, 'profiles'), contains('disabled_groups'));
-    expect(_userVersion(raw), _schemaVersion);
-    expect(
-      (await database.profilesDao.query().get()).single.disabledGroups,
-      isEmpty,
-    );
-  });
-
   test(
     'a v17 user_version with definition already present still opens',
     () async {
@@ -976,6 +951,83 @@ void main() {
       );
     },
   );
+
+  test('the v22 upgrade creates mitm_modules', () async {
+    _downgradeToV21(raw);
+    expect(_hasTable(raw, 'mitm_modules'), isFalse);
+
+    final database = await openAndMigrate();
+
+    expect(_hasTable(raw, 'mitm_modules'), isTrue);
+    expect(_userVersion(raw), _schemaVersion);
+    expect(await database.mitmModulesDao.query().get(), isEmpty);
+  });
+
+  test('the v23 upgrade drops the per-module update interval', () async {
+    _downgradeToV21(raw);
+    raw.execute(
+      'CREATE TABLE mitm_modules (id INTEGER NOT NULL PRIMARY KEY, '
+      'name TEXT NOT NULL, description TEXT NOT NULL DEFAULT \'\', url TEXT, '
+      'enabled INTEGER NOT NULL DEFAULT 1, "order" INTEGER, '
+      'arguments TEXT NOT NULL DEFAULT \'{}\', '
+      'resources TEXT NOT NULL DEFAULT \'{}\', system TEXT, '
+      'scripts INTEGER NOT NULL DEFAULT 0, '
+      'last_update_time INTEGER NOT NULL, '
+      'update_interval_minutes INTEGER NOT NULL DEFAULT 1440)',
+    );
+    raw.execute(
+      "INSERT INTO mitm_modules (id, name, last_update_time) VALUES (1, 'M', 0)",
+    );
+    raw.execute('PRAGMA user_version = 22');
+
+    final database = await openAndMigrate();
+
+    final modules = await database.mitmModulesDao.query().get();
+    expect(modules.single.name, 'M');
+    final columns = raw.select('PRAGMA table_info(mitm_modules)');
+    expect(
+      columns.map((row) => row['name']),
+      isNot(contains('update_interval_minutes')),
+    );
+  });
+
+  test('the v24 upgrade adds custom_options to scripts', () async {
+    _downgradeToV23(raw);
+    raw.execute(
+      'INSERT INTO scripts (id, label, last_update_time) '
+      "VALUES (2, 'MyClash', 0)",
+    );
+    expect(_columnsOf(raw, 'scripts'), isNot(contains('custom_options')));
+
+    final database = await openAndMigrate();
+
+    expect(_columnsOf(raw, 'scripts'), contains('custom_options'));
+    expect(_userVersion(raw), _schemaVersion);
+    expect(
+      (await database.scriptsDao.query().get()).single.customOptions,
+      isEmpty,
+    );
+  });
+
+  test('the v25 upgrade adds disabled_groups to profiles', () async {
+    _downgradeToV24(raw);
+    raw.execute(
+      'INSERT INTO profiles (id, type, label, url, extend_type, '
+      'auto_update_duration_millis, auto_update, selected_map, unfold_set) '
+      "VALUES (4, 'url', 'Sub', 'https://example.com/sub', 'standard', 0, 0, "
+      "'{}', '[]')",
+    );
+    expect(_columnsOf(raw, 'profiles'), isNot(contains('disabled_groups')));
+
+    final database = await openAndMigrate();
+
+    expect(_columnsOf(raw, 'profiles'), contains('disabled_groups'));
+    expect(_userVersion(raw), _schemaVersion);
+    expect(
+      (await database.profilesDao.query().get()).single.disabledGroups,
+      isEmpty,
+    );
+  });
 
   test('an empty v1 rules table still reaches v2', () async {
     _downgradeToV1(raw);

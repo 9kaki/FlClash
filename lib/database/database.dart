@@ -18,6 +18,7 @@ part 'generated/database.g.dart';
 part 'groups.dart';
 part 'icons.dart';
 part 'ip_qualities.dart';
+part 'mitm_modules.dart';
 part 'profiles.dart';
 part 'rules.dart';
 part 'scripts.dart';
@@ -35,6 +36,7 @@ part 'scripts.dart';
     CustomProxies,
     ProxyDialers,
     IpQualities,
+    MitmModules,
   ],
   daos: [
     ProfilesDao,
@@ -47,13 +49,14 @@ part 'scripts.dart';
     CustomProxiesDao,
     ProxyDialersDao,
     IpQualitiesDao,
+    MitmModulesDao,
   ],
 )
 class Database extends _$Database {
   Database([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 25;
 
   static LazyDatabase _openConnection() {
     return LazyDatabase(() async {
@@ -114,11 +117,17 @@ class Database extends _$Database {
             customProxies.emptyOptions,
           );
         }
-        if (from < 23) {
-          // Fork schemas 21 and 22 overlap upstream's 21, and every step here is idempotent.
+        if (from < 25) {
+          // Fork schemas 21 to 23 overlap upstream's 21 to 23 with different
+          // meanings, so every step runs for any older database and none of
+          // them assumes which side wrote the version.
           await _createTableIfMissing(m, ipQualities);
           await _addColumnIfMissing(m, scripts, scripts.customOptions);
           await _addColumnIfMissing(m, profiles, profiles.disabledGroups);
+          await _createTableIfMissing(m, mitmModules);
+          if (from < 23) {
+            await m.alterTable(TableMigration(mitmModules));
+          }
         }
       }),
       beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),
@@ -416,6 +425,7 @@ class Database extends _$Database {
     List<ClashProvider> clashProviders = const [],
     List<CustomProxy> customProxies = const [],
     List<ProxyDialer> proxyDialers = const [],
+    List<MitmModule> mitmModules = const [],
     bool isOverride = false,
   }) async {
     if (profiles.isEmpty &&
@@ -425,7 +435,8 @@ class Database extends _$Database {
         proxyGroups.isEmpty &&
         clashProviders.isEmpty &&
         customProxies.isEmpty &&
-        proxyDialers.isEmpty) {
+        proxyDialers.isEmpty &&
+        mitmModules.isEmpty) {
       return;
     }
     await transaction(() async {
@@ -441,6 +452,7 @@ class Database extends _$Database {
           clashProvidersDao.setAllWithBatch(b, clashProviders);
           // Rewriting profiles or custom proxies cascades into these.
           proxyDialersDao.setAllWithBatch(b, proxyDialers);
+          mitmModulesDao.setAllWithBatch(b, mitmModules);
           return;
         }
         profilesDao.putAllWithBatch(
@@ -453,6 +465,7 @@ class Database extends _$Database {
         customProxiesDao.putAllWithBatch(b, customProxies);
         clashProvidersDao.putAllWithBatch(b, clashProviders);
         proxyDialersDao.putAllWithBatch(b, proxyDialers);
+        mitmModulesDao.putAllWithBatch(b, mitmModules);
       });
       await _purgeOrphans();
     });
