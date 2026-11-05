@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Base64
 import java.util.Properties
 
 plugins {
@@ -55,7 +56,7 @@ fun parseDartDefines(raw: String?): Map<String, String> {
     if (raw.isNullOrEmpty()) return emptyMap()
     return raw.split(",").mapNotNull { entry ->
         runCatching {
-            String(java.util.Base64.getDecoder().decode(entry), Charsets.UTF_8)
+            String(Base64.getDecoder().decode(entry), Charsets.UTF_8)
         }.getOrNull()
     }.mapNotNull { pair ->
         val separator = pair.indexOf('=')
