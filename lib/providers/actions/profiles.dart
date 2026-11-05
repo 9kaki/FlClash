@@ -22,6 +22,7 @@ class ProfilesAction extends _$ProfilesAction {
   Future<void> deleteProfile(int id) async {
     await ref.read(profilesProvider.notifier).del(id);
     await clearEffect(id);
+    ref.read(bundlesActionProvider.notifier).detachMember(id);
     final currentProfileId = ref.read(currentProfileIdProvider);
     if (currentProfileId == id) {
       final profiles = ref.read(profilesProvider);
@@ -159,6 +160,7 @@ class ProfilesAction extends _$ProfilesAction {
         lastUpdateDate: updated.lastUpdateDate,
       );
       ref.read(profilesProvider.notifier).put(newProfile);
+      ref.read(bundlesActionProvider.notifier).generateBundlesOf(newProfile.id);
       if (profile.id == ref.read(currentProfileIdProvider)) {
         ref
             .read(setupActionProvider.notifier)

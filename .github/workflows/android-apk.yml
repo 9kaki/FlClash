@@ -78,8 +78,9 @@ jobs:
             echo "::warning::The tag names $tag_version but pubspec.yaml is at $app_version. The apk still ships versionName $app_version. Bump pubspec.yaml (tool/bump_version.sh all) to release a new version, or tag $app_version to publish what is here."
           fi
 
-      # Say which of the two package ids this run will produce before spending
-      # an hour building. Print character counts, not "is it set": a secret that
+      # Say which package id this run will produce before spending an hour
+      # building: stable ships com.follow.myclash, a pre build adds .pre, and
+      # an unsigned build also carries .dev. Print character counts, not "is it set": a secret that
       # resolves to an empty string looks identical to a set one from here.
       - name: Report signing mode
         env:
@@ -97,12 +98,12 @@ jobs:
           done
           if [[ "${#missing[@]}" -gt 0 ]]; then
             if [[ "${SIGN_INPUT:-required}" == 'required' ]]; then
-              echo "::error::${missing[*]} resolve to empty strings, so Gradle would fall back to the debug key and the com.follow.myclash.dev package id. Add them under Settings -> Secrets and variables -> Actions -> Repository secrets; secrets stored in an Environment are not visible to this job. Or run with sign=auto to build unsigned anyway."
+              echo "::error::${missing[*]} resolve to empty strings, so Gradle would fall back to the debug key and a .dev package id. Add them under Settings -> Secrets and variables -> Actions -> Repository secrets; secrets stored in an Environment are not visible to this job. Or run with sign=auto to build unsigned anyway."
               exit 1
             fi
-            echo "::warning::${missing[*]} resolve to empty strings. This run ships com.follow.myclash.dev and cannot upgrade an earlier install."
+            echo "::warning::${missing[*]} resolve to empty strings. This run ships a .dev package id and cannot upgrade an earlier install."
           else
-            echo "Signed build: the apk carries com.follow.myclash and can upgrade an earlier install."
+            echo "Signed build: the apk carries com.follow.myclash (a pre build com.follow.myclash.pre) and can upgrade that package's earlier install."
           fi
 
       # Written straight after checkout, since checkout cleans the tree, and
@@ -293,7 +294,7 @@ jobs:
           echo "**Package id:** \`$package\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Download:** \`$artifact.zip\`, holding \`$apk_name\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**apk sha256:** \`$apk_sha\`" >> "$GITHUB_STEP_SUMMARY"
-          if [[ "$SIGNED" == 'true' && "$package" == *.dev ]]; then
+          if [[ "$SIGNED" == 'true' && "$package" == *.dev* ]]; then
             echo "::error::Signing secrets are set but the apk still ships $package, so Gradle never saw android/key.properties or android/app/keystore.jks. Check the PROBE lines above for what it resolved."
             exit 1
           fi

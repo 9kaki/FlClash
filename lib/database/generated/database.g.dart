@@ -192,6 +192,15 @@ class $ProfilesTable extends Profiles
     requiredDuringInsert: false,
   ).withConverter<ProfileOverrides?>($ProfilesTable.$converteroverrides);
   @override
+  late final GeneratedColumnWithTypeConverter<ProfileBundle?, String> bundle =
+      GeneratedColumn<String>(
+        'bundle',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<ProfileBundle?>($ProfilesTable.$converterbundle);
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     type,
@@ -211,6 +220,7 @@ class $ProfilesTable extends Profiles
     order,
     disabledGroups,
     overrides,
+    bundle,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -412,6 +422,12 @@ class $ProfilesTable extends Profiles
           data['${effectivePrefix}overrides'],
         ),
       ),
+      bundle: $ProfilesTable.$converterbundle.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}bundle'],
+        ),
+      ),
     );
   }
 
@@ -432,6 +448,8 @@ class $ProfilesTable extends Profiles
       const StringSetConverter();
   static TypeConverter<ProfileOverrides?, String?> $converteroverrides =
       const ProfileOverridesConverter();
+  static TypeConverter<ProfileBundle?, String?> $converterbundle =
+      const ProfileBundleConverter();
 }
 
 class RawProfile extends DataClass implements Insertable<RawProfile> {
@@ -453,6 +471,7 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
   final int? order;
   final String? disabledGroups;
   final ProfileOverrides? overrides;
+  final ProfileBundle? bundle;
   const RawProfile({
     required this.id,
     required this.type,
@@ -472,6 +491,7 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
     this.order,
     this.disabledGroups,
     this.overrides,
+    this.bundle,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -532,6 +552,11 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
         $ProfilesTable.$converteroverrides.toSql(overrides),
       );
     }
+    if (!nullToAbsent || bundle != null) {
+      map['bundle'] = Variable<String>(
+        $ProfilesTable.$converterbundle.toSql(bundle),
+      );
+    }
     return map;
   }
 
@@ -573,6 +598,9 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
       overrides: overrides == null && nullToAbsent
           ? const Value.absent()
           : Value(overrides),
+      bundle: bundle == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bundle),
     );
   }
 
@@ -610,6 +638,7 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
       order: serializer.fromJson<int?>(json['order']),
       disabledGroups: serializer.fromJson<String?>(json['disabledGroups']),
       overrides: serializer.fromJson<ProfileOverrides?>(json['overrides']),
+      bundle: serializer.fromJson<ProfileBundle?>(json['bundle']),
     );
   }
   @override
@@ -642,6 +671,7 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
       'order': serializer.toJson<int?>(order),
       'disabledGroups': serializer.toJson<String?>(disabledGroups),
       'overrides': serializer.toJson<ProfileOverrides?>(overrides),
+      'bundle': serializer.toJson<ProfileBundle?>(bundle),
     };
   }
 
@@ -664,6 +694,7 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
     Value<int?> order = const Value.absent(),
     Value<String?> disabledGroups = const Value.absent(),
     Value<ProfileOverrides?> overrides = const Value.absent(),
+    Value<ProfileBundle?> bundle = const Value.absent(),
   }) => RawProfile(
     id: id ?? this.id,
     type: type ?? this.type,
@@ -692,6 +723,7 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
         ? disabledGroups.value
         : this.disabledGroups,
     overrides: overrides.present ? overrides.value : this.overrides,
+    bundle: bundle.present ? bundle.value : this.bundle,
   );
   RawProfile copyWithCompanion(ProfilesCompanion data) {
     return RawProfile(
@@ -733,6 +765,7 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
           ? data.disabledGroups.value
           : this.disabledGroups,
       overrides: data.overrides.present ? data.overrides.value : this.overrides,
+      bundle: data.bundle.present ? data.bundle.value : this.bundle,
     );
   }
 
@@ -756,7 +789,8 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
           ..write('unfoldSet: $unfoldSet, ')
           ..write('order: $order, ')
           ..write('disabledGroups: $disabledGroups, ')
-          ..write('overrides: $overrides')
+          ..write('overrides: $overrides, ')
+          ..write('bundle: $bundle')
           ..write(')'))
         .toString();
   }
@@ -781,6 +815,7 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
     order,
     disabledGroups,
     overrides,
+    bundle,
   );
   @override
   bool operator ==(Object other) =>
@@ -803,7 +838,8 @@ class RawProfile extends DataClass implements Insertable<RawProfile> {
           other.unfoldSet == this.unfoldSet &&
           other.order == this.order &&
           other.disabledGroups == this.disabledGroups &&
-          other.overrides == this.overrides);
+          other.overrides == this.overrides &&
+          other.bundle == this.bundle);
 }
 
 class ProfilesCompanion extends UpdateCompanion<RawProfile> {
@@ -825,6 +861,7 @@ class ProfilesCompanion extends UpdateCompanion<RawProfile> {
   final Value<int?> order;
   final Value<String?> disabledGroups;
   final Value<ProfileOverrides?> overrides;
+  final Value<ProfileBundle?> bundle;
   const ProfilesCompanion({
     this.id = const Value.absent(),
     this.type = const Value.absent(),
@@ -844,6 +881,7 @@ class ProfilesCompanion extends UpdateCompanion<RawProfile> {
     this.order = const Value.absent(),
     this.disabledGroups = const Value.absent(),
     this.overrides = const Value.absent(),
+    this.bundle = const Value.absent(),
   });
   ProfilesCompanion.insert({
     this.id = const Value.absent(),
@@ -864,6 +902,7 @@ class ProfilesCompanion extends UpdateCompanion<RawProfile> {
     this.order = const Value.absent(),
     this.disabledGroups = const Value.absent(),
     this.overrides = const Value.absent(),
+    this.bundle = const Value.absent(),
   }) : type = Value(type),
        label = Value(label),
        url = Value(url),
@@ -891,6 +930,7 @@ class ProfilesCompanion extends UpdateCompanion<RawProfile> {
     Expression<int>? order,
     Expression<String>? disabledGroups,
     Expression<String>? overrides,
+    Expression<String>? bundle,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -912,6 +952,7 @@ class ProfilesCompanion extends UpdateCompanion<RawProfile> {
       if (order != null) 'order': order,
       if (disabledGroups != null) 'disabled_groups': disabledGroups,
       if (overrides != null) 'overrides': overrides,
+      if (bundle != null) 'bundle': bundle,
     });
   }
 
@@ -934,6 +975,7 @@ class ProfilesCompanion extends UpdateCompanion<RawProfile> {
     Value<int?>? order,
     Value<String?>? disabledGroups,
     Value<ProfileOverrides?>? overrides,
+    Value<ProfileBundle?>? bundle,
   }) {
     return ProfilesCompanion(
       id: id ?? this.id,
@@ -955,6 +997,7 @@ class ProfilesCompanion extends UpdateCompanion<RawProfile> {
       order: order ?? this.order,
       disabledGroups: disabledGroups ?? this.disabledGroups,
       overrides: overrides ?? this.overrides,
+      bundle: bundle ?? this.bundle,
     );
   }
 
@@ -1029,6 +1072,11 @@ class ProfilesCompanion extends UpdateCompanion<RawProfile> {
         $ProfilesTable.$converteroverrides.toSql(overrides.value),
       );
     }
+    if (bundle.present) {
+      map['bundle'] = Variable<String>(
+        $ProfilesTable.$converterbundle.toSql(bundle.value),
+      );
+    }
     return map;
   }
 
@@ -1052,7 +1100,8 @@ class ProfilesCompanion extends UpdateCompanion<RawProfile> {
           ..write('unfoldSet: $unfoldSet, ')
           ..write('order: $order, ')
           ..write('disabledGroups: $disabledGroups, ')
-          ..write('overrides: $overrides')
+          ..write('overrides: $overrides, ')
+          ..write('bundle: $bundle')
           ..write(')'))
         .toString();
   }
@@ -5496,6 +5545,7 @@ typedef $$ProfilesTableCreateCompanionBuilder =
       Value<int?> order,
       Value<String?> disabledGroups,
       Value<ProfileOverrides?> overrides,
+      Value<ProfileBundle?> bundle,
     });
 typedef $$ProfilesTableUpdateCompanionBuilder =
     ProfilesCompanion Function({
@@ -5517,6 +5567,7 @@ typedef $$ProfilesTableUpdateCompanionBuilder =
       Value<int?> order,
       Value<String?> disabledGroups,
       Value<ProfileOverrides?> overrides,
+      Value<ProfileBundle?> bundle,
     });
 
 final class $$ProfilesTableReferences
@@ -5703,6 +5754,12 @@ class $$ProfilesTableFilterComposer
   ColumnWithTypeConverterFilters<ProfileOverrides?, ProfileOverrides, String>
   get overrides => $composableBuilder(
     column: $table.overrides,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<ProfileBundle?, ProfileBundle, String>
+  get bundle => $composableBuilder(
+    column: $table.bundle,
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
@@ -5905,6 +5962,11 @@ class $$ProfilesTableOrderingComposer
     column: $table.overrides,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get bundle => $composableBuilder(
+    column: $table.bundle,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ProfilesTableAnnotationComposer
@@ -5992,6 +6054,9 @@ class $$ProfilesTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<ProfileOverrides?, String> get overrides =>
       $composableBuilder(column: $table.overrides, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<ProfileBundle?, String> get bundle =>
+      $composableBuilder(column: $table.bundle, builder: (column) => column);
 
   Expression<T> rulesRefs<T extends Object>(
     Expression<T> Function($$RulesTableAnnotationComposer a) f,
@@ -6146,6 +6211,7 @@ class $$ProfilesTableTableManager
                 Value<int?> order = const Value.absent(),
                 Value<String?> disabledGroups = const Value.absent(),
                 Value<ProfileOverrides?> overrides = const Value.absent(),
+                Value<ProfileBundle?> bundle = const Value.absent(),
               }) => ProfilesCompanion(
                 id: id,
                 type: type,
@@ -6165,6 +6231,7 @@ class $$ProfilesTableTableManager
                 order: order,
                 disabledGroups: disabledGroups,
                 overrides: overrides,
+                bundle: bundle,
               ),
           createCompanionCallback:
               ({
@@ -6187,6 +6254,7 @@ class $$ProfilesTableTableManager
                 Value<int?> order = const Value.absent(),
                 Value<String?> disabledGroups = const Value.absent(),
                 Value<ProfileOverrides?> overrides = const Value.absent(),
+                Value<ProfileBundle?> bundle = const Value.absent(),
               }) => ProfilesCompanion.insert(
                 id: id,
                 type: type,
@@ -6206,6 +6274,7 @@ class $$ProfilesTableTableManager
                 order: order,
                 disabledGroups: disabledGroups,
                 overrides: overrides,
+                bundle: bundle,
               ),
           withReferenceMapper: (p0) => p0
               .map(

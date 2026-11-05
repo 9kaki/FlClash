@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'sources.dart';
@@ -57,7 +56,7 @@ void main() {
       if (entity is! File || !entity.path.endsWith('.dart')) {
         continue;
       }
-      final relative = p.relative(entity.path);
+      final relative = relativeSourcePath(entity.path);
       if (_isGenerated(relative)) {
         continue;
       }

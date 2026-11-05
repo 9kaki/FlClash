@@ -34,6 +34,18 @@ class _RecordingSetupAction extends SetupAction {
   }
 }
 
+/// Cache cleanup is fire-and-forget, so the file goes once its delete lands
+/// rather than the moment the download returns.
+Future<void> expectCacheGone(String path) async {
+  for (var attempt = 0; attempt < 100; attempt++) {
+    if (!File(path).existsSync()) {
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  }
+  expect(File(path).existsSync(), isFalse, reason: path);
+}
+
 /// Only a change the current custom profile can see is worth a reapply.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -102,7 +114,18 @@ void main() {
     reloads = [];
     reloadError = null;
     final cacheRoot = Directory(await appPath.providerCacheRootPath);
-    if (cacheRoot.existsSync()) cacheRoot.deleteSync(recursive: true);
+    // A previous test's cache cleanup is fire-and-forget: on Windows a delete
+    // still in flight makes the next write to the same path fail.
+    for (var attempt = 0; attempt < 50 && cacheRoot.existsSync(); attempt++) {
+      if (attempt > 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      try {
+        cacheRoot.deleteSync(recursive: true);
+      } on FileSystemException {
+        cacheRoot.deleteSync(recursive: true);
+      }
+    }
     final core = _MockCoreHandlerInterface();
     when(() => core.updateExternalProvider(any())).thenAnswer((
       invocation,
@@ -220,7 +243,7 @@ void main() {
     await testDatabase.clashProvidersDao.putAll([rules.toCompanion()]);
     await pumpEventQueue();
 
-    action().delProvider(rules);
+    await action().delProvider(rules);
     await pumpEventQueue();
 
     expect(await testDatabase.clashProvidersDao.query().get(), isEmpty);
@@ -574,13 +597,13 @@ void main() {
     }
 
     test('stays deleted, its cache too', () async {
-      action().delProvider(saved);
+      await action().delProvider(saved);
       await pumpEventQueue();
 
       await download();
 
       expect(await testDatabase.clashProvidersDao.query().get(), isEmpty);
-      expect(File(await saved.path).existsSync(), isFalse);
+      await expectCacheGone(await saved.path);
       expect(setup.forced, [true]);
     });
 
@@ -604,7 +627,7 @@ void main() {
       await download();
 
       expect((await stored(remote.id)).url, moved.url);
-      expect(File(await saved.path).existsSync(), isFalse);
+      await expectCacheGone(await saved.path);
     });
   });
 

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 import 'sources.dart';
@@ -72,7 +71,7 @@ void main() {
           entity.path.contains('/generated/')) {
         continue;
       }
-      final path = p.relative(entity.path);
+      final path = relativeSourcePath(entity.path);
       final lines = entity.readAsLinesSync();
       for (final (index, line) in lines.indexed) {
         if (_scopeRead.hasMatch(line)) {

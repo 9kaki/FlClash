@@ -293,9 +293,875 @@ as int,
 
 
 /// @nodoc
+mixin _$BundleMember {
+
+ int get id;/// What this member's proxies are labelled with; null takes the label's
+/// own prefix, as the merge page shows it.
+ String? get prefix;
+/// Create a copy of BundleMember
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BundleMemberCopyWith<BundleMember> get copyWith => _$BundleMemberCopyWithImpl<BundleMember>(this as BundleMember, _$identity);
+
+  /// Serializes this BundleMember to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as BundleMember;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BundleMember&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.prefix, _this.prefix) || other.prefix == _this.prefix));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as BundleMember;
+  return Object.hash(runtimeType,_this.id,_this.prefix);
+}
+
+@override
+String toString() {
+  final _this = this as BundleMember;
+  return 'BundleMember(id: ${_this.id}, prefix: ${_this.prefix})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $BundleMemberCopyWith<$Res>  {
+  factory $BundleMemberCopyWith(BundleMember value, $Res Function(BundleMember) _then) = _$BundleMemberCopyWithImpl;
+@useResult
+$Res call({
+ int id, String? prefix
+});
+
+
+
+
+}
+/// @nodoc
+class _$BundleMemberCopyWithImpl<$Res>
+    implements $BundleMemberCopyWith<$Res> {
+  _$BundleMemberCopyWithImpl(this._self, this._then);
+
+  final BundleMember _self;
+  final $Res Function(BundleMember) _then;
+
+/// Create a copy of BundleMember
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? prefix = freezed,}) {
+  return _then(BundleMember(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,prefix: freezed == prefix ? _self.prefix : prefix // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [BundleMember].
+extension BundleMemberPatterns on BundleMember {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _BundleMember value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _BundleMember() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _BundleMember value)  $default,){
+final _that = this;
+switch (_that) {
+case _BundleMember():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _BundleMember value)?  $default,){
+final _that = this;
+switch (_that) {
+case _BundleMember() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String? prefix)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _BundleMember() when $default != null:
+return $default(_that.id,_that.prefix);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String? prefix)  $default,) {final _that = this;
+switch (_that) {
+case _BundleMember():
+return $default(_that.id,_that.prefix);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String? prefix)?  $default,) {final _that = this;
+switch (_that) {
+case _BundleMember() when $default != null:
+return $default(_that.id,_that.prefix);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _BundleMember implements BundleMember {
+  const _BundleMember({required this.id, this.prefix});
+  factory _BundleMember.fromJson(Map<String, dynamic> json) => _$BundleMemberFromJson(json);
+
+@override final  int id;
+/// What this member's proxies are labelled with; null takes the label's
+/// own prefix, as the merge page shows it.
+@override final  String? prefix;
+
+/// Create a copy of BundleMember
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$BundleMemberCopyWith<_BundleMember> get copyWith => __$BundleMemberCopyWithImpl<_BundleMember>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$BundleMemberToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BundleMember&&(identical(other.id, id) || other.id == id)&&(identical(other.prefix, prefix) || other.prefix == prefix));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,id,prefix);
+}
+
+@override
+String toString() {
+    return 'BundleMember(id: $id, prefix: $prefix)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$BundleMemberCopyWith<$Res> implements $BundleMemberCopyWith<$Res> {
+  factory _$BundleMemberCopyWith(_BundleMember value, $Res Function(_BundleMember) _then) = __$BundleMemberCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String? prefix
+});
+
+
+
+
+}
+/// @nodoc
+class __$BundleMemberCopyWithImpl<$Res>
+    implements _$BundleMemberCopyWith<$Res> {
+  __$BundleMemberCopyWithImpl(this._self, this._then);
+
+  final _BundleMember _self;
+  final $Res Function(_BundleMember) _then;
+
+/// Create a copy of BundleMember
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? prefix = freezed,}) {
+  return _then(_BundleMember(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,prefix: freezed == prefix ? _self.prefix : prefix // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$BundleReport {
+
+ int get proxies; int get duplicates; int get groups;
+/// Create a copy of BundleReport
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$BundleReportCopyWith<BundleReport> get copyWith => _$BundleReportCopyWithImpl<BundleReport>(this as BundleReport, _$identity);
+
+  /// Serializes this BundleReport to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as BundleReport;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BundleReport&&(identical(other.proxies, _this.proxies) || other.proxies == _this.proxies)&&(identical(other.duplicates, _this.duplicates) || other.duplicates == _this.duplicates)&&(identical(other.groups, _this.groups) || other.groups == _this.groups));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as BundleReport;
+  return Object.hash(runtimeType,_this.proxies,_this.duplicates,_this.groups);
+}
+
+@override
+String toString() {
+  final _this = this as BundleReport;
+  return 'BundleReport(proxies: ${_this.proxies}, duplicates: ${_this.duplicates}, groups: ${_this.groups})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $BundleReportCopyWith<$Res>  {
+  factory $BundleReportCopyWith(BundleReport value, $Res Function(BundleReport) _then) = _$BundleReportCopyWithImpl;
+@useResult
+$Res call({
+ int proxies, int duplicates, int groups
+});
+
+
+
+
+}
+/// @nodoc
+class _$BundleReportCopyWithImpl<$Res>
+    implements $BundleReportCopyWith<$Res> {
+  _$BundleReportCopyWithImpl(this._self, this._then);
+
+  final BundleReport _self;
+  final $Res Function(BundleReport) _then;
+
+/// Create a copy of BundleReport
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? proxies = null,Object? duplicates = null,Object? groups = null,}) {
+  return _then(BundleReport(
+proxies: null == proxies ? _self.proxies : proxies // ignore: cast_nullable_to_non_nullable
+as int,duplicates: null == duplicates ? _self.duplicates : duplicates // ignore: cast_nullable_to_non_nullable
+as int,groups: null == groups ? _self.groups : groups // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [BundleReport].
+extension BundleReportPatterns on BundleReport {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _BundleReport value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _BundleReport() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _BundleReport value)  $default,){
+final _that = this;
+switch (_that) {
+case _BundleReport():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _BundleReport value)?  $default,){
+final _that = this;
+switch (_that) {
+case _BundleReport() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int proxies,  int duplicates,  int groups)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _BundleReport() when $default != null:
+return $default(_that.proxies,_that.duplicates,_that.groups);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int proxies,  int duplicates,  int groups)  $default,) {final _that = this;
+switch (_that) {
+case _BundleReport():
+return $default(_that.proxies,_that.duplicates,_that.groups);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int proxies,  int duplicates,  int groups)?  $default,) {final _that = this;
+switch (_that) {
+case _BundleReport() when $default != null:
+return $default(_that.proxies,_that.duplicates,_that.groups);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _BundleReport implements BundleReport {
+  const _BundleReport({this.proxies = 0, this.duplicates = 0, this.groups = 0});
+  factory _BundleReport.fromJson(Map<String, dynamic> json) => _$BundleReportFromJson(json);
+
+@override@JsonKey() final  int proxies;
+@override@JsonKey() final  int duplicates;
+@override@JsonKey() final  int groups;
+
+/// Create a copy of BundleReport
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$BundleReportCopyWith<_BundleReport> get copyWith => __$BundleReportCopyWithImpl<_BundleReport>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$BundleReportToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BundleReport&&(identical(other.proxies, proxies) || other.proxies == proxies)&&(identical(other.duplicates, duplicates) || other.duplicates == duplicates)&&(identical(other.groups, groups) || other.groups == groups));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,proxies,duplicates,groups);
+}
+
+@override
+String toString() {
+    return 'BundleReport(proxies: $proxies, duplicates: $duplicates, groups: $groups)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$BundleReportCopyWith<$Res> implements $BundleReportCopyWith<$Res> {
+  factory _$BundleReportCopyWith(_BundleReport value, $Res Function(_BundleReport) _then) = __$BundleReportCopyWithImpl;
+@override @useResult
+$Res call({
+ int proxies, int duplicates, int groups
+});
+
+
+
+
+}
+/// @nodoc
+class __$BundleReportCopyWithImpl<$Res>
+    implements _$BundleReportCopyWith<$Res> {
+  __$BundleReportCopyWithImpl(this._self, this._then);
+
+  final _BundleReport _self;
+  final $Res Function(_BundleReport) _then;
+
+/// Create a copy of BundleReport
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? proxies = null,Object? duplicates = null,Object? groups = null,}) {
+  return _then(_BundleReport(
+proxies: null == proxies ? _self.proxies : proxies // ignore: cast_nullable_to_non_nullable
+as int,duplicates: null == duplicates ? _self.duplicates : duplicates // ignore: cast_nullable_to_non_nullable
+as int,groups: null == groups ? _self.groups : groups // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$ProfileBundle {
+
+ List<BundleMember> get members; BundleReport get report;/// Member id to why its config could not join the last merge.
+ Map<int, String> get failures; bool get collapsed;
+/// Create a copy of ProfileBundle
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ProfileBundleCopyWith<ProfileBundle> get copyWith => _$ProfileBundleCopyWithImpl<ProfileBundle>(this as ProfileBundle, _$identity);
+
+  /// Serializes this ProfileBundle to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as ProfileBundle;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileBundle&&const DeepCollectionEquality().equals(other.members, _this.members)&&(identical(other.report, _this.report) || other.report == _this.report)&&const DeepCollectionEquality().equals(other.failures, _this.failures)&&(identical(other.collapsed, _this.collapsed) || other.collapsed == _this.collapsed));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as ProfileBundle;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.members),_this.report,const DeepCollectionEquality().hash(_this.failures),_this.collapsed);
+}
+
+@override
+String toString() {
+  final _this = this as ProfileBundle;
+  return 'ProfileBundle(members: ${_this.members}, report: ${_this.report}, failures: ${_this.failures}, collapsed: ${_this.collapsed})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ProfileBundleCopyWith<$Res>  {
+  factory $ProfileBundleCopyWith(ProfileBundle value, $Res Function(ProfileBundle) _then) = _$ProfileBundleCopyWithImpl;
+@useResult
+$Res call({
+ List<BundleMember> members, BundleReport report, Map<int, String> failures, bool collapsed
+});
+
+
+$BundleReportCopyWith<$Res> get report;
+
+}
+/// @nodoc
+class _$ProfileBundleCopyWithImpl<$Res>
+    implements $ProfileBundleCopyWith<$Res> {
+  _$ProfileBundleCopyWithImpl(this._self, this._then);
+
+  final ProfileBundle _self;
+  final $Res Function(ProfileBundle) _then;
+
+/// Create a copy of ProfileBundle
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? members = null,Object? report = null,Object? failures = null,Object? collapsed = null,}) {
+  return _then(ProfileBundle(
+members: null == members ? _self.members : members // ignore: cast_nullable_to_non_nullable
+as List<BundleMember>,report: null == report ? _self.report : report // ignore: cast_nullable_to_non_nullable
+as BundleReport,failures: null == failures ? _self.failures : failures // ignore: cast_nullable_to_non_nullable
+as Map<int, String>,collapsed: null == collapsed ? _self.collapsed : collapsed // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+/// Create a copy of ProfileBundle
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$BundleReportCopyWith<$Res> get report {
+  
+  return $BundleReportCopyWith<$Res>(_self.report, (value) {
+    return _then(_self.copyWith(report: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [ProfileBundle].
+extension ProfileBundlePatterns on ProfileBundle {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ProfileBundle value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ProfileBundle() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ProfileBundle value)  $default,){
+final _that = this;
+switch (_that) {
+case _ProfileBundle():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ProfileBundle value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ProfileBundle() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<BundleMember> members,  BundleReport report,  Map<int, String> failures,  bool collapsed)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ProfileBundle() when $default != null:
+return $default(_that.members,_that.report,_that.failures,_that.collapsed);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<BundleMember> members,  BundleReport report,  Map<int, String> failures,  bool collapsed)  $default,) {final _that = this;
+switch (_that) {
+case _ProfileBundle():
+return $default(_that.members,_that.report,_that.failures,_that.collapsed);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<BundleMember> members,  BundleReport report,  Map<int, String> failures,  bool collapsed)?  $default,) {final _that = this;
+switch (_that) {
+case _ProfileBundle() when $default != null:
+return $default(_that.members,_that.report,_that.failures,_that.collapsed);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _ProfileBundle implements ProfileBundle {
+  const _ProfileBundle({ List<BundleMember> members = const <BundleMember>[], this.report = const BundleReport(),  Map<int, String> failures = const <int, String>{}, this.collapsed = false}): _members = members,_failures = failures;
+  factory _ProfileBundle.fromJson(Map<String, dynamic> json) => _$ProfileBundleFromJson(json);
+
+ final  List<BundleMember> _members;
+@override@JsonKey() List<BundleMember> get members {
+  if (_members is EqualUnmodifiableListView) return _members;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_members);
+}
+
+@override@JsonKey() final  BundleReport report;
+/// Member id to why its config could not join the last merge.
+ final  Map<int, String> _failures;
+/// Member id to why its config could not join the last merge.
+@override@JsonKey() Map<int, String> get failures {
+  if (_failures is EqualUnmodifiableMapView) return _failures;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_failures);
+}
+
+@override@JsonKey() final  bool collapsed;
+
+/// Create a copy of ProfileBundle
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ProfileBundleCopyWith<_ProfileBundle> get copyWith => __$ProfileBundleCopyWithImpl<_ProfileBundle>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ProfileBundleToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileBundle&&const DeepCollectionEquality().equals(other.members, _members)&&(identical(other.report, report) || other.report == report)&&const DeepCollectionEquality().equals(other.failures, _failures)&&(identical(other.collapsed, collapsed) || other.collapsed == collapsed));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_members),report,const DeepCollectionEquality().hash(_failures),collapsed);
+}
+
+@override
+String toString() {
+    return 'ProfileBundle(members: $members, report: $report, failures: $failures, collapsed: $collapsed)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ProfileBundleCopyWith<$Res> implements $ProfileBundleCopyWith<$Res> {
+  factory _$ProfileBundleCopyWith(_ProfileBundle value, $Res Function(_ProfileBundle) _then) = __$ProfileBundleCopyWithImpl;
+@override @useResult
+$Res call({
+ List<BundleMember> members, BundleReport report, Map<int, String> failures, bool collapsed
+});
+
+
+@override $BundleReportCopyWith<$Res> get report;
+
+}
+/// @nodoc
+class __$ProfileBundleCopyWithImpl<$Res>
+    implements _$ProfileBundleCopyWith<$Res> {
+  __$ProfileBundleCopyWithImpl(this._self, this._then);
+
+  final _ProfileBundle _self;
+  final $Res Function(_ProfileBundle) _then;
+
+/// Create a copy of ProfileBundle
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? members = null,Object? report = null,Object? failures = null,Object? collapsed = null,}) {
+  return _then(_ProfileBundle(
+members: null == members ? _self._members : members // ignore: cast_nullable_to_non_nullable
+as List<BundleMember>,report: null == report ? _self.report : report // ignore: cast_nullable_to_non_nullable
+as BundleReport,failures: null == failures ? _self._failures : failures // ignore: cast_nullable_to_non_nullable
+as Map<int, String>,collapsed: null == collapsed ? _self.collapsed : collapsed // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+/// Create a copy of ProfileBundle
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$BundleReportCopyWith<$Res> get report {
+  
+  return $BundleReportCopyWith<$Res>(_self.report, (value) {
+    return _then(_self.copyWith(report: value));
+  });
+}
+}
+
+
+/// @nodoc
 mixin _$Profile {
 
- int get id; ProfileType get type; String get label; String? get currentGroupName; String get url; String get ageSecretKey; DateTime? get lastUpdateDate; Duration get autoUpdateDuration; SubscriptionInfo? get subscriptionInfo; bool get autoUpdate; Map<String, String> get selectedMap; Set<String> get unfoldSet; ExtendType get extendType; int? get scriptId; String? get matchTarget; int? get order;/// Policy groups the reader switched off in the YAML rule switches. The
+ int get id; ProfileType get type; String get label; String? get currentGroupName; String get url; String get ageSecretKey; DateTime? get lastUpdateDate; Duration get autoUpdateDuration; SubscriptionInfo? get subscriptionInfo; bool get autoUpdate; Map<String, String> get selectedMap; Set<String> get unfoldSet; ExtendType get extendType; int? get scriptId; String? get matchTarget; int? get order;/// What this profile merges; null for one that carries its own config.
+ ProfileBundle? get bundle;/// Policy groups the reader switched off in the YAML rule switches. The
 /// build drops them, the groups that name them, and the rules that point
 /// at them.
  Set<String> get disabledGroups;@JsonKey(fromJson: ProfileOverrides.safeFromJson) ProfileOverrides get overrides;
@@ -312,20 +1178,20 @@ $ProfileCopyWith<Profile> get copyWith => _$ProfileCopyWithImpl<Profile>(this as
 @override
 bool operator ==(Object other) {
   final _this = this as Profile;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Profile&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.label, _this.label) || other.label == _this.label)&&(identical(other.currentGroupName, _this.currentGroupName) || other.currentGroupName == _this.currentGroupName)&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.ageSecretKey, _this.ageSecretKey) || other.ageSecretKey == _this.ageSecretKey)&&(identical(other.lastUpdateDate, _this.lastUpdateDate) || other.lastUpdateDate == _this.lastUpdateDate)&&(identical(other.autoUpdateDuration, _this.autoUpdateDuration) || other.autoUpdateDuration == _this.autoUpdateDuration)&&(identical(other.subscriptionInfo, _this.subscriptionInfo) || other.subscriptionInfo == _this.subscriptionInfo)&&(identical(other.autoUpdate, _this.autoUpdate) || other.autoUpdate == _this.autoUpdate)&&const DeepCollectionEquality().equals(other.selectedMap, _this.selectedMap)&&const DeepCollectionEquality().equals(other.unfoldSet, _this.unfoldSet)&&(identical(other.extendType, _this.extendType) || other.extendType == _this.extendType)&&(identical(other.scriptId, _this.scriptId) || other.scriptId == _this.scriptId)&&(identical(other.matchTarget, _this.matchTarget) || other.matchTarget == _this.matchTarget)&&(identical(other.order, _this.order) || other.order == _this.order)&&const DeepCollectionEquality().equals(other.disabledGroups, _this.disabledGroups)&&(identical(other.overrides, _this.overrides) || other.overrides == _this.overrides));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Profile&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.label, _this.label) || other.label == _this.label)&&(identical(other.currentGroupName, _this.currentGroupName) || other.currentGroupName == _this.currentGroupName)&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.ageSecretKey, _this.ageSecretKey) || other.ageSecretKey == _this.ageSecretKey)&&(identical(other.lastUpdateDate, _this.lastUpdateDate) || other.lastUpdateDate == _this.lastUpdateDate)&&(identical(other.autoUpdateDuration, _this.autoUpdateDuration) || other.autoUpdateDuration == _this.autoUpdateDuration)&&(identical(other.subscriptionInfo, _this.subscriptionInfo) || other.subscriptionInfo == _this.subscriptionInfo)&&(identical(other.autoUpdate, _this.autoUpdate) || other.autoUpdate == _this.autoUpdate)&&const DeepCollectionEquality().equals(other.selectedMap, _this.selectedMap)&&const DeepCollectionEquality().equals(other.unfoldSet, _this.unfoldSet)&&(identical(other.extendType, _this.extendType) || other.extendType == _this.extendType)&&(identical(other.scriptId, _this.scriptId) || other.scriptId == _this.scriptId)&&(identical(other.matchTarget, _this.matchTarget) || other.matchTarget == _this.matchTarget)&&(identical(other.order, _this.order) || other.order == _this.order)&&(identical(other.bundle, _this.bundle) || other.bundle == _this.bundle)&&const DeepCollectionEquality().equals(other.disabledGroups, _this.disabledGroups)&&(identical(other.overrides, _this.overrides) || other.overrides == _this.overrides));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Profile;
-  return Object.hash(runtimeType,_this.id,_this.type,_this.label,_this.currentGroupName,_this.url,_this.ageSecretKey,_this.lastUpdateDate,_this.autoUpdateDuration,_this.subscriptionInfo,_this.autoUpdate,const DeepCollectionEquality().hash(_this.selectedMap),const DeepCollectionEquality().hash(_this.unfoldSet),_this.extendType,_this.scriptId,_this.matchTarget,_this.order,const DeepCollectionEquality().hash(_this.disabledGroups),_this.overrides);
+  return Object.hashAll([runtimeType,_this.id,_this.type,_this.label,_this.currentGroupName,_this.url,_this.ageSecretKey,_this.lastUpdateDate,_this.autoUpdateDuration,_this.subscriptionInfo,_this.autoUpdate,const DeepCollectionEquality().hash(_this.selectedMap),const DeepCollectionEquality().hash(_this.unfoldSet),_this.extendType,_this.scriptId,_this.matchTarget,_this.order,_this.bundle,const DeepCollectionEquality().hash(_this.disabledGroups),_this.overrides]);
 }
 
 @override
 String toString() {
   final _this = this as Profile;
-  return 'Profile(id: ${_this.id}, type: ${_this.type}, label: ${_this.label}, currentGroupName: ${_this.currentGroupName}, url: ${_this.url}, ageSecretKey: ${_this.ageSecretKey}, lastUpdateDate: ${_this.lastUpdateDate}, autoUpdateDuration: ${_this.autoUpdateDuration}, subscriptionInfo: ${_this.subscriptionInfo}, autoUpdate: ${_this.autoUpdate}, selectedMap: ${_this.selectedMap}, unfoldSet: ${_this.unfoldSet}, extendType: ${_this.extendType}, scriptId: ${_this.scriptId}, matchTarget: ${_this.matchTarget}, order: ${_this.order}, disabledGroups: ${_this.disabledGroups}, overrides: ${_this.overrides})';
+  return 'Profile(id: ${_this.id}, type: ${_this.type}, label: ${_this.label}, currentGroupName: ${_this.currentGroupName}, url: ${_this.url}, ageSecretKey: ${_this.ageSecretKey}, lastUpdateDate: ${_this.lastUpdateDate}, autoUpdateDuration: ${_this.autoUpdateDuration}, subscriptionInfo: ${_this.subscriptionInfo}, autoUpdate: ${_this.autoUpdate}, selectedMap: ${_this.selectedMap}, unfoldSet: ${_this.unfoldSet}, extendType: ${_this.extendType}, scriptId: ${_this.scriptId}, matchTarget: ${_this.matchTarget}, order: ${_this.order}, bundle: ${_this.bundle}, disabledGroups: ${_this.disabledGroups}, overrides: ${_this.overrides})';
 }
 
 
@@ -336,11 +1202,11 @@ abstract mixin class $ProfileCopyWith<$Res>  {
   factory $ProfileCopyWith(Profile value, $Res Function(Profile) _then) = _$ProfileCopyWithImpl;
 @useResult
 $Res call({
- int id, ProfileType type, String label, String? currentGroupName, String url, String ageSecretKey, DateTime? lastUpdateDate, Duration autoUpdateDuration, SubscriptionInfo? subscriptionInfo, bool autoUpdate, Map<String, String> selectedMap, Set<String> unfoldSet, ExtendType extendType, int? scriptId, String? matchTarget, int? order, Set<String> disabledGroups,@JsonKey(fromJson: ProfileOverrides.safeFromJson) ProfileOverrides overrides
+ int id, ProfileType type, String label, String? currentGroupName, String url, String ageSecretKey, DateTime? lastUpdateDate, Duration autoUpdateDuration, SubscriptionInfo? subscriptionInfo, bool autoUpdate, Map<String, String> selectedMap, Set<String> unfoldSet, ExtendType extendType, int? scriptId, String? matchTarget, int? order, ProfileBundle? bundle, Set<String> disabledGroups,@JsonKey(fromJson: ProfileOverrides.safeFromJson) ProfileOverrides overrides
 });
 
 
-$SubscriptionInfoCopyWith<$Res>? get subscriptionInfo;$ProfileOverridesCopyWith<$Res> get overrides;
+$SubscriptionInfoCopyWith<$Res>? get subscriptionInfo;$ProfileBundleCopyWith<$Res>? get bundle;$ProfileOverridesCopyWith<$Res> get overrides;
 
 }
 /// @nodoc
@@ -353,7 +1219,7 @@ class _$ProfileCopyWithImpl<$Res>
 
 /// Create a copy of Profile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? type = null,Object? label = null,Object? currentGroupName = freezed,Object? url = null,Object? ageSecretKey = null,Object? lastUpdateDate = freezed,Object? autoUpdateDuration = null,Object? subscriptionInfo = freezed,Object? autoUpdate = null,Object? selectedMap = null,Object? unfoldSet = null,Object? extendType = null,Object? scriptId = freezed,Object? matchTarget = freezed,Object? order = freezed,Object? disabledGroups = null,Object? overrides = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? type = null,Object? label = null,Object? currentGroupName = freezed,Object? url = null,Object? ageSecretKey = null,Object? lastUpdateDate = freezed,Object? autoUpdateDuration = null,Object? subscriptionInfo = freezed,Object? autoUpdate = null,Object? selectedMap = null,Object? unfoldSet = null,Object? extendType = null,Object? scriptId = freezed,Object? matchTarget = freezed,Object? order = freezed,Object? bundle = freezed,Object? disabledGroups = null,Object? overrides = null,}) {
   return _then(Profile(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
@@ -371,7 +1237,8 @@ as Set<String>,extendType: null == extendType ? _self.extendType : extendType //
 as ExtendType,scriptId: freezed == scriptId ? _self.scriptId : scriptId // ignore: cast_nullable_to_non_nullable
 as int?,matchTarget: freezed == matchTarget ? _self.matchTarget : matchTarget // ignore: cast_nullable_to_non_nullable
 as String?,order: freezed == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
-as int?,disabledGroups: null == disabledGroups ? _self.disabledGroups : disabledGroups // ignore: cast_nullable_to_non_nullable
+as int?,bundle: freezed == bundle ? _self.bundle : bundle // ignore: cast_nullable_to_non_nullable
+as ProfileBundle?,disabledGroups: null == disabledGroups ? _self.disabledGroups : disabledGroups // ignore: cast_nullable_to_non_nullable
 as Set<String>,overrides: null == overrides ? _self.overrides : overrides // ignore: cast_nullable_to_non_nullable
 as ProfileOverrides,
   ));
@@ -387,6 +1254,18 @@ $SubscriptionInfoCopyWith<$Res>? get subscriptionInfo {
 
   return $SubscriptionInfoCopyWith<$Res>(_self.subscriptionInfo!, (value) {
     return _then(_self.copyWith(subscriptionInfo: value));
+  });
+}/// Create a copy of Profile
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ProfileBundleCopyWith<$Res>? get bundle {
+    if (_self.bundle == null) {
+    return null;
+  }
+
+  return $ProfileBundleCopyWith<$Res>(_self.bundle!, (value) {
+    return _then(_self.copyWith(bundle: value));
   });
 }/// Create a copy of Profile
 /// with the given fields replaced by the non-null parameter values.
@@ -479,10 +1358,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  ProfileType type,  String label,  String? currentGroupName,  String url,  String ageSecretKey,  DateTime? lastUpdateDate,  Duration autoUpdateDuration,  SubscriptionInfo? subscriptionInfo,  bool autoUpdate,  Map<String, String> selectedMap,  Set<String> unfoldSet,  ExtendType extendType,  int? scriptId,  String? matchTarget,  int? order,  Set<String> disabledGroups, @JsonKey(fromJson: ProfileOverrides.safeFromJson)  ProfileOverrides overrides)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  ProfileType type,  String label,  String? currentGroupName,  String url,  String ageSecretKey,  DateTime? lastUpdateDate,  Duration autoUpdateDuration,  SubscriptionInfo? subscriptionInfo,  bool autoUpdate,  Map<String, String> selectedMap,  Set<String> unfoldSet,  ExtendType extendType,  int? scriptId,  String? matchTarget,  int? order,  ProfileBundle? bundle,  Set<String> disabledGroups, @JsonKey(fromJson: ProfileOverrides.safeFromJson)  ProfileOverrides overrides)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Profile() when $default != null:
-return $default(_that.id,_that.type,_that.label,_that.currentGroupName,_that.url,_that.ageSecretKey,_that.lastUpdateDate,_that.autoUpdateDuration,_that.subscriptionInfo,_that.autoUpdate,_that.selectedMap,_that.unfoldSet,_that.extendType,_that.scriptId,_that.matchTarget,_that.order,_that.disabledGroups,_that.overrides);case _:
+return $default(_that.id,_that.type,_that.label,_that.currentGroupName,_that.url,_that.ageSecretKey,_that.lastUpdateDate,_that.autoUpdateDuration,_that.subscriptionInfo,_that.autoUpdate,_that.selectedMap,_that.unfoldSet,_that.extendType,_that.scriptId,_that.matchTarget,_that.order,_that.bundle,_that.disabledGroups,_that.overrides);case _:
   return orElse();
 
 }
@@ -500,10 +1379,10 @@ return $default(_that.id,_that.type,_that.label,_that.currentGroupName,_that.url
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  ProfileType type,  String label,  String? currentGroupName,  String url,  String ageSecretKey,  DateTime? lastUpdateDate,  Duration autoUpdateDuration,  SubscriptionInfo? subscriptionInfo,  bool autoUpdate,  Map<String, String> selectedMap,  Set<String> unfoldSet,  ExtendType extendType,  int? scriptId,  String? matchTarget,  int? order,  Set<String> disabledGroups, @JsonKey(fromJson: ProfileOverrides.safeFromJson)  ProfileOverrides overrides)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  ProfileType type,  String label,  String? currentGroupName,  String url,  String ageSecretKey,  DateTime? lastUpdateDate,  Duration autoUpdateDuration,  SubscriptionInfo? subscriptionInfo,  bool autoUpdate,  Map<String, String> selectedMap,  Set<String> unfoldSet,  ExtendType extendType,  int? scriptId,  String? matchTarget,  int? order,  ProfileBundle? bundle,  Set<String> disabledGroups, @JsonKey(fromJson: ProfileOverrides.safeFromJson)  ProfileOverrides overrides)  $default,) {final _that = this;
 switch (_that) {
 case _Profile():
-return $default(_that.id,_that.type,_that.label,_that.currentGroupName,_that.url,_that.ageSecretKey,_that.lastUpdateDate,_that.autoUpdateDuration,_that.subscriptionInfo,_that.autoUpdate,_that.selectedMap,_that.unfoldSet,_that.extendType,_that.scriptId,_that.matchTarget,_that.order,_that.disabledGroups,_that.overrides);case _:
+return $default(_that.id,_that.type,_that.label,_that.currentGroupName,_that.url,_that.ageSecretKey,_that.lastUpdateDate,_that.autoUpdateDuration,_that.subscriptionInfo,_that.autoUpdate,_that.selectedMap,_that.unfoldSet,_that.extendType,_that.scriptId,_that.matchTarget,_that.order,_that.bundle,_that.disabledGroups,_that.overrides);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -520,10 +1399,10 @@ return $default(_that.id,_that.type,_that.label,_that.currentGroupName,_that.url
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  ProfileType type,  String label,  String? currentGroupName,  String url,  String ageSecretKey,  DateTime? lastUpdateDate,  Duration autoUpdateDuration,  SubscriptionInfo? subscriptionInfo,  bool autoUpdate,  Map<String, String> selectedMap,  Set<String> unfoldSet,  ExtendType extendType,  int? scriptId,  String? matchTarget,  int? order,  Set<String> disabledGroups, @JsonKey(fromJson: ProfileOverrides.safeFromJson)  ProfileOverrides overrides)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  ProfileType type,  String label,  String? currentGroupName,  String url,  String ageSecretKey,  DateTime? lastUpdateDate,  Duration autoUpdateDuration,  SubscriptionInfo? subscriptionInfo,  bool autoUpdate,  Map<String, String> selectedMap,  Set<String> unfoldSet,  ExtendType extendType,  int? scriptId,  String? matchTarget,  int? order,  ProfileBundle? bundle,  Set<String> disabledGroups, @JsonKey(fromJson: ProfileOverrides.safeFromJson)  ProfileOverrides overrides)?  $default,) {final _that = this;
 switch (_that) {
 case _Profile() when $default != null:
-return $default(_that.id,_that.type,_that.label,_that.currentGroupName,_that.url,_that.ageSecretKey,_that.lastUpdateDate,_that.autoUpdateDuration,_that.subscriptionInfo,_that.autoUpdate,_that.selectedMap,_that.unfoldSet,_that.extendType,_that.scriptId,_that.matchTarget,_that.order,_that.disabledGroups,_that.overrides);case _:
+return $default(_that.id,_that.type,_that.label,_that.currentGroupName,_that.url,_that.ageSecretKey,_that.lastUpdateDate,_that.autoUpdateDuration,_that.subscriptionInfo,_that.autoUpdate,_that.selectedMap,_that.unfoldSet,_that.extendType,_that.scriptId,_that.matchTarget,_that.order,_that.bundle,_that.disabledGroups,_that.overrides);case _:
   return null;
 
 }
@@ -535,7 +1414,7 @@ return $default(_that.id,_that.type,_that.label,_that.currentGroupName,_that.url
 @JsonSerializable()
 
 class _Profile implements Profile {
-  const _Profile({required this.id, this.type = ProfileType.file, this.label = '', this.currentGroupName, this.url = '', this.ageSecretKey = '', this.lastUpdateDate, required this.autoUpdateDuration, this.subscriptionInfo, this.autoUpdate = true,  Map<String, String> selectedMap = const {},  Set<String> unfoldSet = const {}, this.extendType = ExtendType.standard, this.scriptId, this.matchTarget, this.order,  Set<String> disabledGroups = const <String>{}, @JsonKey(fromJson: ProfileOverrides.safeFromJson) this.overrides = const ProfileOverrides()}): _selectedMap = selectedMap,_unfoldSet = unfoldSet,_disabledGroups = disabledGroups;
+  const _Profile({required this.id, this.type = ProfileType.file, this.label = '', this.currentGroupName, this.url = '', this.ageSecretKey = '', this.lastUpdateDate, required this.autoUpdateDuration, this.subscriptionInfo, this.autoUpdate = true,  Map<String, String> selectedMap = const {},  Set<String> unfoldSet = const {}, this.extendType = ExtendType.standard, this.scriptId, this.matchTarget, this.order, this.bundle,  Set<String> disabledGroups = const <String>{}, @JsonKey(fromJson: ProfileOverrides.safeFromJson) this.overrides = const ProfileOverrides()}): _selectedMap = selectedMap,_unfoldSet = unfoldSet,_disabledGroups = disabledGroups;
   factory _Profile.fromJson(Map<String, dynamic> json) => _$ProfileFromJson(json);
 
 @override final  int id;
@@ -566,6 +1445,8 @@ class _Profile implements Profile {
 @override final  int? scriptId;
 @override final  String? matchTarget;
 @override final  int? order;
+/// What this profile merges; null for one that carries its own config.
+@override final  ProfileBundle? bundle;
 /// Policy groups the reader switched off in the YAML rule switches. The
 /// build drops them, the groups that name them, and the rules that point
 /// at them.
@@ -594,18 +1475,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Profile&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.label, label) || other.label == label)&&(identical(other.currentGroupName, currentGroupName) || other.currentGroupName == currentGroupName)&&(identical(other.url, url) || other.url == url)&&(identical(other.ageSecretKey, ageSecretKey) || other.ageSecretKey == ageSecretKey)&&(identical(other.lastUpdateDate, lastUpdateDate) || other.lastUpdateDate == lastUpdateDate)&&(identical(other.autoUpdateDuration, autoUpdateDuration) || other.autoUpdateDuration == autoUpdateDuration)&&(identical(other.subscriptionInfo, subscriptionInfo) || other.subscriptionInfo == subscriptionInfo)&&(identical(other.autoUpdate, autoUpdate) || other.autoUpdate == autoUpdate)&&const DeepCollectionEquality().equals(other.selectedMap, _selectedMap)&&const DeepCollectionEquality().equals(other.unfoldSet, _unfoldSet)&&(identical(other.extendType, extendType) || other.extendType == extendType)&&(identical(other.scriptId, scriptId) || other.scriptId == scriptId)&&(identical(other.matchTarget, matchTarget) || other.matchTarget == matchTarget)&&(identical(other.order, order) || other.order == order)&&const DeepCollectionEquality().equals(other.disabledGroups, _disabledGroups)&&(identical(other.overrides, overrides) || other.overrides == overrides));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Profile&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.label, label) || other.label == label)&&(identical(other.currentGroupName, currentGroupName) || other.currentGroupName == currentGroupName)&&(identical(other.url, url) || other.url == url)&&(identical(other.ageSecretKey, ageSecretKey) || other.ageSecretKey == ageSecretKey)&&(identical(other.lastUpdateDate, lastUpdateDate) || other.lastUpdateDate == lastUpdateDate)&&(identical(other.autoUpdateDuration, autoUpdateDuration) || other.autoUpdateDuration == autoUpdateDuration)&&(identical(other.subscriptionInfo, subscriptionInfo) || other.subscriptionInfo == subscriptionInfo)&&(identical(other.autoUpdate, autoUpdate) || other.autoUpdate == autoUpdate)&&const DeepCollectionEquality().equals(other.selectedMap, _selectedMap)&&const DeepCollectionEquality().equals(other.unfoldSet, _unfoldSet)&&(identical(other.extendType, extendType) || other.extendType == extendType)&&(identical(other.scriptId, scriptId) || other.scriptId == scriptId)&&(identical(other.matchTarget, matchTarget) || other.matchTarget == matchTarget)&&(identical(other.order, order) || other.order == order)&&(identical(other.bundle, bundle) || other.bundle == bundle)&&const DeepCollectionEquality().equals(other.disabledGroups, _disabledGroups)&&(identical(other.overrides, overrides) || other.overrides == overrides));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,type,label,currentGroupName,url,ageSecretKey,lastUpdateDate,autoUpdateDuration,subscriptionInfo,autoUpdate,const DeepCollectionEquality().hash(_selectedMap),const DeepCollectionEquality().hash(_unfoldSet),extendType,scriptId,matchTarget,order,const DeepCollectionEquality().hash(_disabledGroups),overrides);
+    return Object.hashAll([runtimeType,id,type,label,currentGroupName,url,ageSecretKey,lastUpdateDate,autoUpdateDuration,subscriptionInfo,autoUpdate,const DeepCollectionEquality().hash(_selectedMap),const DeepCollectionEquality().hash(_unfoldSet),extendType,scriptId,matchTarget,order,bundle,const DeepCollectionEquality().hash(_disabledGroups),overrides]);
 }
 
 @override
 String toString() {
-    return 'Profile(id: $id, type: $type, label: $label, currentGroupName: $currentGroupName, url: $url, ageSecretKey: $ageSecretKey, lastUpdateDate: $lastUpdateDate, autoUpdateDuration: $autoUpdateDuration, subscriptionInfo: $subscriptionInfo, autoUpdate: $autoUpdate, selectedMap: $selectedMap, unfoldSet: $unfoldSet, extendType: $extendType, scriptId: $scriptId, matchTarget: $matchTarget, order: $order, disabledGroups: $disabledGroups, overrides: $overrides)';
+    return 'Profile(id: $id, type: $type, label: $label, currentGroupName: $currentGroupName, url: $url, ageSecretKey: $ageSecretKey, lastUpdateDate: $lastUpdateDate, autoUpdateDuration: $autoUpdateDuration, subscriptionInfo: $subscriptionInfo, autoUpdate: $autoUpdate, selectedMap: $selectedMap, unfoldSet: $unfoldSet, extendType: $extendType, scriptId: $scriptId, matchTarget: $matchTarget, order: $order, bundle: $bundle, disabledGroups: $disabledGroups, overrides: $overrides)';
 }
 
 
@@ -616,11 +1497,11 @@ abstract mixin class _$ProfileCopyWith<$Res> implements $ProfileCopyWith<$Res> {
   factory _$ProfileCopyWith(_Profile value, $Res Function(_Profile) _then) = __$ProfileCopyWithImpl;
 @override @useResult
 $Res call({
- int id, ProfileType type, String label, String? currentGroupName, String url, String ageSecretKey, DateTime? lastUpdateDate, Duration autoUpdateDuration, SubscriptionInfo? subscriptionInfo, bool autoUpdate, Map<String, String> selectedMap, Set<String> unfoldSet, ExtendType extendType, int? scriptId, String? matchTarget, int? order, Set<String> disabledGroups,@JsonKey(fromJson: ProfileOverrides.safeFromJson) ProfileOverrides overrides
+ int id, ProfileType type, String label, String? currentGroupName, String url, String ageSecretKey, DateTime? lastUpdateDate, Duration autoUpdateDuration, SubscriptionInfo? subscriptionInfo, bool autoUpdate, Map<String, String> selectedMap, Set<String> unfoldSet, ExtendType extendType, int? scriptId, String? matchTarget, int? order, ProfileBundle? bundle, Set<String> disabledGroups,@JsonKey(fromJson: ProfileOverrides.safeFromJson) ProfileOverrides overrides
 });
 
 
-@override $SubscriptionInfoCopyWith<$Res>? get subscriptionInfo;@override $ProfileOverridesCopyWith<$Res> get overrides;
+@override $SubscriptionInfoCopyWith<$Res>? get subscriptionInfo;@override $ProfileBundleCopyWith<$Res>? get bundle;@override $ProfileOverridesCopyWith<$Res> get overrides;
 
 }
 /// @nodoc
@@ -633,7 +1514,7 @@ class __$ProfileCopyWithImpl<$Res>
 
 /// Create a copy of Profile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? type = null,Object? label = null,Object? currentGroupName = freezed,Object? url = null,Object? ageSecretKey = null,Object? lastUpdateDate = freezed,Object? autoUpdateDuration = null,Object? subscriptionInfo = freezed,Object? autoUpdate = null,Object? selectedMap = null,Object? unfoldSet = null,Object? extendType = null,Object? scriptId = freezed,Object? matchTarget = freezed,Object? order = freezed,Object? disabledGroups = null,Object? overrides = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? type = null,Object? label = null,Object? currentGroupName = freezed,Object? url = null,Object? ageSecretKey = null,Object? lastUpdateDate = freezed,Object? autoUpdateDuration = null,Object? subscriptionInfo = freezed,Object? autoUpdate = null,Object? selectedMap = null,Object? unfoldSet = null,Object? extendType = null,Object? scriptId = freezed,Object? matchTarget = freezed,Object? order = freezed,Object? bundle = freezed,Object? disabledGroups = null,Object? overrides = null,}) {
   return _then(_Profile(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
@@ -651,7 +1532,8 @@ as Set<String>,extendType: null == extendType ? _self.extendType : extendType //
 as ExtendType,scriptId: freezed == scriptId ? _self.scriptId : scriptId // ignore: cast_nullable_to_non_nullable
 as int?,matchTarget: freezed == matchTarget ? _self.matchTarget : matchTarget // ignore: cast_nullable_to_non_nullable
 as String?,order: freezed == order ? _self.order : order // ignore: cast_nullable_to_non_nullable
-as int?,disabledGroups: null == disabledGroups ? _self._disabledGroups : disabledGroups // ignore: cast_nullable_to_non_nullable
+as int?,bundle: freezed == bundle ? _self.bundle : bundle // ignore: cast_nullable_to_non_nullable
+as ProfileBundle?,disabledGroups: null == disabledGroups ? _self._disabledGroups : disabledGroups // ignore: cast_nullable_to_non_nullable
 as Set<String>,overrides: null == overrides ? _self.overrides : overrides // ignore: cast_nullable_to_non_nullable
 as ProfileOverrides,
   ));
@@ -668,6 +1550,18 @@ $SubscriptionInfoCopyWith<$Res>? get subscriptionInfo {
 
   return $SubscriptionInfoCopyWith<$Res>(_self.subscriptionInfo!, (value) {
     return _then(_self.copyWith(subscriptionInfo: value));
+  });
+}/// Create a copy of Profile
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ProfileBundleCopyWith<$Res>? get bundle {
+    if (_self.bundle == null) {
+    return null;
+  }
+
+  return $ProfileBundleCopyWith<$Res>(_self.bundle!, (value) {
+    return _then(_self.copyWith(bundle: value));
   });
 }/// Create a copy of Profile
 /// with the given fields replaced by the non-null parameter values.

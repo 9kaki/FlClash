@@ -8,6 +8,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/profiles/custom/custom.dart';
 import 'package:fl_clash/views/profiles/extend/extend.dart';
+import 'package:fl_clash/views/profiles/merge.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -166,6 +167,7 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
 
   late final ScrollController _controller;
   var _revealed = false;
+  int? _expandedBundleId;
 
   @override
   void initState() {
@@ -204,11 +206,21 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
     minItemWidth: profileItemMinWidth.ap(context),
   );
 
+  /// The profiles the grid draws, which leaves out what a collapsed merge
+  /// stands for.
+  List<Profile> get _visibleProfiles {
+    final collapsed = widget.profiles.collapsedMemberIds;
+    return [
+      for (final profile in widget.profiles)
+        if (!collapsed.contains(profile.id)) profile,
+    ];
+  }
+
   void _revealSelected() {
     if (!mounted || !_controller.hasClients) {
       return;
     }
-    final index = widget.profiles.indexWhere(
+    final index = _visibleProfiles.indexWhere(
       (profile) => profile.id == widget.currentProfileId,
     );
     if (index == -1) {
@@ -232,42 +244,99 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
     );
   }
 
+  void _toggleExpand(int? id) {
+    setState(() => _expandedBundleId = _expandedBundleId == id ? null : id);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final profiles = widget.profiles;
+    final profiles = _visibleProfiles;
     return WidthBuilder(
       builder: (_, width) {
-        return GridView.builder(
+        final columns = _columnsFor(width);
+        final rows = (profiles.length + columns - 1) ~/ columns;
+        return PrismListView(
           key: profilesStoreKey,
           controller: _controller,
           padding: _padding,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: _columnsFor(width),
-            mainAxisSpacing: widget.spacing,
-            crossAxisSpacing: widget.spacing,
-            mainAxisExtent: _profileItemHeight,
-          ),
-          itemCount: profiles.length,
-          itemBuilder: (context, index) {
-            final profile = profiles[index];
-            return ProfileItem(
-              key: ValueKey(profile.id),
-              profile: profile,
-              groupValue: widget.currentProfileId,
-              onChanged: (profileId) {
-                ref.read(currentProfileIdProvider.notifier).value = profileId;
-              },
+          itemCount: rows,
+          itemBuilder: (context, row) {
+            final start = row * columns;
+            final end = start + columns > profiles.length
+                ? profiles.length
+                : start + columns;
+            final rowProfiles = profiles.sublist(start, end);
+            final expanded = _expandedBundle(rowProfiles);
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: widget.spacing,
+                  children: [
+                    for (var index = 0; index < columns; index++)
+                      Expanded(
+                        child: SizedBox(
+                          height: _profileItemHeight,
+                          child: index < rowProfiles.length
+                              ? ProfileItem(
+                                  key: ValueKey(rowProfiles[index].id),
+                                  profile: rowProfiles[index],
+                                  groupValue: widget.currentProfileId,
+                                  isExpanded:
+                                      rowProfiles[index].id ==
+                                      _expandedBundleId,
+                                  onToggleExpand: () =>
+                                      _toggleExpand(rowProfiles[index].id),
+                                  onChanged: (profileId) {
+                                    ref
+                                            .read(
+                                              currentProfileIdProvider.notifier,
+                                            )
+                                            .value =
+                                        profileId;
+                                  },
+                                )
+                              : null,
+                        ),
+                      ),
+                  ],
+                ),
+                if (expanded != null) ...[
+                  SizedBox(height: widget.spacing),
+                  BundleMembers(
+                    profile: expanded,
+                    currentProfileId: widget.currentProfileId,
+                    onCollapse: () => _toggleExpand(expanded.id),
+                  ),
+                ],
+                if (row != rows - 1) SizedBox(height: widget.spacing),
+              ],
             );
           },
         );
       },
     );
   }
+
+  Profile? _expandedBundle(List<Profile> rowProfiles) {
+    if (_expandedBundleId == null) {
+      return null;
+    }
+    for (final profile in rowProfiles) {
+      if (profile.id == _expandedBundleId) {
+        return profile;
+      }
+    }
+    return null;
+  }
 }
 
 class ProfileItem extends ConsumerWidget {
   final Profile profile;
   final int? groupValue;
+  final bool isExpanded;
+  final VoidCallback? onToggleExpand;
   final void Function(int? value) onChanged;
 
   const ProfileItem({
@@ -275,16 +344,21 @@ class ProfileItem extends ConsumerWidget {
     required this.profile,
     required this.groupValue,
     required this.onChanged,
+    this.isExpanded = false,
+    this.onToggleExpand,
   });
 
   Future<void> _handleDeleteProfile(BuildContext context, WidgetRef ref) async {
     final profilesAction = ref.read(profilesActionProvider.notifier);
     final appLocalizations = context.appLocalizations;
     final users = await profilesAction.providerUsers(profile);
+    final bundles = ref.read(profilesProvider).bundlesOf(profile.id);
     final res = await dialogs.showMessage(
       title: appLocalizations.tip,
       message: TextSpan(
-        text: users.isEmpty
+        text: bundles.isNotEmpty
+            ? appLocalizations.mergedDeleteMemberTip(bundles.first.realLabel)
+            : users.isEmpty
             ? appLocalizations.deleteTip(appLocalizations.profile)
             : appLocalizations.providerInUse(
                 profile.realLabel,
@@ -323,9 +397,21 @@ class ProfileItem extends ConsumerWidget {
   }
 
   SubscriptionInfo? get _subscriptionInfo =>
-      profile.type == ProfileType.url ? profile.subscriptionInfo : null;
+      profile.type == ProfileType.url || profile.isBundle
+      ? profile.subscriptionInfo
+      : null;
 
   String _subtitle(BuildContext context) {
+    final bundle = profile.bundle;
+    if (bundle != null) {
+      final info = profile.subscriptionInfo;
+      if (info != null && info.usage != null) {
+        final used = info.upload + info.download;
+        return '${used.traffic.show} / ${info.total.traffic.show} · '
+            '${context.appLocalizations.mergeMembersCount(bundle.members.length)}';
+      }
+      return context.appLocalizations.mergeMembersCount(bundle.members.length);
+    }
     final info = _subscriptionInfo;
     if (info != null && info.usage != null) {
       final used = info.upload + info.download;
@@ -340,6 +426,28 @@ class ProfileItem extends ConsumerWidget {
   }
 
   Widget _buildTrailing(BuildContext context, {required bool isUpdating}) {
+    if (profile.isBundle) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 4,
+        children: [
+          AnimatedRotation(
+            turns: isExpanded ? 0.5 : 0,
+            duration: context.motionDuration(commonDuration),
+            child: IconButton(
+              onPressed: onToggleExpand,
+              icon: const GlyphIcon(AppGlyphs.chevronDown, size: 18),
+              tooltip: context.appLocalizations.mergeExpand,
+            ),
+          ),
+          _buildUpdateTime(context, isUpdating: isUpdating),
+        ],
+      );
+    }
+    return _buildUpdateTime(context, isUpdating: isUpdating);
+  }
+
+  Widget _buildUpdateTime(BuildContext context, {required bool isUpdating}) {
     return AnimatedSwitcher(
       duration: context.motionDuration(commonDuration),
       layoutBuilder: (currentChild, previousChildren) => Stack(
@@ -395,6 +503,15 @@ class ProfileItem extends ConsumerWidget {
   }
 
   void _handleEdit(BuildContext context) {
+    if (profile.isBundle) {
+      unawaited(
+        BaseNavigator.push<void>(
+          context,
+          MergeProfileView(profileId: profile.id),
+        ),
+      );
+      return;
+    }
     if (profile.type == ProfileType.custom) {
       _handlePushCustomProfilePage(context, profile.id);
     } else {
@@ -406,13 +523,37 @@ class ProfileItem extends ConsumerWidget {
     final appLocalizations = context.appLocalizations;
     final isUrl = profile.type == ProfileType.url;
     final isCustom = profile.type == ProfileType.custom;
+    final isBundle = profile.isBundle;
     return [
       PopupMenuItem(
         glyph: AppGlyphs.edit,
         label: appLocalizations.edit,
         onPressed: () => _handleEdit(context),
       ),
-      if (isCustom) ...[
+      if (isBundle) ...[
+        PopupMenuItem(
+          glyph: AppGlyphs.refresh,
+          label: appLocalizations.mergeRegenerate,
+          onPressed: () {
+            unawaited(
+              globalState.loadingRun(
+                () => ref
+                    .read(bundlesActionProvider.notifier)
+                    .generateBundle(profile.id, refresh: true),
+                tag: LoadingTag.profiles,
+                title: appLocalizations.mergeRegenerate,
+              ),
+            );
+          },
+        ),
+        PopupMenuItem(
+          glyph: AppGlyphs.eye,
+          label: appLocalizations.runtimeConfig,
+          onPressed: () {
+            _handlePreview(context);
+          },
+        ),
+      ] else if (isCustom) ...[
         PopupMenuItem(
           glyph: AppGlyphs.textShort,
           label: appLocalizations.rename,
@@ -434,6 +575,12 @@ class ProfileItem extends ConsumerWidget {
           onPressed: () {
             _handlePushGenProfilePage(context, profile.id);
           },
+        ),
+      if (isBundle)
+        PopupMenuItem(
+          glyph: AppGlyphs.layers,
+          label: appLocalizations.mergeMembers,
+          onPressed: () => onToggleExpand?.call(),
         ),
       if (isUrl)
         PopupMenuItem(
@@ -499,7 +646,9 @@ class ProfileItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
     final subscriptionInfo = _subscriptionInfo;
-    final isSelected = profile.id == groupValue;
+    final isSelected =
+        profile.id == groupValue ||
+        profile.bundleMembers.any((member) => member.id == groupValue);
     return ContextMenuRegion(
       menuItems: isUpdating ? null : _menuItems(context, ref),
       child: Card(
@@ -674,6 +823,101 @@ class _ReorderableProfilesSheetState
         itemCount: profiles.length,
       ),
       title: appLocalizations.profilesSort,
+    );
+  }
+}
+
+/// The subscriptions a bundle merges, shown under its card.
+class BundleMembers extends ConsumerWidget {
+  const BundleMembers({
+    super.key,
+    required this.profile,
+    required this.currentProfileId,
+    required this.onCollapse,
+  });
+
+  final Profile profile;
+  final int? currentProfileId;
+  final VoidCallback onCollapse;
+
+  String _usageOf(Profile member) {
+    final info = member.subscriptionInfo;
+    if (info == null || info.usage == null) {
+      return '';
+    }
+    return '${(info.upload + info.download).traffic.show} / '
+        '${info.total.traffic.show}';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final profiles = ref.watch(profilesProvider);
+    final members = [
+      for (final member in profile.bundleMembers)
+        ?profiles.getProfile(member.id),
+    ];
+    return Card(
+      radius: AppCorner.xl,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListItem(
+            leading: const GlyphIcon(AppGlyphs.layers),
+            title: Text(
+              appLocalizations.mergeMembersCount(members.length),
+              style: AppTextStyle.subheadline.of(context).toLighter,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 4,
+              children: [
+                IconButton(
+                  onPressed: () => unawaited(
+                    BaseNavigator.push<void>(
+                      context,
+                      MergeProfileView(profileId: profile.id),
+                    ),
+                  ),
+                  icon: const GlyphIcon(AppGlyphs.edit, size: 18),
+                  tooltip: appLocalizations.edit,
+                ),
+                IconButton(
+                  onPressed: onCollapse,
+                  icon: const GlyphIcon(AppGlyphs.chevronUp, size: 18),
+                  tooltip: appLocalizations.mergeCollapseMembers,
+                ),
+              ],
+            ),
+          ),
+          if (members.isEmpty)
+            ListItem(title: Text(appLocalizations.mergeNoMembers))
+          else
+            for (final member in members)
+              ListItem(
+                key: ValueKey('bundle_member_${member.id}'),
+                leading: GlyphIcon(
+                  member.id == currentProfileId
+                      ? AppGlyphs.checkCircle
+                      : AppGlyphs.profiles,
+                ),
+                title: Text(
+                  member.realLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  _usageOf(member),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () {
+                  ref.read(currentProfileIdProvider.notifier).value = member.id;
+                },
+              ),
+        ],
+      ),
     );
   }
 }

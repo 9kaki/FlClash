@@ -43,8 +43,31 @@ class Profiles extends Table {
   TextColumn get overrides =>
       text().map(const ProfileOverridesConverter()).nullable()();
 
+  TextColumn get bundle =>
+      text().map(const ProfileBundleConverter()).nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
+}
+
+class ProfileBundleConverter extends TypeConverter<ProfileBundle?, String?> {
+  const ProfileBundleConverter();
+
+  @override
+  ProfileBundle? fromSql(String? fromDb) {
+    if (fromDb == null) return null;
+    return decodeOrRestoreDefault(
+      'profile bundle',
+      () => ProfileBundle.fromJson(json.decode(fromDb)),
+      () => null,
+    );
+  }
+
+  @override
+  String? toSql(ProfileBundle? value) {
+    if (value == null) return null;
+    return json.encode(value.toJson());
+  }
 }
 
 class ProfileOverridesConverter
@@ -183,6 +206,7 @@ extension RawProfilExt on RawProfile {
       order: order,
       disabledGroups: decodeDisabledGroups(disabledGroups),
       overrides: overrides ?? const ProfileOverrides(),
+      bundle: bundle,
     );
   }
 }
@@ -208,6 +232,7 @@ extension ProfilesCompanionExt on Profile {
       order: Value(order ?? this.order),
       disabledGroups: Value(encodeDisabledGroups(disabledGroups)),
       overrides: Value(overrides),
+      bundle: Value(bundle),
     );
   }
 }

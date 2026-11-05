@@ -24,6 +24,9 @@ billN9o10i2kxHN/yZkuSW4xpVUtd6kxP2s=
 -----END CERTIFICATE-----
 ''';
 
+/// The store splits PATH on ':', which a Windows path carries itself.
+const _posixPath = 'the Linux store reads a POSIX search path';
+
 const _sha1 = '0D045E4AA451F22BE8D41A13A1F2E18446192632';
 const _sha256 =
     '5684B99A4C8E9CB4F3639425A5D2B61C2D4B05C6531536268BAC4A2FD7378D17';
@@ -344,7 +347,7 @@ void main() {
     });
   });
 
-  group('Linux', () {
+  group('Linux', skip: Platform.isWindows ? _posixPath : null, () {
     late Map<String, String> files;
     late Map<String, List<String>> directories;
     late List<List<String>> elevated;

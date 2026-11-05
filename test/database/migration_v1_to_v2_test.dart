@@ -89,8 +89,15 @@ void _downgradeToV7(Database raw) {
   raw.execute('PRAGMA user_version = 7');
 }
 
+/// Schema version 25 had no `bundle` on `profiles`.
+void _downgradeToV25(Database raw) {
+  raw.execute('ALTER TABLE profiles DROP COLUMN bundle');
+  raw.execute('PRAGMA user_version = 25');
+}
+
 /// Schema version 24 had no `disabled_groups` on `profiles`.
 void _downgradeToV24(Database raw) {
+  _downgradeToV25(raw);
   raw.execute('ALTER TABLE profiles DROP COLUMN disabled_groups');
   raw.execute('PRAGMA user_version = 24');
 }

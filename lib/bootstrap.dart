@@ -171,6 +171,9 @@ class Bootstrap {
     if (!_bootDecision.isDegraded) {
       await _container.read(setupActionProvider.notifier).initStatus();
     }
+    unawaited(
+      _container.read(bundlesActionProvider.notifier).generateMissing(),
+    );
     _container.read(initProvider.notifier).value = true;
     unawaited(_container.read(resourcesActionProvider.notifier).autoUpdate());
     unawaited(_container.read(mitmModulesActionProvider.notifier).autoUpdate());

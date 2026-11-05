@@ -26,7 +26,7 @@ class ClashProvidersAction extends _$ClashProvidersAction {
     if (before != null &&
         (latest == null || latest.fileName != before.fileName)) {
       if (latest?.fileName != compiled.fileName) {
-        unawaited(_clearCache(compiled));
+        await _clearCache(compiled);
       }
       return latest ?? compiled;
     }
@@ -41,7 +41,7 @@ class ClashProvidersAction extends _$ClashProvidersAction {
     };
     ref.read(clashProvidersProvider.notifier).put(next);
     if (previous != null && previous.fileName != next.fileName) {
-      unawaited(_clearCache(previous));
+      await _clearCache(previous);
     }
     final reread = content != null || download;
     if (reread && next == before) {
@@ -155,9 +155,11 @@ class ClashProvidersAction extends _$ClashProvidersAction {
     }
   }
 
-  void delProvider(ClashProvider provider) {
+  /// The cache goes with the row, and callers wait for both before treating
+  /// the set as deleted.
+  Future<void> delProvider(ClashProvider provider) async {
     ref.read(clashProvidersProvider.notifier).del(provider.id);
-    unawaited(_clearCache(provider));
+    await _clearCache(provider);
   }
 
   Future<List<Profile>> profilesUsing(ClashProvider provider) {

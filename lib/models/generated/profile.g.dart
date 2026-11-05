@@ -22,6 +22,55 @@ Map<String, dynamic> _$SubscriptionInfoToJson(_SubscriptionInfo instance) =>
       'expire': instance.expire,
     };
 
+_BundleMember _$BundleMemberFromJson(Map<String, dynamic> json) =>
+    _BundleMember(
+      id: (json['id'] as num).toInt(),
+      prefix: json['prefix'] as String?,
+    );
+
+Map<String, dynamic> _$BundleMemberToJson(_BundleMember instance) =>
+    <String, dynamic>{'id': instance.id, 'prefix': instance.prefix};
+
+_BundleReport _$BundleReportFromJson(Map<String, dynamic> json) =>
+    _BundleReport(
+      proxies: (json['proxies'] as num?)?.toInt() ?? 0,
+      duplicates: (json['duplicates'] as num?)?.toInt() ?? 0,
+      groups: (json['groups'] as num?)?.toInt() ?? 0,
+    );
+
+Map<String, dynamic> _$BundleReportToJson(_BundleReport instance) =>
+    <String, dynamic>{
+      'proxies': instance.proxies,
+      'duplicates': instance.duplicates,
+      'groups': instance.groups,
+    };
+
+_ProfileBundle _$ProfileBundleFromJson(Map<String, dynamic> json) =>
+    _ProfileBundle(
+      members:
+          (json['members'] as List<dynamic>?)
+              ?.map((e) => BundleMember.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const <BundleMember>[],
+      report: json['report'] == null
+          ? const BundleReport()
+          : BundleReport.fromJson(json['report'] as Map<String, dynamic>),
+      failures:
+          (json['failures'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(int.parse(k), e as String),
+          ) ??
+          const <int, String>{},
+      collapsed: json['collapsed'] as bool? ?? false,
+    );
+
+Map<String, dynamic> _$ProfileBundleToJson(_ProfileBundle instance) =>
+    <String, dynamic>{
+      'members': instance.members,
+      'report': instance.report,
+      'failures': instance.failures.map((k, e) => MapEntry(k.toString(), e)),
+      'collapsed': instance.collapsed,
+    };
+
 _Profile _$ProfileFromJson(Map<String, dynamic> json) => _Profile(
   id: (json['id'] as num).toInt(),
   type:
@@ -57,6 +106,9 @@ _Profile _$ProfileFromJson(Map<String, dynamic> json) => _Profile(
   scriptId: (json['scriptId'] as num?)?.toInt(),
   matchTarget: json['matchTarget'] as String?,
   order: (json['order'] as num?)?.toInt(),
+  bundle: json['bundle'] == null
+      ? null
+      : ProfileBundle.fromJson(json['bundle'] as Map<String, dynamic>),
   disabledGroups:
       (json['disabledGroups'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -86,6 +138,7 @@ Map<String, dynamic> _$ProfileToJson(_Profile instance) => <String, dynamic>{
   'scriptId': instance.scriptId,
   'matchTarget': instance.matchTarget,
   'order': instance.order,
+  'bundle': instance.bundle,
   'disabledGroups': instance.disabledGroups.toList(),
   'overrides': instance.overrides,
 };

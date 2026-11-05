@@ -12,6 +12,7 @@ import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/views/config/managed_mode.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,29 +57,57 @@ class _ScriptsViewState extends ConsumerState<ScriptsView> {
 
   Widget _buildContent(List<Script> scripts, {required bool isLoading}) {
     final appLocalizations = context.appLocalizations;
-    return NullStatusSwitcher(
-      isLoading: isLoading,
-      isEmpty: scripts.isEmpty,
-      nullStatus: NullStatus(
-        illustration: NullStatusIllustration.scripts,
-        label: appLocalizations.nullTip(appLocalizations.script),
-      ),
-      child: PrismReorderableListView(
-        padding: const EdgeInsets.all(16).copyWith(
-          top: context.contentTopPadding,
-          bottom: 16 + context.bottomInset,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            0,
+            16,
+            12,
+          ).copyWith(top: context.contentTopPadding),
+          child: Card(
+            radius: AppCorner.xl,
+            onPressed: () => unawaited(
+              BaseNavigator.push<void>(context, const ManagedModeView()),
+            ),
+            child: ListItem(
+              leading: const GlyphIcon(AppGlyphs.layers),
+              title: Text(appLocalizations.managedMode),
+              subtitle: Text(
+                appLocalizations.managedModeDesc,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
         ),
-        itemCount: scripts.length,
-        itemBuilder: (_, index) => _buildItem(scripts, index),
-        proxyDecorator: (_, index, animation) {
-          return commonProxyDecorator(
-            _buildItem(scripts, index),
-            index,
-            animation,
-          );
-        },
-        onReorderItem: ref.read(scriptsProvider.notifier).order,
-      ),
+        Expanded(
+          child: NullStatusSwitcher(
+            isLoading: isLoading,
+            isEmpty: scripts.isEmpty,
+            nullStatus: NullStatus(
+              illustration: NullStatusIllustration.scripts,
+              label: appLocalizations.nullTip(appLocalizations.script),
+            ),
+            child: PrismReorderableListView(
+              padding: const EdgeInsets.all(
+                16,
+              ).copyWith(top: 0, bottom: 16 + context.bottomInset),
+              itemCount: scripts.length,
+              itemBuilder: (_, index) => _buildItem(scripts, index),
+              proxyDecorator: (_, index, animation) {
+                return commonProxyDecorator(
+                  _buildItem(scripts, index),
+                  index,
+                  animation,
+                );
+              },
+              onReorderItem: ref.read(scriptsProvider.notifier).order,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -59,6 +59,51 @@ extension SubscriptionInfoExt on SubscriptionInfo {
 
   DateTime? get expireDate =>
       expire > 0 ? DateTime.fromMillisecondsSinceEpoch(expire * 1000) : null;
+
+  /// Whether the server reported anything at all.
+  bool get hasUsage => upload + download + total > 0;
+}
+
+@freezed
+abstract class BundleMember with _$BundleMember {
+  const factory BundleMember({
+    required int id,
+
+    /// What this member's proxies are labelled with; null takes the label's
+    /// own prefix, as the merge page shows it.
+    String? prefix,
+  }) = _BundleMember;
+
+  factory BundleMember.fromJson(Map<String, Object?> json) =>
+      _$BundleMemberFromJson(json);
+}
+
+@freezed
+abstract class BundleReport with _$BundleReport {
+  const factory BundleReport({
+    @Default(0) int proxies,
+    @Default(0) int duplicates,
+    @Default(0) int groups,
+  }) = _BundleReport;
+
+  factory BundleReport.fromJson(Map<String, Object?> json) =>
+      _$BundleReportFromJson(json);
+}
+
+/// The subscriptions a bundle merges, and what the last merge made of them.
+@freezed
+abstract class ProfileBundle with _$ProfileBundle {
+  const factory ProfileBundle({
+    @Default(<BundleMember>[]) List<BundleMember> members,
+    @Default(BundleReport()) BundleReport report,
+
+    /// Member id to why its config could not join the last merge.
+    @Default(<int, String>{}) Map<int, String> failures,
+    @Default(false) bool collapsed,
+  }) = _ProfileBundle;
+
+  factory ProfileBundle.fromJson(Map<String, Object?> json) =>
+      _$ProfileBundleFromJson(json);
 }
 
 @freezed
@@ -80,6 +125,9 @@ abstract class Profile with _$Profile {
     int? scriptId,
     String? matchTarget,
     int? order,
+
+    /// What this profile merges; null for one that carries its own config.
+    ProfileBundle? bundle,
 
     /// Policy groups the reader switched off in the YAML rule switches. The
     /// build drops them, the groups that name them, and the rules that point
@@ -114,6 +162,21 @@ abstract class Profile with _$Profile {
       autoUpdateDuration: defaultUpdateDuration,
     );
   }
+
+  factory Profile.bundle({
+    required String label,
+    required List<BundleMember> members,
+    bool collapsed = true,
+  }) {
+    return Profile(
+      id: snowflake.id,
+      label: label,
+      lastUpdateDate: DateTime.now(),
+      autoUpdate: false,
+      autoUpdateDuration: defaultUpdateDuration,
+      bundle: ProfileBundle(members: members, collapsed: collapsed),
+    );
+  }
 }
 
 /// A profile leaving out one of the global rules its extension would add.
@@ -129,6 +192,21 @@ extension ProfilesExt on List<Profile> {
     return index == -1 ? null : this[index];
   }
 
+  /// The ids a collapsed bundle hides from the list.
+  Set<int> get collapsedMemberIds => {
+    for (final profile in this)
+      if (profile.bundle case final bundle? when bundle.collapsed)
+        for (final member in bundle.members) member.id,
+  };
+
+  /// The bundles a member's config feeds.
+  List<Profile> bundlesOf(int memberId) => [
+    for (final profile in this)
+      if (profile.bundle?.members.any((member) => member.id == memberId) ??
+          false)
+        profile,
+  ];
+
   Profile optimizeLabel(Profile profile) {
     return profile.copyWith(
       label: uniqueLabelFor(
@@ -141,8 +219,51 @@ extension ProfilesExt on List<Profile> {
   }
 }
 
+extension BundleMembersExt on List<BundleMember> {
+  bool containsProfile(int profileId) =>
+      any((member) => member.id == profileId);
+}
+
+extension SubscriptionInfosExt on Iterable<SubscriptionInfo> {
+  /// One meter's worth of several plans: what they carry is added up, and the
+  /// deadline that comes first is the one worth warning about.
+  SubscriptionInfo? get combined {
+    var upload = 0;
+    var download = 0;
+    var total = 0;
+    var expire = 0;
+    for (final info in this) {
+      if (!info.hasUsage && info.expire <= 0) {
+        continue;
+      }
+      upload += info.upload;
+      download += info.download;
+      total += info.total;
+      if (info.expire > 0 && (expire == 0 || info.expire < expire)) {
+        expire = info.expire;
+      }
+    }
+    if (upload + download + total + expire <= 0) {
+      return null;
+    }
+    return SubscriptionInfo(
+      upload: upload,
+      download: download,
+      total: total,
+      expire: expire,
+    );
+  }
+}
+
 extension ProfileExtension on Profile {
   bool get realAutoUpdate => type == ProfileType.url && autoUpdate;
+
+  bool get isBundle => bundle != null;
+
+  List<BundleMember> get bundleMembers => bundle?.members ?? const [];
+
+  /// A profile that points at its own config file, which a bundle does not.
+  bool get hasOwnConfig => bundle == null;
 
   String get realLabel => label.takeFirstValid([defaultLabel]);
 

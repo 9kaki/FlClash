@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
+import 'sources.dart';
 
 const _stateManagement = [
   'flutter_riverpod',
@@ -67,7 +68,7 @@ void main() {
     final offenders = <String>[];
     for (final entity in directory.listSync(recursive: true)) {
       if (entity is! File || !entity.path.endsWith('.dart')) continue;
-      final chain = _escape(p.relative(entity.path));
+      final chain = _escape(relativeSourcePath(entity.path));
       if (chain != null) offenders.add(chain.join(' -> '));
     }
     expect(

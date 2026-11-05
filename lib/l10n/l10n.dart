@@ -9174,6 +9174,431 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Subscription merge`
+  String get subscriptionMerge {
+    return Intl.message(
+      'Subscription merge',
+      name: 'subscriptionMerge',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Merged subscription {index}`
+  String mergedSubscriptionLabel(Object index) {
+    return Intl.message(
+      'Merged subscription $index',
+      name: 'mergedSubscriptionLabel',
+      desc: '',
+      args: [index],
+    );
+  }
+
+  /// `Subscriptions`
+  String get mergeMembers {
+    return Intl.message(
+      'Subscriptions',
+      name: 'mergeMembers',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nodes keep this order, and the first subscription supplies the settings the merge does not rebuild.`
+  String get mergeMembersDesc {
+    return Intl.message(
+      'Nodes keep this order, and the first subscription supplies the settings the merge does not rebuild.',
+      name: 'mergeMembersDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add a subscription`
+  String get mergeAddMember {
+    return Intl.message(
+      'Add a subscription',
+      name: 'mergeAddMember',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add from a link`
+  String get mergeAddUrl {
+    return Intl.message(
+      'Add from a link',
+      name: 'mergeAddUrl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Downloads the subscription and joins it to this merge.`
+  String get mergeAddUrlDesc {
+    return Intl.message(
+      'Downloads the subscription and joins it to this merge.',
+      name: 'mergeAddUrlDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No subscription has joined yet`
+  String get mergeNoMembers {
+    return Intl.message(
+      'No subscription has joined yet',
+      name: 'mergeNoMembers',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A merge holds up to {count} subscriptions`
+  String mergeMemberLimit(Object count) {
+    return Intl.message(
+      'A merge holds up to $count subscriptions',
+      name: 'mergeMemberLimit',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Node tag`
+  String get mergeNodePrefix {
+    return Intl.message(
+      'Node tag',
+      name: 'mergeNodePrefix',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tagged {prefix}`
+  String mergeNodePrefixValue(Object prefix) {
+    return Intl.message(
+      'Tagged $prefix',
+      name: 'mergeNodePrefixValue',
+      desc: '',
+      args: [prefix],
+    );
+  }
+
+  /// `No tag`
+  String get mergeNodePrefixNone {
+    return Intl.message(
+      'No tag',
+      name: 'mergeNodePrefixNone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Left out of the merge: {message}`
+  String mergeMemberFailed(Object message) {
+    return Intl.message(
+      'Left out of the merge: $message',
+      name: 'mergeMemberFailed',
+      desc: '',
+      args: [message],
+    );
+  }
+
+  /// `{proxies} nodes · {duplicates} duplicates · {groups} groups`
+  String mergeReport(Object proxies, Object duplicates, Object groups) {
+    return Intl.message(
+      '$proxies nodes · $duplicates duplicates · $groups groups',
+      name: 'mergeReport',
+      desc: '',
+      args: [proxies, duplicates, groups],
+    );
+  }
+
+  /// `Merge again`
+  String get mergeRegenerate {
+    return Intl.message(
+      'Merge again',
+      name: 'mergeRegenerate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last merge`
+  String get mergeLastGenerated {
+    return Intl.message(
+      'Last merge',
+      name: 'mergeLastGenerated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Collapse the list`
+  String get mergeCollapse {
+    return Intl.message(
+      'Collapse the list',
+      name: 'mergeCollapse',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The profiles page shows only the merge; open its card to see the subscriptions.`
+  String get mergeCollapseDesc {
+    return Intl.message(
+      'The profiles page shows only the merge; open its card to see the subscriptions.',
+      name: 'mergeCollapseDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show subscriptions`
+  String get mergeExpand {
+    return Intl.message(
+      'Show subscriptions',
+      name: 'mergeExpand',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} subscriptions`
+  String mergeMembersCount(Object count) {
+    return Intl.message(
+      '$count subscriptions',
+      name: 'mergeMembersCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `This profile is merged into “{label}”. Deleting it takes it out of that merge.`
+  String mergedDeleteMemberTip(Object label) {
+    return Intl.message(
+      'This profile is merged into “$label”. Deleting it takes it out of that merge.',
+      name: 'mergedDeleteMemberTip',
+      desc: '',
+      args: [label],
+    );
+  }
+
+  /// `Hosted mode`
+  String get managedMode {
+    return Intl.message('Hosted mode', name: 'managedMode', desc: '', args: []);
+  }
+
+  /// `Every subscription passes through this script before it joins a merge, so nodes and routing are handled one way.`
+  String get managedModeDesc {
+    return Intl.message(
+      'Every subscription passes through this script before it joins a merge, so nodes and routing are handled one way.',
+      name: 'managedModeDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hosted script`
+  String get managedScript {
+    return Intl.message(
+      'Hosted script',
+      name: 'managedScript',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Script source`
+  String get managedScriptSource {
+    return Intl.message(
+      'Script source',
+      name: 'managedScriptSource',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter an http or https link`
+  String get managedScriptSourceInvalid {
+    return Intl.message(
+      'Enter an http or https link',
+      name: 'managedScriptSourceInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not set`
+  String get managedScriptUnset {
+    return Intl.message(
+      'Not set',
+      name: 'managedScriptUnset',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edited here`
+  String get managedScriptLocal {
+    return Intl.message(
+      'Edited here',
+      name: 'managedScriptLocal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No script yet`
+  String get managedScriptEmpty {
+    return Intl.message(
+      'No script yet',
+      name: 'managedScriptEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Version {version}`
+  String managedScriptVersion(Object version) {
+    return Intl.message(
+      'Version $version',
+      name: 'managedScriptVersion',
+      desc: '',
+      args: [version],
+    );
+  }
+
+  /// `No version declared`
+  String get managedScriptVersionNone {
+    return Intl.message(
+      'No version declared',
+      name: 'managedScriptVersionNone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sync from the source`
+  String get managedScriptSync {
+    return Intl.message(
+      'Sync from the source',
+      name: 'managedScriptSync',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Downloads the script and merges every subscription again.`
+  String get managedScriptSyncDesc {
+    return Intl.message(
+      'Downloads the script and merges every subscription again.',
+      name: 'managedScriptSyncDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set a source`
+  String get managedScriptEnable {
+    return Intl.message(
+      'Set a source',
+      name: 'managedScriptEnable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear the script`
+  String get managedScriptRestore {
+    return Intl.message(
+      'Clear the script',
+      name: 'managedScriptRestore',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Merging then only dedupes nodes and joins groups; no hosted script runs.`
+  String get managedScriptRestoreTip {
+    return Intl.message(
+      'Merging then only dedupes nodes and joins groups; no hosted script runs.',
+      name: 'managedScriptRestoreTip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Synced version {version}`
+  String managedScriptSynced(Object version) {
+    return Intl.message(
+      'Synced version $version',
+      name: 'managedScriptSynced',
+      desc: '',
+      args: [version],
+    );
+  }
+
+  /// `Script switches`
+  String get managedScriptOptions {
+    return Intl.message(
+      'Script switches',
+      name: 'managedScriptOptions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} switches`
+  String managedScriptOptionsCount(Object count) {
+    return Intl.message(
+      '$count switches',
+      name: 'managedScriptOptionsCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Merge every subscription again`
+  String get managedScriptRegenerate {
+    return Intl.message(
+      'Merge every subscription again',
+      name: 'managedScriptRegenerate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Applies the script and switch changes to all merges.`
+  String get managedScriptRegenerateDesc {
+    return Intl.message(
+      'Applies the script and switch changes to all merges.',
+      name: 'managedScriptRegenerateDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Move up`
+  String get mergeMoveUp {
+    return Intl.message('Move up', name: 'mergeMoveUp', desc: '', args: []);
+  }
+
+  /// `Move down`
+  String get mergeMoveDown {
+    return Intl.message('Move down', name: 'mergeMoveDown', desc: '', args: []);
+  }
+
+  /// `Hide subscriptions`
+  String get mergeCollapseMembers {
+    return Intl.message(
+      'Hide subscriptions',
+      name: 'mergeCollapseMembers',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

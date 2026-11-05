@@ -263,7 +263,7 @@ class _ClashProvidersViewState extends ConsumerState<ClashProvidersView> {
     if (res != true) {
       return;
     }
-    _providersAction.delProvider(provider);
+    unawaited(_providersAction.delProvider(provider));
   }
 
   bool _isEditable(ClashProvider provider) =>

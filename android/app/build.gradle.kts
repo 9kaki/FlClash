@@ -47,6 +47,26 @@ if (releaseStoreFile.exists() && !hasReleaseSigning) {
     )
 }
 
+/// `flutter build --dart-define[-from-file]` reaches Gradle as one base64 list,
+/// and APP_ENV is the same value that decides the PRE banner in Dart. A build
+/// that is not stable carries it in the package id too, so it installs beside a
+/// release instead of over it.
+fun parseDartDefines(raw: String?): Map<String, String> {
+    if (raw.isNullOrEmpty()) return emptyMap()
+    return raw.split(",").mapNotNull { entry ->
+        runCatching {
+            String(java.util.Base64.getDecoder().decode(entry), Charsets.UTF_8)
+        }.getOrNull()
+    }.mapNotNull { pair ->
+        val separator = pair.indexOf('=')
+        if (separator <= 0) null
+        else pair.substring(0, separator) to pair.substring(separator + 1)
+    }.toMap()
+}
+
+val dartDefines = parseDartDefines(project.findProperty("dart-defines") as String?)
+val appEnv = dartDefines["APP_ENV"] ?: "pre"
+
 android {
     namespace = "com.follow.clash"
     compileSdk = libs.versions.compileSdk.get().toInt()
@@ -95,7 +115,15 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             } else {
                 signingConfig = signingConfigs.getByName("debug")
-                applicationIdSuffix = ".dev"
+            }
+            // An unsigned build keeps the .dev id; every build that is not
+            // stable adds .pre, so a pre apk and a release apk coexist.
+            val suffixes = buildList {
+                if (!hasReleaseSigning) add("dev")
+                if (appEnv != "stable") add("pre")
+            }
+            if (suffixes.isNotEmpty()) {
+                applicationIdSuffix = suffixes.joinToString(".", prefix = ".")
             }
 
             proguardFiles(

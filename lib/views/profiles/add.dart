@@ -7,6 +7,7 @@ import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/profiles/custom/custom.dart';
+import 'package:fl_clash/views/profiles/merge.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -124,6 +125,10 @@ class AddProfileMenu extends ConsumerWidget {
     );
   }
 
+  void _toMerge(BuildContext context) {
+    unawaited(BaseNavigator.push(context, const MergeProfileView()));
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
@@ -157,6 +162,11 @@ class AddProfileMenu extends ConsumerWidget {
             glyph: AppGlyphs.customize,
             label: appLocalizations.customProfile,
             onPressed: () => _toAddCustom(context, ref),
+          ),
+          PopupMenuItem(
+            glyph: AppGlyphs.layers,
+            label: appLocalizations.subscriptionMerge,
+            onPressed: () => _toMerge(context),
           ),
         ],
       ),
