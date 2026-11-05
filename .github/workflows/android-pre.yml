@@ -1,0 +1,177 @@
+name: android apk (pre)
+
+# A pre build installs beside the release and never publishes one.
+on:
+  push:
+    branches:
+      - feat/subscription-merge
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-pre-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Keep these in step with android-apk.yml.
+  FLUTTER_VERSION: '3.47.6'
+  NDK_VERSION: r28c
+
+jobs:
+  apk:
+    name: Build pre APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      KEYSTORE: ${{ secrets.KEYSTORE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Report signing mode
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "KEYSTORE:       ${#KEYSTORE} chars"
+          echo "KEY_ALIAS:      ${#KEY_ALIAS} chars"
+          echo "STORE_PASSWORD: ${#STORE_PASSWORD} chars"
+          echo "KEY_PASSWORD:   ${#KEY_PASSWORD} chars"
+          missing=()
+          for name in KEYSTORE KEY_ALIAS STORE_PASSWORD KEY_PASSWORD; do
+            [[ -n "${!name:-}" ]] || missing+=("$name")
+          done
+          if [[ "${#missing[@]}" -gt 0 ]]; then
+            echo "::error::${missing[*]} resolve to empty strings. Add them under Settings -> Secrets and variables -> Actions -> Repository secrets; secrets stored in an Environment are not visible to this job."
+            exit 1
+          fi
+          echo "Signed build: the apk carries com.follow.myclash.pre."
+
+      - name: Setup Android signing
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          echo "$KEYSTORE" | base64 --decode > android/app/keystore.jks
+          {
+            echo "storeFile=keystore.jks"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+          echo "keystore: $(wc -c < android/app/keystore.jks) bytes"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Setup NDK
+        id: ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: true
+          link-to-sdk: true
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Fetch CA certificates
+        shell: bash
+        env:
+          CA_BUNDLE: cacert-2026-09-25.pem
+          CA_BUNDLE_SHA256: a41b5d356aea97a529fe27e0f7316d2f9d946d75927476cf9cf1b90637d00505
+        run: |
+          bundle=core/Clash.Meta/component/ca/ca-certificates.crt
+          mkdir -p "$(dirname "$bundle")"
+          curl -fsSL --retry 3 -o "$bundle" "https://curl.se/ca/$CA_BUNDLE"
+          echo "$CA_BUNDLE_SHA256  $bundle" | sha256sum -c -
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Put pub global executables on PATH
+        run: echo "${PUB_CACHE:-$HOME/.pub-cache}/bin" >> "$GITHUB_PATH"
+
+      - name: Verify the signing key
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          keytool -list -v -alias "$KEY_ALIAS" \
+            -keystore android/app/keystore.jks \
+            -storepass "$STORE_PASSWORD"
+
+      - name: Build APK
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: |
+          echo "APP_ENV=pre" >> "$GITHUB_ENV"
+          dart setup.dart android --env pre
+
+      - name: Verify package id
+        id: package
+        run: |
+          build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          for apk in dist/*.apk; do
+            echo "$apk"
+            "$build_tools/aapt" dump badging "$apk" | sed -n '1p'
+          done
+          first="$(ls dist/*.apk | head -1)"
+          package="$("$build_tools/aapt" dump badging "$first" |
+            sed -n "1s/^package: name='\([^']*\)'.*/\1/p")"
+          "$build_tools/apksigner" verify --print-certs "$first" |
+            grep -E "certificate DN|SHA-256" | head -2
+
+          base="$(basename "$first" .apk)"
+          if [[ "$(ls dist/*.apk | wc -l)" != '1' ]]; then
+            base="$(printf '%s' "$base" | sed -E 's/-android-.*$/-android-all-abi/')"
+          fi
+          # Downloads as a zip named after the artifact, so no .apk ending.
+          artifact="$base-pre-$(printf '%s' "$GITHUB_SHA" | cut -c1-7)-apk"
+          apk_name="$(basename "$first")"
+          apk_sha="$(sha256sum "$first" | cut -d' ' -f1)"
+
+          echo "package=$package" >> "$GITHUB_OUTPUT"
+          echo "artifact=$artifact" >> "$GITHUB_OUTPUT"
+          echo "**Package id:** \`$package\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Download:** \`$artifact.zip\`, holding \`$apk_name\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**apk sha256:** \`$apk_sha\`" >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$package" != *.pre ]]; then
+            echo "::error::Expected a package id ending in .pre, got $package. The APP_ENV=$APP_ENV dart define did not reach Gradle."
+            exit 1
+          fi
+
+      - name: Show artifacts
+        run: ls -lh dist && sha256sum dist/*.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.artifact }}
+          path: dist/*.apk
+          if-no-files-found: error
+          retention-days: 14
