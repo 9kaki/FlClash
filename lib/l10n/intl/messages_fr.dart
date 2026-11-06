@@ -1451,7 +1451,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "mergeMemberFailed": m54,
     "mergeMemberLimit": m55,
-    "mergeMembers": MessageLookupByLibrary.simpleMessage("Abonnements"),
+    "mergeMembers": MessageLookupByLibrary.simpleMessage(
+      "Abonnements fusionnés",
+    ),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
       "Les nœuds sont fusionnés dans cet ordre ; les nœuds identiques ne sont gardés qu’une fois, l’abonnement le plus tôt prioritaire.",

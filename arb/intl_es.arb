@@ -1090,7 +1090,7 @@
   "longTermSubscription": "Largo plazo",
   "subscriptionMerge": "Fusión de suscripciones",
   "mergedSubscriptionLabel": "Suscripción fusionada {index}",
-  "mergeMembers": "Suscripciones",
+  "mergeMembers": "Suscripciones fusionadas",
   "mergeMembersDesc": "Los nodos se fusionan en este orden; los idénticos se conservan una vez y gana la suscripción anterior.",
   "mergeAddMember": "Añadir una suscripción",
   "mergeAddUrl": "Añadir desde un enlace",

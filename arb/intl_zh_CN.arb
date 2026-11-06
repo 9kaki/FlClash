@@ -1090,7 +1090,7 @@
   "longTermSubscription": "长期订阅",
   "subscriptionMerge": "订阅合并",
   "mergedSubscriptionLabel": "合并订阅{index}",
-  "mergeMembers": "合并的订阅",
+  "mergeMembers": "合并订阅",
   "mergeMembersDesc": "节点按此顺序排列并合并，内容相同的节点只保留一份，按订阅顺序优先。",
   "mergeAddMember": "添加订阅",
   "mergeAddUrl": "从链接添加",

@@ -1090,7 +1090,7 @@
   "longTermSubscription": "장기 구독",
   "subscriptionMerge": "구독 병합",
   "mergedSubscriptionLabel": "병합 구독 {index}",
-  "mergeMembers": "구독",
+  "mergeMembers": "병합된 구독",
   "mergeMembersDesc": "노드는 이 순서로 병합되며, 같은 노드는 하나만 남고 앞선 구독이 우선합니다.",
   "mergeAddMember": "구독 추가",
   "mergeAddUrl": "링크에서 추가",

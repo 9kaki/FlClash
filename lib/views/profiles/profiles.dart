@@ -396,6 +396,8 @@ class ProfileItem extends ConsumerWidget {
   /// Marks a card that a merge also uses, when the merge shows its members.
   final bool merged;
 
+  final double radius;
+
   const ProfileItem({
     super.key,
     required this.profile,
@@ -405,6 +407,7 @@ class ProfileItem extends ConsumerWidget {
     this.onToggleExpand,
     this.detail,
     this.merged = false,
+    this.radius = AppCorner.xl,
   });
 
   Future<void> _handleDeleteProfile(BuildContext context, WidgetRef ref) async {
@@ -469,20 +472,25 @@ class ProfileItem extends ConsumerWidget {
           ? '${(info.upload + info.download).traffic.show} / '
                 '${info.total.traffic.show}'
           : null;
-      return usage ?? appLocalizations.mergeMembersCount(bundle.members.length);
+      final text =
+          usage ?? appLocalizations.mergeMembersCount(bundle.members.length);
+      return merged ? _marked(context, text) : text;
     }
     final info = _subscriptionInfo;
-    if (info != null && info.usage != null) {
-      final used = info.upload + info.download;
-      return '${used.traffic.show} / ${info.total.traffic.show}';
-    }
     final appLocalizations = context.appLocalizations;
-    return switch (profile.type) {
-      ProfileType.url => appLocalizations.remote,
-      ProfileType.file => appLocalizations.local,
-      ProfileType.custom => appLocalizations.custom,
-    };
+    final text = info != null && info.usage != null
+        ? '${(info.upload + info.download).traffic.show} / '
+              '${info.total.traffic.show}'
+        : switch (profile.type) {
+            ProfileType.url => appLocalizations.remote,
+            ProfileType.file => appLocalizations.local,
+            ProfileType.custom => appLocalizations.custom,
+          };
+    return merged ? _marked(context, text) : text;
   }
+
+  String _marked(BuildContext context, String text) =>
+      '$text · ${context.appLocalizations.mergedBadge}';
 
   String? _detail(BuildContext context) {
     final bundle = profile.bundle;
@@ -710,7 +718,7 @@ class ProfileItem extends ConsumerWidget {
       menuItems: isUpdating ? null : _menuItems(context, ref),
       child: Card(
         enterActionsOnRight: true,
-        radius: AppCorner.xl,
+        radius: radius,
         isSelected: isSelected,
         onPressed: () {
           onChanged(profile.id);
@@ -737,7 +745,6 @@ class ProfileItem extends ConsumerWidget {
             permanent: (subscriptionInfo?.total ?? 0) > 0,
             subtitle: _subtitle(context),
             detail: _detail(context),
-            merged: merged,
           ),
         ),
       ),
@@ -752,7 +759,6 @@ class _ProfileCardTitle extends StatelessWidget {
     required this.permanent,
     required this.subtitle,
     this.detail,
-    this.merged = false,
   });
 
   final Profile profile;
@@ -760,7 +766,6 @@ class _ProfileCardTitle extends StatelessWidget {
   final bool permanent;
   final String subtitle;
   final String? detail;
-  final bool merged;
 
   @override
   Widget build(BuildContext context) {
@@ -775,25 +780,11 @@ class _ProfileCardTitle extends StatelessWidget {
           style: AppTextStyle.headline.of(context),
         ),
         const SizedBox(height: _infoGap),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 6,
-          children: [
-            Flexible(
-              child: Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyle.footnote.of(context).toLighter,
-              ),
-            ),
-            if (merged)
-              TonalChip(
-                label: context.appLocalizations.mergedBadge,
-                color: context.colorScheme.primary.opacity15,
-                foregroundColor: context.colorScheme.primary,
-              ),
-          ],
+        Text(
+          subtitle,
+          style: AppTextStyle.footnote.of(context).toLighter,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         if (detail case final detail?) ...[
           const SizedBox(height: _infoGap),
@@ -1004,15 +995,21 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
                     visibleCount: members.length.toDouble(),
                     child: SizedBox(
                       height: _profileItemHeight,
-                      child: ProfileItem(
-                        key: ValueKey('bundle_member_${members[index].id}'),
-                        profile: members[index],
-                        groupValue: widget.currentProfileId,
-                        onChanged: (profileId) {
-                          if (profileId != null) {
-                            widget.onSelect(profileId);
-                          }
-                        },
+                      // One level in, so a member is a card on the merge's
+                      // own card rather than another sheet of white.
+                      child: SurfaceScope(
+                        level: SurfaceLevel.card,
+                        child: ProfileItem(
+                          key: ValueKey('bundle_member_${members[index].id}'),
+                          profile: members[index],
+                          radius: AppCorner.md,
+                          groupValue: widget.currentProfileId,
+                          onChanged: (profileId) {
+                            if (profileId != null) {
+                              widget.onSelect(profileId);
+                            }
+                          },
+                        ),
                       ),
                     ),
                   ),

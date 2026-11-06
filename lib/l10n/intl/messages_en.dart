@@ -1340,7 +1340,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeLastGenerated": MessageLookupByLibrary.simpleMessage("Last merge"),
     "mergeMemberFailed": m54,
     "mergeMemberLimit": m55,
-    "mergeMembers": MessageLookupByLibrary.simpleMessage("Subscriptions"),
+    "mergeMembers": MessageLookupByLibrary.simpleMessage(
+      "Merged subscriptions",
+    ),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
       "Nodes are merged in this order; identical nodes are kept once, the earlier subscription winning.",

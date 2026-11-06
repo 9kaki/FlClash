@@ -9195,10 +9195,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Subscriptions`
+  /// `Merged subscriptions`
   String get mergeMembers {
     return Intl.message(
-      'Subscriptions',
+      'Merged subscriptions',
       name: 'mergeMembers',
       desc: '',
       args: [],

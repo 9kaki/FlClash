@@ -1090,7 +1090,7 @@
   "longTermSubscription": "Longue durée",
   "subscriptionMerge": "Fusion d’abonnements",
   "mergedSubscriptionLabel": "Abonnement fusionné {index}",
-  "mergeMembers": "Abonnements",
+  "mergeMembers": "Abonnements fusionnés",
   "mergeMembersDesc": "Les nœuds sont fusionnés dans cet ordre ; les nœuds identiques ne sont gardés qu’une fois, l’abonnement le plus tôt prioritaire.",
   "mergeAddMember": "Ajouter un abonnement",
   "mergeAddUrl": "Ajouter depuis un lien",

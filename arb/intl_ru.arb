@@ -1090,7 +1090,7 @@
   "longTermSubscription": "Бессрочно",
   "subscriptionMerge": "Слияние подписок",
   "mergedSubscriptionLabel": "Объединённая подписка {index}",
-  "mergeMembers": "Подписки",
+  "mergeMembers": "Объединённые подписки",
   "mergeMembersDesc": "Узлы сливаются в этом порядке; одинаковые узлы сохраняются один раз, приоритет у первой подписки.",
   "mergeAddMember": "Добавить подписку",
   "mergeAddUrl": "Добавить по ссылке",

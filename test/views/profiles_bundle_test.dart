@@ -198,7 +198,10 @@ void main() {
     await pumpProfiles(tester);
 
     expect(find.text('机场甲'), findsOne);
-    expect(find.text(currentAppLocalizations.mergedBadge), findsOne);
+    expect(
+      find.textContaining('· ${currentAppLocalizations.mergedBadge}'),
+      findsOne,
+    );
     expect(find.byTooltip(currentAppLocalizations.mergeExpand), findsNothing);
     expect(tester.takeException(), null);
   });
@@ -212,7 +215,10 @@ void main() {
     await pumpProfiles(tester);
 
     expect(find.text('机场甲'), findsNothing);
-    expect(find.text(currentAppLocalizations.mergedBadge), findsNothing);
+    expect(
+      find.textContaining('· ${currentAppLocalizations.mergedBadge}'),
+      findsNothing,
+    );
     expect(find.byTooltip(currentAppLocalizations.mergeExpand), findsOne);
     expect(tester.takeException(), null);
   });

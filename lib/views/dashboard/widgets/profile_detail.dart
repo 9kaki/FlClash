@@ -444,8 +444,8 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-/// What a merge is made of, one line per subscription the way the provider
-/// list shows a set of them.
+/// What a merge is made of, one row per subscription with the bar its own
+/// plan deserves, and one sync for all of them.
 class _BundleMembersSection extends ConsumerWidget {
   const _BundleMembersSection({required this.profile});
 
@@ -455,31 +455,57 @@ class _BundleMembersSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
     final profiles = ref.watch(profilesProvider);
-    final members = [
-      for (final member in profile.bundleMembers)
-        ?profiles.getProfile(member.id),
-    ];
-    if (members.isEmpty) {
+    final rows = <Widget>[];
+    for (final member in profile.bundleMembers) {
+      final target = profiles.getProfile(member.id);
+      if (target == null) {
+        continue;
+      }
+      final info = target.subscriptionInfo;
+      rows.add(
+        ListItem(
+          title: ChipTitle(
+            title: target.realLabel,
+            chip: member.proxies > 0 ? member.proxies.compact : null,
+            expire: info?.expireDate,
+            permanent: (info?.total ?? 0) > 0,
+          ),
+          subtitle: info == null || !info.hasUsage
+              ? null
+              : _MemberUsage(info: info),
+          trailing: LastUpdateTimeText(
+            lastUpdateDate: target.lastUpdateDate,
+            compact: true,
+            style: context.listCaptionStyle,
+          ),
+        ),
+      );
+    }
+    if (rows.isEmpty) {
       return const SizedBox.shrink();
     }
-    final nodes = profile.bundle?.report.proxies ?? 0;
+    final updating = ref.watch(isUpdatingProvider(profile.updatingKey));
     return generateSection(
       title: appLocalizations.mergeMembers,
-      footer: nodes > 0 ? appLocalizations.mergeProxiesCount(nodes) : null,
-      items: [
-        for (final member in members)
-          ListItem(
-            title: ChipTitle(
-              title: member.realLabel,
-              expire: member.subscriptionInfo?.expireDate,
-              permanent: (member.subscriptionInfo?.total ?? 0) > 0,
-            ),
-            subtitle: switch (member.subscriptionInfo) {
-              final info? when info.hasUsage => _MemberUsage(info: info),
-              _ => null,
-            },
-          ),
+      actions: [
+        IconButtonData(
+          glyph: AppGlyphs.sync,
+          tooltip: appLocalizations.sync,
+          isLoading: updating,
+          onPressed: updating
+              ? null
+              : () => unawaited(
+                  globalState.loadingRun(
+                    () => ref
+                        .read(bundlesActionProvider.notifier)
+                        .generateBundle(profile.id, refresh: true),
+                    tag: LoadingTag.profiles,
+                    title: appLocalizations.sync,
+                  ),
+                ),
+        ),
       ],
+      items: rows,
     );
   }
 }
@@ -503,8 +529,7 @@ class _MemberUsage extends StatelessWidget {
       children: [
         Text(
           info.total > 0
-              ? '${(share * 100).round()}% · ${used.traffic.show} / '
-                    '${info.total.traffic.show}'
+              ? '${used.traffic.show} / ${info.total.traffic.show}'
               : used.traffic.show,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

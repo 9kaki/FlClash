@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/common/managed_script.dart';
 import 'package:fl_clash/database/database.dart' hide Profiles;
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
@@ -37,9 +36,6 @@ sealed class RuleSwitches {
 
   /// Groups the build cannot do without.
   Set<String> get locked => const {};
-
-  /// The script switches shown beside these, when the profile has any.
-  ScriptSwitchSet? get scriptSet => null;
 }
 
 final class ScriptRuleSwitches extends RuleSwitches {
@@ -69,7 +65,6 @@ final class GroupRuleSwitches extends RuleSwitches {
     required this.groups,
     required this.icons,
     required this.locked,
-    this.scriptSet,
   });
 
   @override
@@ -80,28 +75,6 @@ final class GroupRuleSwitches extends RuleSwitches {
 
   @override
   final Set<String> locked;
-
-  /// The script switches a merge also answers to, so both live in one sheet.
-  @override
-  final ScriptSwitchSet? scriptSet;
-}
-
-/// A script's switches and where saving them goes: the profile's own script,
-/// or the hosted one every merge shares.
-final class ScriptSwitchSet {
-  const ScriptSwitchSet({
-    required this.values,
-    required this.groups,
-    required this.icons,
-    required this.content,
-    this.script,
-  });
-
-  final Map<String, bool> values;
-  final List<String> groups;
-  final Map<String, String> icons;
-  final String content;
-  final Script? script;
 }
 
 /// Reads whichever kind of switch the profile has, and null when the menu
@@ -113,22 +86,7 @@ Future<RuleSwitches?> loadRuleSwitches(Profile? profile) async {
   if (profile.extendType == ExtendType.script) {
     return _loadScriptSwitches(profile);
   }
-  final groups = await _loadGroupSwitches(profile);
-  if (!profile.isBundle) {
-    return groups;
-  }
-  final script = await _hostedScriptSwitches();
-  if (script == null) {
-    return groups;
-  }
-  return GroupRuleSwitches(
-    profileId: profile.id,
-    values: groups?.values ?? const {},
-    groups: groups?.groups ?? const [],
-    icons: groups?.icons ?? const {},
-    locked: groups?.locked ?? const {},
-    scriptSet: script,
-  );
+  return _loadGroupSwitches(profile);
 }
 
 Future<RuleSwitches?> _loadScriptSwitches(Profile profile) async {
@@ -218,27 +176,6 @@ Future<RuleSwitches?> _loadGroupSwitches(Profile profile) async {
   );
 }
 
-Future<ScriptSwitchSet?> _hostedScriptSwitches() async {
-  final content = await ManagedScript.content();
-  if (content == null) {
-    return null;
-  }
-  final declared = await extractRuleOptions(content);
-  if (declared.options.isEmpty) {
-    return null;
-  }
-  final stored = await ManagedScript.options();
-  return ScriptSwitchSet(
-    values: {
-      for (final entry in declared.options.entries)
-        entry.key: stored[entry.key] ?? entry.value,
-    },
-    groups: declared.groups,
-    icons: declared.icons,
-    content: content,
-  );
-}
-
 class RuleOptionsSheet extends ConsumerStatefulWidget {
   const RuleOptionsSheet({super.key, this.profileId});
 
@@ -255,8 +192,6 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
   /// What the sheet shows, and what the profile last accepted.
   Map<String, bool> _values = {};
   Map<String, bool> _saved = {};
-  Map<String, bool> _scriptValues = {};
-  Map<String, bool> _savedScript = {};
 
   String? _failure;
   bool _isLoading = true;
@@ -290,10 +225,6 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
         _switches = switches;
         _values = Map<String, bool>.of(switches?.values ?? const {});
         _saved = Map<String, bool>.of(_values);
-        _scriptValues = Map<String, bool>.of(
-          switches?.scriptSet?.values ?? const {},
-        );
-        _savedScript = Map<String, bool>.of(_scriptValues);
         _failure = null;
         _isLoading = false;
       });
@@ -315,9 +246,7 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
     }
   }
 
-  bool get _hasChanges =>
-      _switches != null &&
-      (!mapEquals(_values, _saved) || !mapEquals(_scriptValues, _savedScript));
+  bool get _hasChanges => _switches != null && !mapEquals(_values, _saved);
 
   void _handleChanged(String name, bool value) {
     setState(() => _values[name] = value);
@@ -364,12 +293,7 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
       return;
     }
     final next = Map<String, bool>.of(_values);
-    final nextScript = Map<String, bool>.of(_scriptValues);
-    final groupsChanged = !mapEquals(next, _saved);
-    final scriptSet = switches.scriptSet;
-    final scriptChanged =
-        scriptSet != null && !mapEquals(nextScript, _savedScript);
-    if (!groupsChanged && !scriptChanged) {
+    if (mapEquals(next, _saved)) {
       return;
     }
     setState(() => _isSaving = true);
@@ -389,37 +313,17 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
             switches.script.copyWith(customOptions: next),
           );
         case GroupRuleSwitches():
-          if (groupsChanged) {
-            _profilesAction.updateProfile(
-              switches.profileId,
-              (profile) => profile.copyWith(
-                disabledGroups: {
-                  for (final entry in next.entries)
-                    if (!entry.value) entry.key,
-                },
-              ),
-            );
-          }
-      }
-      if (scriptChanged) {
-        final failure = await _validateScript(
-          switches.profileId,
-          scriptSet.content,
-          nextScript,
-        );
-        if (failure != null) {
-          _handleRejected(failure);
-          return;
-        }
-        if (scriptSet.script case final script?) {
-          _scriptsAction.putScript(script.copyWith(customOptions: nextScript));
-        } else {
-          await ManagedScript.setOptions(nextScript);
-          ref.read(bundlesActionProvider.notifier).generateAll();
-        }
+          _profilesAction.updateProfile(
+            switches.profileId,
+            (profile) => profile.copyWith(
+              disabledGroups: {
+                for (final entry in next.entries)
+                  if (!entry.value) entry.key,
+              },
+            ),
+          );
       }
       _saved = next;
-      _savedScript = nextScript;
       // The page closes when this returns, so a bar on the page behind it
       // would only flash after the groups are already there.
       await _setupAction.applyProfile(silence: true);
@@ -511,39 +415,12 @@ class _RuleOptionsSheetState extends ConsumerState<RuleOptionsSheet> {
       for (final name in _values.keys)
         if (!groups.contains(name)) name,
     ];
-    final script = switches.scriptSet;
-    final scriptNames = <String>[];
-    if (script != null) {
-      for (final name in script.groups) {
-        if (_scriptValues.containsKey(name)) scriptNames.add(name);
-      }
-      for (final name in _scriptValues.keys) {
-        if (!scriptNames.contains(name)) scriptNames.add(name);
-      }
-    }
     var index = 0;
     return ListView(
       padding: const EdgeInsets.symmetric(
         horizontal: 16,
       ).copyWith(top: context.contentTopPadding, bottom: 32),
       children: [
-        // The script decides what the merge builds; its switches sit above
-        // the groups they end up shaping.
-        if (script != null && scriptNames.isNotEmpty)
-          generateSection(
-            title: appLocalizations.managedScriptOptions,
-            items: [
-              for (final name in scriptNames)
-                _buildSwitch(
-                  index: index++,
-                  name: name,
-                  value: _scriptValues[name] ?? false,
-                  icons: script.icons,
-                  onChanged: (value) =>
-                      setState(() => _scriptValues[name] = value),
-                ),
-            ],
-          ),
         if (groupNames.isNotEmpty)
           generateSection(
             title: appLocalizations.ruleOptionsGroups,

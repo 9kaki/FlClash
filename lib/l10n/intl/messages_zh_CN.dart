@@ -1043,7 +1043,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeLastGenerated": MessageLookupByLibrary.simpleMessage("上次合并"),
     "mergeMemberFailed": m54,
     "mergeMemberLimit": m55,
-    "mergeMembers": MessageLookupByLibrary.simpleMessage("合并的订阅"),
+    "mergeMembers": MessageLookupByLibrary.simpleMessage("合并订阅"),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
       "节点按此顺序排列并合并，内容相同的节点只保留一份，按订阅顺序优先。",

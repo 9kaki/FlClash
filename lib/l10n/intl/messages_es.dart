@@ -1447,7 +1447,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeLastGenerated": MessageLookupByLibrary.simpleMessage("Última fusión"),
     "mergeMemberFailed": m54,
     "mergeMemberLimit": m55,
-    "mergeMembers": MessageLookupByLibrary.simpleMessage("Suscripciones"),
+    "mergeMembers": MessageLookupByLibrary.simpleMessage(
+      "Suscripciones fusionadas",
+    ),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
       "Los nodos se fusionan en este orden; los idénticos se conservan una vez y gana la suscripción anterior.",

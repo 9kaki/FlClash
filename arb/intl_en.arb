@@ -1090,7 +1090,7 @@
   "longTermSubscription": "Long term",
   "subscriptionMerge": "Subscription merge",
   "mergedSubscriptionLabel": "Merged subscription {index}",
-  "mergeMembers": "Subscriptions",
+  "mergeMembers": "Merged subscriptions",
   "mergeMembersDesc": "Nodes are merged in this order; identical nodes are kept once, the earlier subscription winning.",
   "mergeAddMember": "Add a subscription",
   "mergeAddUrl": "Add from a link",

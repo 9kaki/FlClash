@@ -78,7 +78,7 @@ void main() {
     expect(find.text(l10n.mergeMembers), findsOne);
     expect(find.text('机场甲'), findsOne);
     expect(find.text('机场乙'), findsOne);
-    expect(find.text(l10n.mergeProxiesCount(287)), findsOne);
+    expect(find.text(l10n.mergeProxiesCount(287)), findsNothing);
     expect(tester.takeException(), null);
   });
 }

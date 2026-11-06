@@ -1090,7 +1090,7 @@
   "longTermSubscription": "長期契約",
   "subscriptionMerge": "サブスクリプション統合",
   "mergedSubscriptionLabel": "統合サブスクリプション {index}",
-  "mergeMembers": "サブスクリプション",
+  "mergeMembers": "統合サブスクリプション",
   "mergeMembersDesc": "ノードはこの順序で統合され、同一のノードは 1 つだけ残り、先のサブスクリプションが優先されます。",
   "mergeAddMember": "サブスクリプションを追加",
   "mergeAddUrl": "リンクから追加",

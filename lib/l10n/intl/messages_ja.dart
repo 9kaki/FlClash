@@ -1149,7 +1149,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeLastGenerated": MessageLookupByLibrary.simpleMessage("前回の統合"),
     "mergeMemberFailed": m54,
     "mergeMemberLimit": m55,
-    "mergeMembers": MessageLookupByLibrary.simpleMessage("サブスクリプション"),
+    "mergeMembers": MessageLookupByLibrary.simpleMessage("統合サブスクリプション"),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
       "ノードはこの順序で統合され、同一のノードは 1 つだけ残り、先のサブスクリプションが優先されます。",

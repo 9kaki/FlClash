@@ -1130,7 +1130,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeLastGenerated": MessageLookupByLibrary.simpleMessage("마지막 병합"),
     "mergeMemberFailed": m54,
     "mergeMemberLimit": m55,
-    "mergeMembers": MessageLookupByLibrary.simpleMessage("구독"),
+    "mergeMembers": MessageLookupByLibrary.simpleMessage("병합된 구독"),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
       "노드는 이 순서로 병합되며, 같은 노드는 하나만 남고 앞선 구독이 우선합니다.",
