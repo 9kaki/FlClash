@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/managed_script.dart';
+import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/config/managed_mode.dart';
@@ -38,8 +40,35 @@ String _probeAnswer({Map<String, String> icons = const {'Emby': _icon}}) {
   });
 }
 
+Profile _profile(int id, String label) => Profile(
+  id: id,
+  type: ProfileType.url,
+  label: label,
+  url: 'https://$id.example.com/sub',
+  autoUpdateDuration: defaultUpdateDuration,
+);
+
+Profile _bundle(int id) => Profile(
+  id: id,
+  label: '合并订阅A',
+  autoUpdateDuration: defaultUpdateDuration,
+  bundle: const ProfileBundle(members: [BundleMember(id: 1)]),
+);
+
 void main() {
   late ProviderContainer container;
+
+  ProviderContainer profilesContainer(List<Profile> profiles) {
+    final local = ProviderContainer(
+      overrides: [
+        profilesProvider.overrideWith(() => TestProfiles(profiles)),
+        viewSizeProvider.overrideWithBuild((_, _) => const Size(1000, 1200)),
+      ],
+    );
+    globalState.container = local;
+    addTearDown(local.dispose);
+    return local;
+  }
 
   setUp(() async {
     final home = Directory.systemTemp.createTempSync('managed_options');
@@ -117,11 +146,12 @@ void main() {
   });
 
   testWidgets('a merge editor opens the same switches', (tester) async {
+    final local = profilesContainer([_bundle(9)]);
     sizeView(tester, size: const Size(400, 900));
     await tester.pumpWidget(
       UncontrolledProviderScope(
-        container: container,
-        child: const TestApp(child: ManagedScriptSection()),
+        container: local,
+        child: const TestApp(child: ManagedScriptSection(profileId: 9)),
       ),
     );
     await settle(tester, find.text(currentAppLocalizations.ruleOptions));
@@ -155,6 +185,48 @@ void main() {
     expect(switches, hasLength(3));
     expect(switches[0].value, isTrue);
     expect(switches[1].value, isFalse);
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('a subscription reads its own groups, a merge the hosted ones', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      final path = await appPath.getProfilePath('1');
+      await File(path).create(recursive: true);
+      await File(path).writeAsString('''
+proxy-groups:
+  - name: 地区组
+    type: select
+    proxies: [DIRECT]
+''');
+    });
+    final local = profilesContainer([_profile(1, '机场甲'), _bundle(9)]);
+    sizeView(tester);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: local,
+        child: const TestApp(child: ManagedOptionsView(profileId: 1)),
+      ),
+    );
+    await settle(tester, find.text('地区组'));
+    await pumpFrames(tester);
+
+    expect(find.text('地区组'), findsOne);
+    expect(find.text('Emby'), findsNothing);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: local,
+        child: const TestApp(child: ManagedOptionsView(profileId: 9)),
+      ),
+    );
+    await settle(tester, find.text('Emby'));
+    await pumpFrames(tester);
+
+    expect(find.text('Emby'), findsOne);
+    expect(find.text('地区组'), findsNothing);
     expect(tester.takeException(), null);
   });
 

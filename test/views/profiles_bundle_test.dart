@@ -244,6 +244,32 @@ void main() {
     expect(find.byType(SelectionBadge), findsOne);
   });
 
+  testWidgets('using a member keeps the order the profiles were in', (
+    tester,
+  ) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _url(2, '机场乙'),
+      _bundle(const [
+        BundleMember(id: 1),
+        BundleMember(id: 2),
+      ], collapsed: false),
+    ]);
+
+    await pumpProfiles(tester);
+    await tester.tap(find.text('机场乙'));
+    await tester.pumpAndSettle();
+
+    final labels = [
+      for (final item in tester.widgetList<ProfileItem>(
+        find.byType(ProfileItem),
+      ))
+        item.profile.realLabel,
+    ];
+    expect(labels, ['机场甲', '机场乙', '合并订阅1']);
+    expect(tester.takeException(), null);
+  });
+
   testWidgets('long pressing a member opens the profile menu', (tester) async {
     setUpProfiles(tester, [
       _url(1, '机场甲'),

@@ -264,7 +264,10 @@ class _ManagedModeViewState extends ConsumerState<ManagedModeView> {
 
 /// The merge page's own view of the script, so the two entries agree.
 class ManagedScriptSection extends ConsumerStatefulWidget {
-  const ManagedScriptSection({super.key});
+  const ManagedScriptSection({super.key, this.profileId});
+
+  /// The config this section edits, whose own switches the row opens.
+  final int? profileId;
 
   @override
   ConsumerState<ManagedScriptSection> createState() =>
@@ -314,22 +317,23 @@ class _ManagedScriptSectionState extends ConsumerState<ManagedScriptSection> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final options =
-        ref.watch(managedOptionsProvider).value?.values ??
-        const <String, bool>{};
+    final switches = ref.watch(ruleSwitchesProvider(widget.profileId)).value;
     return generateSection(
       title: appLocalizations.managedMode,
       footer: appLocalizations.managedModeDesc,
       items: [
         _buildRow(),
-        if (options.isNotEmpty)
+        if (switches != null && switches.values.isNotEmpty)
           ListItem(
             leading: const GlyphIcon(AppGlyphs.toggleOn),
             title: Text(appLocalizations.ruleOptions),
             subtitle: Text(
-              appLocalizations.managedScriptOptionsCount(options.length),
+              appLocalizations.managedScriptOptionsCount(
+                switches.values.length,
+              ),
             ),
-            onTap: () => showManagedOptions(context),
+            onTap: () =>
+                showManagedOptions(context, profileId: widget.profileId),
           ),
       ],
     );

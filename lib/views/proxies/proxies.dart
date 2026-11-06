@@ -48,7 +48,10 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
           glyph: AppGlyphs.toggle,
           label: appLocalizations.ruleOptions,
           onPressed: () {
-            showManagedOptions(context);
+            showManagedOptions(
+              context,
+              profileId: ref.read(currentProfileIdProvider),
+            );
           },
         ),
       _optionsMenuItem(
@@ -163,8 +166,10 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   @override
   Widget build(BuildContext context) {
     final style = ref.watch(proxiesStyleSettingProvider);
+    final profileId = ref.watch(currentProfileIdProvider);
     final hasRuleSwitches =
-        ref.watch(managedOptionsProvider).value?.values.isNotEmpty ?? false;
+        ref.watch(ruleSwitchesProvider(profileId)).value?.values.isNotEmpty ??
+        false;
     final isLoading = ref.watch(loadingProvider(LoadingTag.proxies));
     final picker = widget.picker;
     final primaryAction = _buildPrimaryAction();

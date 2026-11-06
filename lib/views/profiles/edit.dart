@@ -10,6 +10,7 @@ import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/core.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/views/config/managed_options.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/services.dart';
@@ -343,6 +344,8 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
           ),
         ],
       ),
+      if (widget.profile.type != ProfileType.custom)
+        RuleOptionsItem(profileId: widget.profile.id),
     ];
     return FocusTraversalGroup(
       policy: PageTraversalPolicy(),

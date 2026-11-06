@@ -3730,16 +3730,12 @@ final class ProfileProvidersProvider
 
 String _$profileProvidersHash() => r'689856f32a4b40e6a26b1eedd16db418d140371a';
 
-/// One source of truth for the hosted script's switches: the proxies page,
-/// the hosted-mode page and a merge's editor all read this, so a switch set in
-/// one of them is what the other two show.
+/// The hosted script's switches, read once: every entry shows what this holds.
 
 @ProviderFor(managedOptions)
 final managedOptionsProvider = ManagedOptionsProvider._();
 
-/// One source of truth for the hosted script's switches: the proxies page,
-/// the hosted-mode page and a merge's editor all read this, so a switch set in
-/// one of them is what the other two show.
+/// The hosted script's switches, read once: every entry shows what this holds.
 
 final class ManagedOptionsProvider
     extends
@@ -3749,9 +3745,7 @@ final class ManagedOptionsProvider
           FutureOr<ManagedOptions>
         >
     with $FutureModifier<ManagedOptions>, $FutureProvider<ManagedOptions> {
-  /// One source of truth for the hosted script's switches: the proxies page,
-  /// the hosted-mode page and a merge's editor all read this, so a switch set in
-  /// one of them is what the other two show.
+  /// The hosted script's switches, read once: every entry shows what this holds.
   ManagedOptionsProvider._()
     : super(
         from: null,
@@ -3779,3 +3773,97 @@ final class ManagedOptionsProvider
 }
 
 String _$managedOptionsHash() => r'c9459c1d92891e207b05b1bed842a63b5aa770b9';
+
+/// A config's own switches: a merge answers with the hosted defaults, a
+/// subscription with what its own file or script declares, and null names the
+/// hosted defaults themselves.
+
+@ProviderFor(ruleSwitches)
+final ruleSwitchesProvider = RuleSwitchesFamily._();
+
+/// A config's own switches: a merge answers with the hosted defaults, a
+/// subscription with what its own file or script declares, and null names the
+/// hosted defaults themselves.
+
+final class RuleSwitchesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<RuleSwitchSet?>,
+          RuleSwitchSet?,
+          FutureOr<RuleSwitchSet?>
+        >
+    with $FutureModifier<RuleSwitchSet?>, $FutureProvider<RuleSwitchSet?> {
+  /// A config's own switches: a merge answers with the hosted defaults, a
+  /// subscription with what its own file or script declares, and null names the
+  /// hosted defaults themselves.
+  RuleSwitchesProvider._({
+    required RuleSwitchesFamily super.from,
+    required int? super.argument,
+  }) : super(
+         retry: null,
+         name: r'ruleSwitchesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$ruleSwitchesHash();
+
+  @override
+  String toString() {
+    return r'ruleSwitchesProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<RuleSwitchSet?> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<RuleSwitchSet?> create(Ref ref) {
+    final argument = this.argument as int?;
+    return ruleSwitches(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is RuleSwitchesProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$ruleSwitchesHash() => r'ce2b4cd59b9488cad39c9f81b71fdd63a182cdbc';
+
+/// A config's own switches: a merge answers with the hosted defaults, a
+/// subscription with what its own file or script declares, and null names the
+/// hosted defaults themselves.
+
+final class RuleSwitchesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<RuleSwitchSet?>, int?> {
+  RuleSwitchesFamily._()
+    : super(
+        retry: null,
+        name: r'ruleSwitchesProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// A config's own switches: a merge answers with the hosted defaults, a
+  /// subscription with what its own file or script declares, and null names the
+  /// hosted defaults themselves.
+
+  RuleSwitchesProvider call(int? profileId) =>
+      RuleSwitchesProvider._(argument: profileId, from: this);
+
+  @override
+  String toString() => r'ruleSwitchesProvider';
+}

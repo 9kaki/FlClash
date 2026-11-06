@@ -251,6 +251,7 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
     );
     final ownerIndex = visible.indexWhere(
       (profile) =>
+          profile.bundle?.collapsed == true &&
           profile.bundleMembers.any((member) => member.id == currentProfileId),
     );
     if (memberIndex == -1 ||

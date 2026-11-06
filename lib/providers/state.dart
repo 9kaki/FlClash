@@ -29,5 +29,6 @@ part 'state/system.dart';
 part 'state/theme.dart';
 part 'state/profile.dart';
 part 'state/managed.dart';
+part 'state/rule_options.dart';
 part 'state/custom.dart';
 part 'state/custom_import.dart';
