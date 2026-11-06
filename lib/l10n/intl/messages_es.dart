@@ -166,8 +166,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m58(count) => "${count} nodos";
 
-  static String m59(proxies, duplicates, groups) =>
-      "${proxies} nodos · ${duplicates} duplicados · ${groups} grupos";
+  static String m59(proxies, duplicates, members) =>
+      "${proxies} nodos · ${duplicates} duplicados · ${members} suscripciones";
 
   static String m60(label) =>
       "Este perfil está fusionado en «${label}». Al eliminarlo sale de esa fusión.";

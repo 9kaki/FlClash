@@ -144,8 +144,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m58(count) => "${count} 个节点";
 
-  static String m59(proxies, duplicates, groups) =>
-      "${proxies} 个节点 · ${duplicates} 个重复 · ${groups} 个策略组";
+  static String m59(proxies, duplicates, members) =>
+      "${proxies} 个节点 · ${duplicates} 个重复 · ${members} 个订阅";
 
   static String m60(label) => "该订阅已合并到「${label}」，删除后会从该合并中移除。";
 

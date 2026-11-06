@@ -145,8 +145,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m58(count) => "${count} ノード";
 
-  static String m59(proxies, duplicates, groups) =>
-      "${proxies} ノード · ${duplicates} 重複 · ${groups} グループ";
+  static String m59(proxies, duplicates, members) =>
+      "${proxies} ノード · ${duplicates} 重複 · ${members} サブスクリプション";
 
   static String m60(label) => "このプロファイルは「${label}」に統合されています。削除するとその統合から外れます。";
 

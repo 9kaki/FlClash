@@ -9305,13 +9305,13 @@ class AppLocalizations {
     );
   }
 
-  /// `{proxies} nodes · {duplicates} duplicates · {groups} groups`
-  String mergeReport(Object proxies, Object duplicates, Object groups) {
+  /// `{proxies} nodes · {duplicates} duplicates · {members} subscriptions`
+  String mergeReport(Object proxies, Object duplicates, Object members) {
     return Intl.message(
-      '$proxies nodes · $duplicates duplicates · $groups groups',
+      '$proxies nodes · $duplicates duplicates · $members subscriptions',
       name: 'mergeReport',
       desc: '',
-      args: [proxies, duplicates, groups],
+      args: [proxies, duplicates, members],
     );
   }
 

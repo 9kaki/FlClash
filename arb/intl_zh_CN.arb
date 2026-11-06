@@ -1101,7 +1101,7 @@
   "mergeNodePrefixValue": "标记为 {prefix}",
   "mergeNodePrefixNone": "不加标记",
   "mergeMemberFailed": "未参与合并：{message}",
-  "mergeReport": "{proxies} 个节点 · {duplicates} 个重复 · {groups} 个策略组",
+  "mergeReport": "{proxies} 个节点 · {duplicates} 个重复 · {members} 个订阅",
   "mergeRegenerate": "重新合并",
   "mergeLastGenerated": "上次合并",
   "mergeCollapse": "在列表中折叠",

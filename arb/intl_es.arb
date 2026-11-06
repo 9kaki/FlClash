@@ -1101,7 +1101,7 @@
   "mergeNodePrefixValue": "Etiquetado {prefix}",
   "mergeNodePrefixNone": "Sin etiqueta",
   "mergeMemberFailed": "Fuera de la fusión: {message}",
-  "mergeReport": "{proxies} nodos · {duplicates} duplicados · {groups} grupos",
+  "mergeReport": "{proxies} nodos · {duplicates} duplicados · {members} suscripciones",
   "mergeRegenerate": "Fusionar de nuevo",
   "mergeLastGenerated": "Última fusión",
   "mergeCollapse": "Contraer la lista",

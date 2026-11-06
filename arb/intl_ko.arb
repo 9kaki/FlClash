@@ -1101,7 +1101,7 @@
   "mergeNodePrefixValue": "{prefix} 표시",
   "mergeNodePrefixNone": "태그 없음",
   "mergeMemberFailed": "병합에서 제외됨: {message}",
-  "mergeReport": "{proxies}개 노드 · {duplicates}개 중복 · {groups}개 그룹",
+  "mergeReport": "{proxies}개 노드 · {duplicates}개 중복 · 구독 {members}개",
   "mergeRegenerate": "다시 병합",
   "mergeLastGenerated": "마지막 병합",
   "mergeCollapse": "목록에서 접기",

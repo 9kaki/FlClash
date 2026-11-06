@@ -1101,7 +1101,7 @@
   "mergeNodePrefixValue": "{prefix} と表示",
   "mergeNodePrefixNone": "タグなし",
   "mergeMemberFailed": "統合から除外：{message}",
-  "mergeReport": "{proxies} ノード · {duplicates} 重複 · {groups} グループ",
+  "mergeReport": "{proxies} ノード · {duplicates} 重複 · {members} サブスクリプション",
   "mergeRegenerate": "再統合",
   "mergeLastGenerated": "前回の統合",
   "mergeCollapse": "一覧で折りたたむ",

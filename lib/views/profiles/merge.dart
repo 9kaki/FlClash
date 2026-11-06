@@ -391,7 +391,7 @@ class _MergeProfileViewState extends ConsumerState<MergeProfileView> {
             appLocalizations.mergeReport(
               report.proxies,
               report.duplicates,
-              report.groups,
+              profile.bundleMembers.length,
             ),
           ),
           LastUpdateTimeText(lastUpdateDate: generated),

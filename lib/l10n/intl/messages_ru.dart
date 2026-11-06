@@ -162,8 +162,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m58(count) => "${count} узлов";
 
-  static String m59(proxies, duplicates, groups) =>
-      "${proxies} узлов · ${duplicates} дубликатов · ${groups} групп";
+  static String m59(proxies, duplicates, members) =>
+      "${proxies} узлов · ${duplicates} дубликатов · подписок: ${members}";
 
   static String m60(label) =>
       "Этот профиль входит в «${label}». Удаление уберёт его из этого слияния.";

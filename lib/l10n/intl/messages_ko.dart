@@ -146,8 +146,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m58(count) => "${count}개 노드";
 
-  static String m59(proxies, duplicates, groups) =>
-      "${proxies}개 노드 · ${duplicates}개 중복 · ${groups}개 그룹";
+  static String m59(proxies, duplicates, members) =>
+      "${proxies}개 노드 · ${duplicates}개 중복 · 구독 ${members}개";
 
   static String m60(label) =>
       "이 프로필은 \'${label}\'에 병합되어 있습니다. 삭제하면 해당 병합에서 빠집니다.";

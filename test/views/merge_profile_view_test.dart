@@ -109,7 +109,7 @@ void main() {
 
     final l10n = currentAppLocalizations;
     expect(find.text(l10n.mergeLastGenerated), findsOne);
-    expect(find.text(l10n.mergeReport(12, 3, 4)), findsOne);
+    expect(find.text(l10n.mergeReport(12, 3, 1)), findsOne);
     expect(tester.takeException(), null);
   });
 

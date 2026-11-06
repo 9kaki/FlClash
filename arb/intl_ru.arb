@@ -1101,7 +1101,7 @@
   "mergeNodePrefixValue": "С меткой {prefix}",
   "mergeNodePrefixNone": "Без метки",
   "mergeMemberFailed": "Не вошла в слияние: {message}",
-  "mergeReport": "{proxies} узлов · {duplicates} дубликатов · {groups} групп",
+  "mergeReport": "{proxies} узлов · {duplicates} дубликатов · подписок: {members}",
   "mergeRegenerate": "Слить снова",
   "mergeLastGenerated": "Последнее слияние",
   "mergeCollapse": "Свернуть список",

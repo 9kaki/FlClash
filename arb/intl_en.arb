@@ -1101,7 +1101,7 @@
   "mergeNodePrefixValue": "Tagged {prefix}",
   "mergeNodePrefixNone": "No tag",
   "mergeMemberFailed": "Left out of the merge: {message}",
-  "mergeReport": "{proxies} nodes · {duplicates} duplicates · {groups} groups",
+  "mergeReport": "{proxies} nodes · {duplicates} duplicates · {members} subscriptions",
   "mergeRegenerate": "Merge again",
   "mergeLastGenerated": "Last merge",
   "mergeCollapse": "Collapse the list",

@@ -162,8 +162,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m58(count) => "${count} nodes";
 
-  static String m59(proxies, duplicates, groups) =>
-      "${proxies} nodes · ${duplicates} duplicates · ${groups} groups";
+  static String m59(proxies, duplicates, members) =>
+      "${proxies} nodes · ${duplicates} duplicates · ${members} subscriptions";
 
   static String m60(label) =>
       "This profile is merged into “${label}”. Deleting it takes it out of that merge.";
