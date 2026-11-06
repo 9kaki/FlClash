@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
@@ -10,7 +8,7 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'rule_options.dart';
+import '../config/managed_options.dart';
 import 'tab.dart';
 
 class ProxiesView extends ConsumerStatefulWidget {
@@ -32,9 +30,6 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
   late final _tabView = ProxiesTabView(key: _proxiesTabKey);
   bool _isTab = false;
 
-  /// Decided off the profile: a script must be asked, a YAML parsed.
-  bool _hasRuleSwitches = false;
-
   void _updateStyle(
     ProxiesStyleProps Function(ProxiesStyleProps state) update,
   ) {
@@ -43,16 +38,17 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
 
   List<PopupMenuItem> _buildMenuItems(
     BuildContext context,
-    ProxiesStyleProps style,
-  ) {
+    ProxiesStyleProps style, {
+    required bool hasRuleSwitches,
+  }) {
     final appLocalizations = context.appLocalizations;
     return [
-      if (_hasRuleSwitches)
+      if (hasRuleSwitches)
         PopupMenuItem(
           glyph: AppGlyphs.toggle,
           label: appLocalizations.ruleOptions,
           onPressed: () {
-            showRuleOptionsSheet(context);
+            showManagedOptions(context);
           },
         ),
       _optionsMenuItem(
@@ -162,30 +158,13 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       },
       fireImmediately: true,
     );
-    ref.listenManual(
-      currentProfileProvider,
-      (_, profile) => unawaited(_resolveRuleSwitches(profile)),
-      fireImmediately: true,
-    );
-  }
-
-  Future<void> _resolveRuleSwitches(Profile? profile) async {
-    final bool available;
-    try {
-      available = await loadRuleSwitches(profile) != null;
-    } catch (error) {
-      commonPrint.log('rule switches could not be resolved: $error');
-      return;
-    }
-    if (!mounted || available == _hasRuleSwitches) {
-      return;
-    }
-    setState(() => _hasRuleSwitches = available);
   }
 
   @override
   Widget build(BuildContext context) {
     final style = ref.watch(proxiesStyleSettingProvider);
+    final hasRuleSwitches =
+        ref.watch(managedOptionsProvider).value?.values.isNotEmpty ?? false;
     final isLoading = ref.watch(loadingProvider(LoadingTag.proxies));
     final picker = widget.picker;
     final primaryAction = _buildPrimaryAction();
@@ -204,7 +183,9 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
             tooltip: context.appLocalizations.scrollToSelected,
           ),
       ],
-      menuItems: picker ? const [] : _buildMenuItems(context, style),
+      menuItems: picker
+          ? const []
+          : _buildMenuItems(context, style, hasRuleSwitches: hasRuleSwitches),
       title: context.appLocalizations.proxies,
       searchState: AppBarSearchState(onSearch: _onSearch),
       body: switch (style.type) {

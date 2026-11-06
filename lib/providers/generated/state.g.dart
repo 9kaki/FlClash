@@ -3729,3 +3729,53 @@ final class ProfileProvidersProvider
 }
 
 String _$profileProvidersHash() => r'689856f32a4b40e6a26b1eedd16db418d140371a';
+
+/// One source of truth for the hosted script's switches: the proxies page,
+/// the hosted-mode page and a merge's editor all read this, so a switch set in
+/// one of them is what the other two show.
+
+@ProviderFor(managedOptions)
+final managedOptionsProvider = ManagedOptionsProvider._();
+
+/// One source of truth for the hosted script's switches: the proxies page,
+/// the hosted-mode page and a merge's editor all read this, so a switch set in
+/// one of them is what the other two show.
+
+final class ManagedOptionsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<ManagedOptions>,
+          ManagedOptions,
+          FutureOr<ManagedOptions>
+        >
+    with $FutureModifier<ManagedOptions>, $FutureProvider<ManagedOptions> {
+  /// One source of truth for the hosted script's switches: the proxies page,
+  /// the hosted-mode page and a merge's editor all read this, so a switch set in
+  /// one of them is what the other two show.
+  ManagedOptionsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'managedOptionsProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$managedOptionsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<ManagedOptions> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<ManagedOptions> create(Ref ref) {
+    return managedOptions(ref);
+  }
+}
+
+String _$managedOptionsHash() => r'c9459c1d92891e207b05b1bed842a63b5aa770b9';

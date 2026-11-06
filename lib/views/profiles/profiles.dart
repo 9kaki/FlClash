@@ -302,6 +302,46 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
     setState(() => _expandedBundleId = _expandedBundleId == id ? null : id);
   }
 
+  /// One column: the card, and under it the panel a merged one unfolds.
+  Widget _buildCell(List<Profile> rowProfiles, int index, double rowHeight) {
+    if (index >= rowProfiles.length) {
+      return const SizedBox.shrink();
+    }
+    final profile = rowProfiles[index];
+    final expanded = profile.id == _expandedBundleId;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: rowHeight,
+          child: ProfileItem(
+            key: ValueKey(profile.id),
+            profile: profile,
+            groupValue: widget.currentProfileId,
+            merged: _isMergedVisible(profile),
+            isExpanded: expanded,
+            attachedBelow: expanded,
+            onToggleExpand: () => _toggleExpand(profile.id),
+            onChanged: (profileId) {
+              ref.read(currentProfileIdProvider.notifier).value = profileId;
+            },
+          ),
+        ),
+        if (profile.isBundle && (profile.bundle?.collapsed ?? false))
+          BundleMembers(
+            key: ValueKey('bundle_members_${profile.id}'),
+            profile: profile,
+            expanded: expanded,
+            currentProfileId: widget.currentProfileId,
+            onSelect: (profileId) {
+              setState(() => _expandedBundleId = null);
+              ref.read(currentProfileIdProvider.notifier).value = profileId;
+            },
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final profiles = _visibleProfiles;
@@ -332,47 +372,10 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
                   children: [
                     for (var index = 0; index < columns; index++)
                       Expanded(
-                        child: SizedBox(
-                          height: rowHeight,
-                          child: index < rowProfiles.length
-                              ? ProfileItem(
-                                  key: ValueKey(rowProfiles[index].id),
-                                  profile: rowProfiles[index],
-                                  groupValue: widget.currentProfileId,
-                                  merged: _isMergedVisible(rowProfiles[index]),
-                                  isExpanded:
-                                      rowProfiles[index].id ==
-                                      _expandedBundleId,
-                                  onToggleExpand: () =>
-                                      _toggleExpand(rowProfiles[index].id),
-                                  onChanged: (profileId) {
-                                    ref
-                                            .read(
-                                              currentProfileIdProvider.notifier,
-                                            )
-                                            .value =
-                                        profileId;
-                                  },
-                                )
-                              : null,
-                        ),
+                        child: _buildCell(rowProfiles, index, rowHeight),
                       ),
                   ],
                 ),
-                for (final profile in rowProfiles)
-                  if (profile.isBundle && (profile.bundle?.collapsed ?? false))
-                    BundleMembers(
-                      key: ValueKey('bundle_members_${profile.id}'),
-                      profile: profile,
-                      expanded: profile.id == _expandedBundleId,
-                      currentProfileId: widget.currentProfileId,
-                      spacing: widget.spacing,
-                      onSelect: (profileId) {
-                        setState(() => _expandedBundleId = null);
-                        ref.read(currentProfileIdProvider.notifier).value =
-                            profileId;
-                      },
-                    ),
                 if (row != rows - 1) SizedBox(height: widget.spacing),
               ],
             );
@@ -396,6 +399,12 @@ class ProfileItem extends ConsumerWidget {
   /// Marks a card that a merge also uses, when the merge shows its members.
   final bool merged;
 
+  /// Draws the row on the surface below it, as a merge lists its members.
+  final bool flat;
+
+  /// Squares the bottom corners so the panel under it joins without a seam.
+  final bool attachedBelow;
+
   final double radius;
 
   const ProfileItem({
@@ -407,6 +416,8 @@ class ProfileItem extends ConsumerWidget {
     this.onToggleExpand,
     this.detail,
     this.merged = false,
+    this.flat = false,
+    this.attachedBelow = false,
     this.radius = AppCorner.xl,
   });
 
@@ -714,40 +725,48 @@ class ProfileItem extends ConsumerWidget {
     final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
     final subscriptionInfo = _subscriptionInfo;
     final isSelected = profile.id == groupValue;
+    final row = ListItem(
+      key: Key(profile.id.toString()),
+      minTileHeight: _profileItemHeight,
+      minVerticalPadding: listRowVerticalPadding,
+      padding: flat
+          ? const EdgeInsets.only(left: 28, right: 16)
+          : const EdgeInsets.symmetric(horizontal: 16),
+      onTap: flat ? () => onChanged(profile.id) : null,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 8,
+        children: [
+          if (profile.type == ProfileType.custom)
+            _GroupsCountChip(profileId: profile.id)
+          else
+            _buildTrailing(context, isUpdating: isUpdating),
+          if (isSelected && !flat) const SelectionBadge(size: 24),
+        ],
+      ),
+      title: _ProfileCardTitle(
+        profile: profile,
+        expire: subscriptionInfo?.expireDate,
+        // A subscription that reported a quota and no expiry never ends.
+        permanent: (subscriptionInfo?.total ?? 0) > 0,
+        subtitle: _subtitle(context),
+        detail: _detail(context),
+      ),
+    );
     return ContextMenuRegion(
       menuItems: isUpdating ? null : _menuItems(context, ref),
-      child: Card(
-        enterActionsOnRight: true,
-        radius: radius,
-        isSelected: isSelected,
-        onPressed: () {
-          onChanged(profile.id);
-        },
-        child: ListItem(
-          key: Key(profile.id.toString()),
-          minTileHeight: _profileItemHeight,
-          minVerticalPadding: listRowVerticalPadding,
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 8,
-            children: [
-              if (profile.type == ProfileType.custom)
-                _GroupsCountChip(profileId: profile.id)
-              else
-                _buildTrailing(context, isUpdating: isUpdating),
-              if (isSelected) const SelectionBadge(size: 24),
-            ],
-          ),
-          title: _ProfileCardTitle(
-            profile: profile,
-            expire: subscriptionInfo?.expireDate,
-            // A subscription that reported a quota and no expiry never ends.
-            permanent: (subscriptionInfo?.total ?? 0) > 0,
-            subtitle: _subtitle(context),
-            detail: _detail(context),
-          ),
-        ),
-      ),
+      child: flat
+          ? row
+          : Card(
+              enterActionsOnRight: true,
+              radius: radius,
+              shape: attachedBelow ? AppShape.vertical(top: radius) : null,
+              isSelected: isSelected,
+              onPressed: () {
+                onChanged(profile.id);
+              },
+              child: row,
+            ),
     );
   }
 }
@@ -904,22 +923,19 @@ class _ReorderableProfilesSheetState
   }
 }
 
-/// The subscriptions a bundle merges, unfolding under its card as a proxy
-/// group unfolds, with each member card selecting that subscription alone.
+/// The subscriptions a merge folds away, continued on the merge's own card.
 class BundleMembers extends ConsumerStatefulWidget {
   const BundleMembers({
     super.key,
     required this.profile,
     required this.expanded,
     required this.currentProfileId,
-    required this.spacing,
     required this.onSelect,
   });
 
   final Profile profile;
   final bool expanded;
   final int? currentProfileId;
-  final double spacing;
   final ValueChanged<int> onSelect;
 
   @override
@@ -972,53 +988,76 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
     if (members.isEmpty) {
       return const SizedBox.shrink();
     }
+    final colorScheme = context.colorScheme;
     return SizeTransition(
       sizeFactor: _unfold,
       alignment: Alignment.topCenter,
-      child: Padding(
-        padding: EdgeInsets.only(top: widget.spacing),
-        child: DecoratedBox(
-          decoration: ShapeDecoration(
-            color: context.raisedSurfaceLevel.colorOf(context.colorScheme),
-            shape: AppShape.all(AppCorner.xl),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(widget.spacing),
-            child: Column(
+      child: DecoratedBox(
+        decoration: ShapeDecoration(
+          color: context.raisedSurfaceLevel.colorOf(colorScheme),
+          shape: AppShape.vertical(bottom: AppCorner.xl),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              left: 17,
+              top: 8,
+              bottom: 8,
+              child: SizedBox(
+                width: 2,
+                child: DecoratedBox(
+                  decoration: ShapeDecoration(
+                    color: colorScheme.primary.opacity30,
+                    shape: AppShape.all(1),
+                  ),
+                ),
+              ),
+            ),
+            Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const _BundleDivider(),
                 for (var index = 0; index < members.length; index++) ...[
-                  if (index > 0) SizedBox(height: widget.spacing),
+                  if (index > 0) const _BundleDivider(),
                   UnfoldEntryTransition(
                     animation: _unfold,
                     index: index,
                     visibleCount: members.length.toDouble(),
                     child: SizedBox(
                       height: _profileItemHeight,
-                      // One level in, so a member is a card on the merge's
-                      // own card rather than another sheet of white.
-                      child: SurfaceScope(
-                        level: SurfaceLevel.card,
-                        child: ProfileItem(
-                          key: ValueKey('bundle_member_${members[index].id}'),
-                          profile: members[index],
-                          radius: AppCorner.md,
-                          groupValue: widget.currentProfileId,
-                          onChanged: (profileId) {
-                            if (profileId != null) {
-                              widget.onSelect(profileId);
-                            }
-                          },
-                        ),
+                      child: ProfileItem(
+                        key: ValueKey('bundle_member_${members[index].id}'),
+                        profile: members[index],
+                        groupValue: widget.currentProfileId,
+                        flat: true,
+                        onChanged: (profileId) {
+                          if (profileId != null) {
+                            widget.onSelect(profileId);
+                          }
+                        },
                       ),
                     ),
                   ),
                 ],
+                const SizedBox(height: 8),
               ],
             ),
-          ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+/// The hairline a merge draws between the rows it holds.
+class _BundleDivider extends StatelessWidget {
+  const _BundleDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      child: Divider(height: 1, thickness: 1),
     );
   }
 }

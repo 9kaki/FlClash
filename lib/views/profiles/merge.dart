@@ -441,9 +441,7 @@ class _MergeProfileViewState extends ConsumerState<MergeProfileView> {
                 _buildMemberSliver(profiles),
                 SliverToBoxAdapter(child: _buildMemberFooter()),
                 SliverToBoxAdapter(child: _buildCandidateSection(profiles)),
-                SliverToBoxAdapter(
-                  child: ManagedScriptSection(profileId: _profile?.id),
-                ),
+                const SliverToBoxAdapter(child: ManagedScriptSection()),
               ],
             ),
           ),

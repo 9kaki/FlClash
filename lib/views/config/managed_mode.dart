@@ -5,17 +5,12 @@ import 'package:fl_clash/common/managed_script.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/pages/editor.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/views/proxies/rule_options.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/views/config/managed_options.dart';
 import 'package:fl_clash/widgets/widgets.dart';
-import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-Future<void> showManagedOptions(BuildContext context) {
-  return showExtend<void>(context, builder: (_) => const ManagedOptionsView());
-}
 
 /// The managed script a merge runs, in the page every entry opens.
 class ManagedModeView extends ConsumerStatefulWidget {
@@ -27,7 +22,6 @@ class ManagedModeView extends ConsumerStatefulWidget {
 
 class _ManagedModeViewState extends ConsumerState<ManagedModeView> {
   ManagedScriptState? _state;
-  ScriptRuleOptions? _declared;
   var _isLoading = true;
 
   @override
@@ -38,19 +32,18 @@ class _ManagedModeViewState extends ConsumerState<ManagedModeView> {
 
   Future<void> _load() async {
     final state = await ManagedScript.state();
-    final content = await ManagedScript.content();
-    final declared = content == null ? null : await extractRuleOptions(content);
     if (!mounted) {
       return;
     }
     setState(() {
       _state = state;
-      _declared = declared;
       _isLoading = false;
     });
   }
 
+  /// A change here reaches every reader of the script's switches.
   void _regenerate() {
+    ref.invalidate(managedOptionsProvider);
     ref.read(bundlesActionProvider.notifier).generateAll();
   }
 
@@ -204,10 +197,10 @@ class _ManagedModeViewState extends ConsumerState<ManagedModeView> {
     );
   }
 
-  Widget _buildOptions(ScriptRuleOptions? declared) {
+  Widget _buildOptions() {
     final appLocalizations = context.appLocalizations;
-    final options = declared?.options ?? const <String, bool>{};
-    if (options.isEmpty) {
+    final options = ref.watch(managedOptionsProvider).value?.values;
+    if (options == null || options.isEmpty) {
       return const SizedBox.shrink();
     }
     return generateSection(
@@ -249,7 +242,7 @@ class _ManagedModeViewState extends ConsumerState<ManagedModeView> {
                 children: [
                   ListFooter(text: appLocalizations.managedModeDesc),
                   _buildScript(state),
-                  _buildOptions(_declared),
+                  _buildOptions(),
                   generateSection(
                     items: [
                       ListItem(
@@ -271,10 +264,7 @@ class _ManagedModeViewState extends ConsumerState<ManagedModeView> {
 
 /// The merge page's own view of the script, so the two entries agree.
 class ManagedScriptSection extends ConsumerStatefulWidget {
-  const ManagedScriptSection({super.key, this.profileId});
-
-  /// The merge whose groups these switches also cover, when there is one.
-  final int? profileId;
+  const ManagedScriptSection({super.key});
 
   @override
   ConsumerState<ManagedScriptSection> createState() =>
@@ -283,7 +273,6 @@ class ManagedScriptSection extends ConsumerStatefulWidget {
 
 class _ManagedScriptSectionState extends ConsumerState<ManagedScriptSection> {
   ManagedScriptState? _state;
-  ScriptRuleOptions? _declared;
 
   @override
   void initState() {
@@ -293,15 +282,10 @@ class _ManagedScriptSectionState extends ConsumerState<ManagedScriptSection> {
 
   Future<void> _load() async {
     final state = await ManagedScript.state();
-    final content = await ManagedScript.content();
-    final declared = content == null ? null : await extractRuleOptions(content);
     if (!mounted) {
       return;
     }
-    setState(() {
-      _state = state;
-      _declared = declared;
-    });
+    setState(() => _state = state);
   }
 
   Widget _buildRow() {
@@ -320,6 +304,7 @@ class _ManagedScriptSectionState extends ConsumerState<ManagedScriptSection> {
       onTap: () async {
         await BaseNavigator.push<void>(context, const ManagedModeView());
         if (mounted) {
+          ref.invalidate(managedOptionsProvider);
           unawaited(_load());
         }
       },
@@ -328,166 +313,25 @@ class _ManagedScriptSectionState extends ConsumerState<ManagedScriptSection> {
 
   @override
   Widget build(BuildContext context) {
-    final options = _declared?.options ?? const <String, bool>{};
+    final appLocalizations = context.appLocalizations;
+    final options =
+        ref.watch(managedOptionsProvider).value?.values ??
+        const <String, bool>{};
     return generateSection(
-      title: context.appLocalizations.managedMode,
-      footer: context.appLocalizations.managedModeDesc,
+      title: appLocalizations.managedMode,
+      footer: appLocalizations.managedModeDesc,
       items: [
         _buildRow(),
-        if (options.isNotEmpty || widget.profileId != null)
+        if (options.isNotEmpty)
           ListItem(
             leading: const GlyphIcon(AppGlyphs.toggleOn),
-            title: Text(context.appLocalizations.ruleOptions),
-            subtitle: options.isEmpty
-                ? null
-                : Text(
-                    context.appLocalizations.managedScriptOptionsCount(
-                      options.length,
-                    ),
-                  ),
-            onTap: () => switch (widget.profileId) {
-              final profileId? => showRuleOptionsSheet(
-                context,
-                profileId: profileId,
-              ),
-              null => showManagedOptions(context),
-            },
+            title: Text(appLocalizations.ruleOptions),
+            subtitle: Text(
+              appLocalizations.managedScriptOptionsCount(options.length),
+            ),
+            onTap: () => showManagedOptions(context),
           ),
       ],
-    );
-  }
-}
-
-/// The switches the managed script declares, saved where a merge reads them.
-class ManagedOptionsView extends ConsumerStatefulWidget {
-  const ManagedOptionsView({super.key});
-
-  @override
-  ConsumerState<ManagedOptionsView> createState() => _ManagedOptionsViewState();
-}
-
-class _ManagedOptionsViewState extends ConsumerState<ManagedOptionsView> {
-  Map<String, bool> _values = {};
-  Map<String, bool> _saved = {};
-  ScriptRuleOptions? _declared;
-  var _isLoading = true;
-  var _isSaving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_load());
-  }
-
-  Future<void> _load() async {
-    final content = await ManagedScript.content();
-    final declared = content == null ? null : await extractRuleOptions(content);
-    final stored = await ManagedScript.options();
-    if (!mounted) {
-      return;
-    }
-    final declaredOptions = declared?.options ?? const <String, bool>{};
-    final values = {
-      for (final entry in declaredOptions.entries)
-        entry.key: stored[entry.key] ?? entry.value,
-    };
-    setState(() {
-      _declared = declared;
-      _values = Map.of(values);
-      _saved = Map.of(values);
-      _isLoading = false;
-    });
-  }
-
-  bool get _hasChanges => !mapEquals(_values, _saved);
-
-  Future<void> _handleSave() async {
-    if (_isSaving || !_hasChanges) {
-      return;
-    }
-    setState(() => _isSaving = true);
-    try {
-      await ManagedScript.setOptions(Map.of(_values));
-      _saved = Map.of(_values);
-      ref.read(bundlesActionProvider.notifier).generateAll();
-    } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
-      }
-    }
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
-  }
-
-  Widget _buildContent() {
-    final appLocalizations = context.appLocalizations;
-    final groups = _declared?.groups ?? const <String>[];
-    final groupNames = [
-      for (final name in _values.keys)
-        if (groups.contains(name)) name,
-    ];
-    final otherNames = [
-      for (final name in _values.keys)
-        if (!groups.contains(name)) name,
-    ];
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
-        top: context.contentTopPadding,
-        bottom: 16 + context.bottomInset,
-      ),
-      children: [
-        if (groupNames.isNotEmpty)
-          generateSection(
-            title: appLocalizations.ruleOptionsGroups,
-            items: [
-              for (final name in groupNames)
-                ListItem.toggle(
-                  title: Text(name),
-                  value: _values[name] ?? false,
-                  onChanged: (value) => setState(() => _values[name] = value),
-                ),
-            ],
-          ),
-        if (otherNames.isNotEmpty)
-          generateSection(
-            title: appLocalizations.ruleOptionsOthers,
-            items: [
-              for (final name in otherNames)
-                ListItem.toggle(
-                  title: Text(name),
-                  value: _values[name] ?? false,
-                  onChanged: (value) => setState(() => _values[name] = value),
-                ),
-            ],
-          ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final appLocalizations = context.appLocalizations;
-    return Scaffold(
-      title: appLocalizations.ruleOptions,
-      confirmationAction: _hasChanges || _isSaving
-          ? IconButtonData(
-              glyph: AppGlyphs.check,
-              tooltip: appLocalizations.save,
-              isLoading: _isSaving,
-              onPressed: _isSaving ? null : () => unawaited(_handleSave()),
-            )
-          : null,
-      body: NullStatusSwitcher(
-        isLoading: _isLoading,
-        isEmpty: _values.isEmpty,
-        nullStatus: NullStatus(
-          label: appLocalizations.ruleOptionsEmpty,
-          description: appLocalizations.ruleOptionsEmptyDesc,
-          illustration: NullStatusIllustration.scripts,
-        ),
-        child: _values.isEmpty ? const SizedBox.shrink() : _buildContent(),
-      ),
     );
   }
 }

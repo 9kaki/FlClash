@@ -40,20 +40,37 @@ String scriptWithRuleOptions(String script, Map<String, bool> options) {
 
 /// Replaces `main` inside a wrapper, so the probe finds it whether the script
 /// declared it with `function main` or with `const main = () => {}`.
+/// It also runs the script over an empty config, to read each group's icon.
 String _ruleOptionsProbe(String script) {
   return '(function () {\n'
       '$script\n'
+      ';var __flclashMain = typeof main === "function" ? main : null;\n'
       ';globalThis.main = function () {\n'
       '  var options = typeof $_optionsMarker !== "undefined" && '
       '$_optionsMarker && typeof $_optionsMarker === "object" '
       '? $_optionsMarker : {};\n'
       '  var icons = {};\n'
+      '  if (__flclashMain) {\n'
+      '    try {\n'
+      '      var built = __flclashMain({ "proxies": [], "proxy-groups": [], '
+      '"rules": [], "proxy-providers": {}, "rule-providers": {} });\n'
+      '      if (built && Array.isArray(built["proxy-groups"])) {\n'
+      '        for (var g = 0; g < built["proxy-groups"].length; g++) {\n'
+      '          var group = built["proxy-groups"][g];\n'
+      '          if (group && typeof group.name === "string" && '
+      'typeof group.icon === "string" && !icons[group.name]) {\n'
+      '            icons[group.name] = group.icon;\n'
+      '          }\n'
+      '        }\n'
+      '      }\n'
+      '    } catch (e) {}\n'
+      '  }\n'
       '  if (typeof serviceConfigs !== "undefined" && '
       'Array.isArray(serviceConfigs)) {\n'
       '    for (var i = 0; i < serviceConfigs.length; i++) {\n'
       '      var service = serviceConfigs[i];\n'
-      '      if (service && service.name && '
-      'typeof service.icon === "string") {\n'
+      '      if (service && service.name && typeof service.icon === "string" '
+      '&& !icons[service.name]) {\n'
       '        icons[service.name] = service.icon;\n'
       '      }\n'
       '    }\n'
@@ -71,6 +88,28 @@ String _ruleOptionsProbe(String script) {
       '{ "options": options, "icons": icons, "groups": groups } };\n'
       '};\n'
       '})();\n';
+}
+
+final _iconField = RegExp(r"""icon\s*:\s*['\"]([^'\"]+)['\"]""");
+final _nameField = RegExp(r"""name\s*:\s*['\"]([^'\"]+)['\"]""");
+const _iconLookBehind = 320;
+
+/// Icons written in the script, for groups the empty run never reached.
+Map<String, String> _writtenIcons(String script) {
+  final icons = <String, String>{};
+  for (final icon in _iconField.allMatches(script)) {
+    final from = icon.start - _iconLookBehind;
+    final window = script.substring(from < 0 ? 0 : from, icon.start);
+    String? name;
+    for (final match in _nameField.allMatches(window)) {
+      name = match.group(1);
+    }
+    if (name == null || name.isEmpty) {
+      continue;
+    }
+    icons.putIfAbsent(name, () => icon.group(1)!);
+  }
+  return icons;
 }
 
 final _ruleOptionsCache = <String, ScriptRuleOptions>{};
@@ -136,10 +175,16 @@ Future<ScriptRuleOptions> extractRuleOptions(String script) async {
   if (parsed.error != null) {
     return parsed;
   }
+  final declared = (
+    options: parsed.options,
+    icons: {..._writtenIcons(script), ...parsed.icons},
+    groups: parsed.groups,
+    error: parsed.error,
+  );
   if (_ruleOptionsCache.length >= _ruleOptionsCacheSize) {
     _ruleOptionsCache.remove(_ruleOptionsCache.keys.first);
   }
-  return _ruleOptionsCache[script] = parsed;
+  return _ruleOptionsCache[script] = declared;
 }
 
 Future<Map<String, dynamic>> handleEvaluate(
