@@ -92,8 +92,9 @@ class ProfilesCard extends ConsumerWidget {
         : AppTextStyle.callout;
     final fromProviders = quota?.fromProviders ?? false;
     final endText = switch ((profile, expiry, fromProviders)) {
-      (_, final expiry?, _) =>
-        fromProviders
+      // A merge ends with the first of its subscriptions to run out.
+      (final profile?, final expiry?, _) =>
+        fromProviders || profile.isBundle
             ? appLocalizations.profileShortestDaysLeft(_daysLeft(expiry))
             : appLocalizations.profileDaysLeft(_daysLeft(expiry)),
       // Providers that never expire still end a config that has no expiry.

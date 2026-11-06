@@ -1150,7 +1150,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeMembers": MessageLookupByLibrary.simpleMessage("サブスクリプション"),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
-      "ノードはこの順序を保ち、1 つ目のサブスクリプションが統合で再構築しない設定を提供します。",
+      "ノードはこの順序で統合され、同一のノードは 1 つだけ残り、先のサブスクリプションが優先されます。",
     ),
     "mergeMoveDown": MessageLookupByLibrary.simpleMessage("下へ"),
     "mergeMoveUp": MessageLookupByLibrary.simpleMessage("上へ"),

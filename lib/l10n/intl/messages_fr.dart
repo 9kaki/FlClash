@@ -1451,7 +1451,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeMembers": MessageLookupByLibrary.simpleMessage("Abonnements"),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
-      "Les nœuds gardent cet ordre et le premier abonnement fournit les réglages que la fusion ne reconstruit pas.",
+      "Les nœuds sont fusionnés dans cet ordre ; les nœuds identiques ne sont gardés qu’une fois, l’abonnement le plus tôt prioritaire.",
     ),
     "mergeMoveDown": MessageLookupByLibrary.simpleMessage("Descendre"),
     "mergeMoveUp": MessageLookupByLibrary.simpleMessage("Monter"),

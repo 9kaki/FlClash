@@ -1044,7 +1044,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeMembers": MessageLookupByLibrary.simpleMessage("合并的订阅"),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
-      "节点按此顺序排列，第一个订阅提供合并未重建的其余设置。",
+      "节点按此顺序排列并合并，内容相同的节点只保留一份，按订阅顺序优先。",
     ),
     "mergeMoveDown": MessageLookupByLibrary.simpleMessage("下移"),
     "mergeMoveUp": MessageLookupByLibrary.simpleMessage("上移"),

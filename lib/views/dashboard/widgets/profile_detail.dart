@@ -281,7 +281,9 @@ class _ProfileDetailSheetState extends ConsumerState<ProfileDetailSheet>
                       },
                       failed: configCountsFailed,
                     ),
-                    if (quota != null &&
+                    if (profile.isBundle)
+                      _BundleMembersSection(profile: profile)
+                    else if (quota != null &&
                         !quota.fromProviders &&
                         quota.info.total > 0)
                       generateSection(
@@ -438,6 +440,55 @@ class _InfoRow extends StatelessWidget {
             .copyWith(color: context.colorScheme.onSurfaceVariant),
         child: value,
       ),
+    );
+  }
+}
+
+/// What a merge is made of, one line per subscription the way the provider
+/// list shows a set of them.
+class _BundleMembersSection extends ConsumerWidget {
+  const _BundleMembersSection({required this.profile});
+
+  final Profile profile;
+
+  String _usageOf(SubscriptionInfo info) {
+    final used = info.upload + info.download;
+    if (info.total <= 0) {
+      return used.traffic.show;
+    }
+    final percent = (used / info.total * 100).round();
+    return '$percent% · ${used.traffic.show} / ${info.total.traffic.show}';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final profiles = ref.watch(profilesProvider);
+    final members = [
+      for (final member in profile.bundleMembers)
+        ?profiles.getProfile(member.id),
+    ];
+    if (members.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final nodes = profile.bundle?.report.proxies ?? 0;
+    return generateSection(
+      title: appLocalizations.mergeMembers,
+      footer: nodes > 0 ? appLocalizations.mergeProxiesCount(nodes) : null,
+      items: [
+        for (final member in members)
+          ListItem(
+            title: ChipTitle(
+              title: member.realLabel,
+              expire: member.subscriptionInfo?.expireDate,
+              permanent: (member.subscriptionInfo?.total ?? 0) > 0,
+            ),
+            subtitle: switch (member.subscriptionInfo) {
+              final info? when info.hasUsage => Text(_usageOf(info)),
+              _ => null,
+            },
+          ),
+      ],
     );
   }
 }

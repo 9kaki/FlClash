@@ -1091,7 +1091,7 @@
   "subscriptionMerge": "Fusion d’abonnements",
   "mergedSubscriptionLabel": "Abonnement fusionné {index}",
   "mergeMembers": "Abonnements",
-  "mergeMembersDesc": "Les nœuds gardent cet ordre et le premier abonnement fournit les réglages que la fusion ne reconstruit pas.",
+  "mergeMembersDesc": "Les nœuds sont fusionnés dans cet ordre ; les nœuds identiques ne sont gardés qu’une fois, l’abonnement le plus tôt prioritaire.",
   "mergeAddMember": "Ajouter un abonnement",
   "mergeAddUrl": "Ajouter depuis un lien",
   "mergeAddUrlDesc": "Télécharge l’abonnement et le joint à cette fusion.",

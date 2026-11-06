@@ -1409,7 +1409,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeMembers": MessageLookupByLibrary.simpleMessage("Подписки"),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
-      "Узлы сохраняют этот порядок, а первая подписка задаёт параметры, которые слияние не пересобирает.",
+      "Узлы сливаются в этом порядке; одинаковые узлы сохраняются один раз, приоритет у первой подписки.",
     ),
     "mergeMoveDown": MessageLookupByLibrary.simpleMessage("Ниже"),
     "mergeMoveUp": MessageLookupByLibrary.simpleMessage("Выше"),

@@ -1340,7 +1340,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeMembers": MessageLookupByLibrary.simpleMessage("Subscriptions"),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
-      "Nodes keep this order, and the first subscription supplies the settings the merge does not rebuild.",
+      "Nodes are merged in this order; identical nodes are kept once, the earlier subscription winning.",
     ),
     "mergeMoveDown": MessageLookupByLibrary.simpleMessage("Move down"),
     "mergeMoveUp": MessageLookupByLibrary.simpleMessage("Move up"),

@@ -6,6 +6,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/profiles.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,11 +37,7 @@ Profile _bundle(
   label: '合并订阅1',
   autoUpdateDuration: defaultUpdateDuration,
   lastUpdateDate: DateTime(2026, 11, 5),
-  bundle: ProfileBundle(
-    members: members,
-    collapsed: collapsed,
-    report: report,
-  ),
+  bundle: ProfileBundle(members: members, collapsed: collapsed, report: report),
 );
 
 void main() {
@@ -151,24 +148,28 @@ void main() {
   testWidgets('the merge card names the nodes the merge holds', (tester) async {
     setUpProfiles(tester, [
       _url(1, '机场甲'),
-      _bundle(const [BundleMember(id: 1)], report: const BundleReport(proxies: 292)),
+      _bundle(const [
+        BundleMember(id: 1),
+      ], report: const BundleReport(proxies: 292)),
     ]);
 
     await pumpProfiles(tester);
 
     expect(
-      find.textContaining(
-        currentAppLocalizations.mergeProxiesCount(292),
-      ),
+      find.textContaining(currentAppLocalizations.mergeProxiesCount(292)),
       findsOne,
     );
     expect(tester.takeException(), null);
   });
 
-  testWidgets('an expanded member card counts its own nodes', (tester) async {
+  testWidgets('the merge reports the nodes once, not per member', (
+    tester,
+  ) async {
     setUpProfiles(tester, [
       _url(1, '机场甲'),
-      _bundle(const [BundleMember(id: 1, proxies: 120)]),
+      _bundle(const [
+        BundleMember(id: 1, proxies: 120),
+      ], report: const BundleReport(proxies: 120)),
     ]);
 
     await pumpProfiles(tester);
@@ -180,6 +181,27 @@ void main() {
       findsOne,
     );
     expect(tester.takeException(), null);
+  });
+
+  testWidgets('a member in use sits under its merge, alone checked', (
+    tester,
+  ) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _url(2, '机场乙'),
+      _bundle(const [BundleMember(id: 1), BundleMember(id: 2)]),
+    ]);
+
+    await pumpProfiles(tester);
+    await tester.tap(find.byTooltip(currentAppLocalizations.mergeExpand));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('机场乙'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(currentProfileIdProvider), 2);
+    expect(find.text('机场乙'), findsOne);
+    expect(find.text('机场甲'), findsNothing);
+    expect(find.byType(SelectionBadge), findsOne);
   });
 
   testWidgets('long pressing a member opens the profile menu', (tester) async {

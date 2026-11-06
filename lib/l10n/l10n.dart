@@ -9205,10 +9205,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Nodes keep this order, and the first subscription supplies the settings the merge does not rebuild.`
+  /// `Nodes are merged in this order; identical nodes are kept once, the earlier subscription winning.`
   String get mergeMembersDesc {
     return Intl.message(
-      'Nodes keep this order, and the first subscription supplies the settings the merge does not rebuild.',
+      'Nodes are merged in this order; identical nodes are kept once, the earlier subscription winning.',
       name: 'mergeMembersDesc',
       desc: '',
       args: [],

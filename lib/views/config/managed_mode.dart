@@ -5,6 +5,7 @@ import 'package:fl_clash/common/managed_script.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/pages/editor.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/views/proxies/rule_options.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -174,11 +175,12 @@ class _ManagedModeViewState extends ConsumerState<ManagedModeView> {
                 ? appLocalizations.managedScriptLocal
                 : appLocalizations.managedScriptEmpty,
           ),
-          subtitle: Text(
-            state.version == null
-                ? appLocalizations.managedScriptVersionNone
-                : appLocalizations.managedScriptVersion(state.version!),
-          ),
+          subtitle: switch (state.version) {
+            final version? => Text(
+              appLocalizations.managedScriptVersion(version),
+            ),
+            null => null,
+          },
           trailing: const GlyphIcon(AppGlyphs.chevronForward),
           onTap: _handleEdit,
         ),
@@ -269,7 +271,10 @@ class _ManagedModeViewState extends ConsumerState<ManagedModeView> {
 
 /// The merge page's own view of the script, so the two entries agree.
 class ManagedScriptSection extends ConsumerStatefulWidget {
-  const ManagedScriptSection({super.key});
+  const ManagedScriptSection({super.key, this.profileId});
+
+  /// The merge whose groups these switches also cover, when there is one.
+  final int? profileId;
 
   @override
   ConsumerState<ManagedScriptSection> createState() =>
@@ -329,16 +334,24 @@ class _ManagedScriptSectionState extends ConsumerState<ManagedScriptSection> {
       footer: context.appLocalizations.managedModeDesc,
       items: [
         _buildRow(),
-        if (options.isNotEmpty)
+        if (options.isNotEmpty || widget.profileId != null)
           ListItem(
             leading: const GlyphIcon(AppGlyphs.toggleOn),
             title: Text(context.appLocalizations.ruleOptions),
-            subtitle: Text(
-              context.appLocalizations.managedScriptOptionsCount(
-                options.length,
+            subtitle: options.isEmpty
+                ? null
+                : Text(
+                    context.appLocalizations.managedScriptOptionsCount(
+                      options.length,
+                    ),
+                  ),
+            onTap: () => switch (widget.profileId) {
+              final profileId? => showRuleOptionsSheet(
+                context,
+                profileId: profileId,
               ),
-            ),
-            onTap: () => showManagedOptions(context),
+              null => showManagedOptions(context),
+            },
           ),
       ],
     );

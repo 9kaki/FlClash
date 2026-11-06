@@ -1091,7 +1091,7 @@
   "subscriptionMerge": "サブスクリプション統合",
   "mergedSubscriptionLabel": "統合サブスクリプション {index}",
   "mergeMembers": "サブスクリプション",
-  "mergeMembersDesc": "ノードはこの順序を保ち、1 つ目のサブスクリプションが統合で再構築しない設定を提供します。",
+  "mergeMembersDesc": "ノードはこの順序で統合され、同一のノードは 1 つだけ残り、先のサブスクリプションが優先されます。",
   "mergeAddMember": "サブスクリプションを追加",
   "mergeAddUrl": "リンクから追加",
   "mergeAddUrlDesc": "サブスクリプションをダウンロードしてこの統合に加えます。",

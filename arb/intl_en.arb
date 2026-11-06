@@ -1091,7 +1091,7 @@
   "subscriptionMerge": "Subscription merge",
   "mergedSubscriptionLabel": "Merged subscription {index}",
   "mergeMembers": "Subscriptions",
-  "mergeMembersDesc": "Nodes keep this order, and the first subscription supplies the settings the merge does not rebuild.",
+  "mergeMembersDesc": "Nodes are merged in this order; identical nodes are kept once, the earlier subscription winning.",
   "mergeAddMember": "Add a subscription",
   "mergeAddUrl": "Add from a link",
   "mergeAddUrlDesc": "Downloads the subscription and joins it to this merge.",

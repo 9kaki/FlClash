@@ -1131,7 +1131,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "mergeMembers": MessageLookupByLibrary.simpleMessage("구독"),
     "mergeMembersCount": m56,
     "mergeMembersDesc": MessageLookupByLibrary.simpleMessage(
-      "노드는 이 순서를 유지하며, 첫 번째 구독이 병합에서 다시 만들지 않는 설정을 제공합니다.",
+      "노드는 이 순서로 병합되며, 같은 노드는 하나만 남고 앞선 구독이 우선합니다.",
     ),
     "mergeMoveDown": MessageLookupByLibrary.simpleMessage("아래로"),
     "mergeMoveUp": MessageLookupByLibrary.simpleMessage("위로"),

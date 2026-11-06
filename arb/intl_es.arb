@@ -1091,7 +1091,7 @@
   "subscriptionMerge": "Fusión de suscripciones",
   "mergedSubscriptionLabel": "Suscripción fusionada {index}",
   "mergeMembers": "Suscripciones",
-  "mergeMembersDesc": "Los nodos conservan este orden y la primera suscripción aporta los ajustes que la fusión no reconstruye.",
+  "mergeMembersDesc": "Los nodos se fusionan en este orden; los idénticos se conservan una vez y gana la suscripción anterior.",
   "mergeAddMember": "Añadir una suscripción",
   "mergeAddUrl": "Añadir desde un enlace",
   "mergeAddUrlDesc": "Descarga la suscripción y la une a esta fusión.",

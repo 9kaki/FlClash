@@ -1091,7 +1091,7 @@
   "subscriptionMerge": "구독 병합",
   "mergedSubscriptionLabel": "병합 구독 {index}",
   "mergeMembers": "구독",
-  "mergeMembersDesc": "노드는 이 순서를 유지하며, 첫 번째 구독이 병합에서 다시 만들지 않는 설정을 제공합니다.",
+  "mergeMembersDesc": "노드는 이 순서로 병합되며, 같은 노드는 하나만 남고 앞선 구독이 우선합니다.",
   "mergeAddMember": "구독 추가",
   "mergeAddUrl": "링크에서 추가",
   "mergeAddUrlDesc": "구독을 내려받아 이 병합에 추가합니다.",

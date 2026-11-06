@@ -20,6 +20,11 @@ import 'preview.dart';
 
 const _infoGap = 4.0;
 
+double get _profileItemDetailHeight {
+  final measure = globalState.measure;
+  return measure.textHeight(AppTextStyle.footnote) + _infoGap;
+}
+
 double get _profileItemHeight {
   final measure = globalState.measure;
   return measure.textHeight(AppTextStyle.headline) +
@@ -217,14 +222,46 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
     minItemWidth: profileItemMinWidth.ap(context),
   );
 
-  /// The profiles the grid draws, which leaves out what a collapsed merge
-  /// stands for.
+  /// The profiles the grid draws. A collapsed merge stands for its members,
+  /// except the one in use, which stays beside it as its own card.
   List<Profile> get _visibleProfiles {
+    final currentProfileId = widget.currentProfileId;
     final collapsed = widget.profiles.collapsedMemberIds;
-    return [
+    // A member the open panel already lists would otherwise appear twice.
+    final shownInPanel =
+        _expandedBundleId != null &&
+        widget.profiles.any(
+          (profile) =>
+              profile.id == _expandedBundleId &&
+              profile.bundleMembers.any(
+                (member) => member.id == currentProfileId,
+              ),
+        );
+    final visible = [
       for (final profile in widget.profiles)
-        if (!collapsed.contains(profile.id)) profile,
+        if (!collapsed.contains(profile.id) ||
+            (profile.id == currentProfileId && !shownInPanel))
+          profile,
     ];
+    if (currentProfileId == null) {
+      return visible;
+    }
+    final memberIndex = visible.indexWhere(
+      (profile) => profile.id == currentProfileId,
+    );
+    final ownerIndex = visible.indexWhere(
+      (profile) =>
+          profile.bundleMembers.any((member) => member.id == currentProfileId),
+    );
+    if (memberIndex == -1 ||
+        ownerIndex == -1 ||
+        memberIndex == ownerIndex + 1) {
+      return visible;
+    }
+    final member = visible.removeAt(memberIndex);
+    final target = memberIndex > ownerIndex ? ownerIndex + 1 : ownerIndex;
+    visible.insert(target.clamp(0, visible.length), member);
+    return visible;
   }
 
   void _revealSelected() {
@@ -277,6 +314,9 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
                 ? profiles.length
                 : start + columns;
             final rowProfiles = profiles.sublist(start, end);
+            final rowHeight = rowProfiles.any((profile) => profile.isBundle)
+                ? _profileItemHeight + _profileItemDetailHeight
+                : _profileItemHeight;
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -287,7 +327,7 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
                     for (var index = 0; index < columns; index++)
                       Expanded(
                         child: SizedBox(
-                          height: _profileItemHeight,
+                          height: rowHeight,
                           child: index < rowProfiles.length
                               ? ProfileItem(
                                   key: ValueKey(rowProfiles[index].id),
@@ -320,6 +360,11 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
                       expanded: profile.id == _expandedBundleId,
                       currentProfileId: widget.currentProfileId,
                       spacing: widget.spacing,
+                      onSelect: (profileId) {
+                        setState(() => _expandedBundleId = null);
+                        ref.read(currentProfileIdProvider.notifier).value =
+                            profileId;
+                      },
                     ),
                 if (row != rows - 1) SizedBox(height: widget.spacing),
               ],
@@ -338,8 +383,8 @@ class ProfileItem extends ConsumerWidget {
   final VoidCallback? onToggleExpand;
   final void Function(int? value) onChanged;
 
-  /// Follows the quota on a card that stands for several subscriptions.
-  final String? subtitleDetail;
+  /// A second line under the quota, for what a merge adds up to.
+  final String? detail;
 
   const ProfileItem({
     super.key,
@@ -348,7 +393,7 @@ class ProfileItem extends ConsumerWidget {
     required this.onChanged,
     this.isExpanded = false,
     this.onToggleExpand,
-    this.subtitleDetail,
+    this.detail,
   });
 
   Future<void> _handleDeleteProfile(BuildContext context, WidgetRef ref) async {
@@ -416,15 +461,12 @@ class ProfileItem extends ConsumerWidget {
       return [
         ?usage,
         appLocalizations.mergeMembersCount(bundle.members.length),
-        if (bundle.report.proxies > 0)
-          appLocalizations.mergeProxiesCount(bundle.report.proxies),
       ].join(' · ');
     }
     final info = _subscriptionInfo;
     if (info != null && info.usage != null) {
       final used = info.upload + info.download;
-      final usage = '${used.traffic.show} / ${info.total.traffic.show}';
-      return subtitleDetail == null ? usage : '$usage · $subtitleDetail';
+      return '${used.traffic.show} / ${info.total.traffic.show}';
     }
     final appLocalizations = context.appLocalizations;
     return switch (profile.type) {
@@ -432,6 +474,14 @@ class ProfileItem extends ConsumerWidget {
       ProfileType.file => appLocalizations.local,
       ProfileType.custom => appLocalizations.custom,
     };
+  }
+
+  String? _detail(BuildContext context) {
+    final report = profile.bundle?.report;
+    if (report == null || report.proxies <= 0) {
+      return null;
+    }
+    return context.appLocalizations.mergeProxiesCount(report.proxies);
   }
 
   Widget _buildTrailing(BuildContext context, {required bool isUpdating}) {
@@ -655,9 +705,7 @@ class ProfileItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
     final subscriptionInfo = _subscriptionInfo;
-    final isSelected =
-        profile.id == groupValue ||
-        profile.bundleMembers.any((member) => member.id == groupValue);
+    final isSelected = profile.id == groupValue;
     return ContextMenuRegion(
       menuItems: isUpdating ? null : _menuItems(context, ref),
       child: Card(
@@ -688,6 +736,7 @@ class ProfileItem extends ConsumerWidget {
             // A subscription that reported a quota and no expiry never ends.
             permanent: (subscriptionInfo?.total ?? 0) > 0,
             subtitle: _subtitle(context),
+            detail: _detail(context),
           ),
         ),
       ),
@@ -701,12 +750,14 @@ class _ProfileCardTitle extends StatelessWidget {
     required this.expire,
     required this.permanent,
     required this.subtitle,
+    this.detail,
   });
 
   final Profile profile;
   final DateTime? expire;
   final bool permanent;
   final String subtitle;
+  final String? detail;
 
   @override
   Widget build(BuildContext context) {
@@ -727,6 +778,15 @@ class _ProfileCardTitle extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        if (detail case final detail?) ...[
+          const SizedBox(height: _infoGap),
+          Text(
+            detail,
+            style: AppTextStyle.footnote.of(context).toLighter,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ],
     );
   }
@@ -845,12 +905,14 @@ class BundleMembers extends ConsumerStatefulWidget {
     required this.expanded,
     required this.currentProfileId,
     required this.spacing,
+    required this.onSelect,
   });
 
   final Profile profile;
   final bool expanded;
   final int? currentProfileId;
   final double spacing;
+  final ValueChanged<int> onSelect;
 
   @override
   ConsumerState<BundleMembers> createState() => _BundleMembersState();
@@ -897,8 +959,7 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
     final profiles = ref.watch(profilesProvider);
     final members = [
       for (final member in widget.profile.bundleMembers)
-        if (profiles.getProfile(member.id) case final profile?)
-          (profile: profile, proxies: member.proxies),
+        ?profiles.getProfile(member.id),
     ];
     if (members.isEmpty) {
       return const SizedBox.shrink();
@@ -908,35 +969,40 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
       alignment: Alignment.topCenter,
       child: Padding(
         padding: EdgeInsets.only(top: widget.spacing),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var index = 0; index < members.length; index++) ...[
-              if (index > 0) SizedBox(height: widget.spacing),
-              UnfoldEntryTransition(
-                animation: _unfold,
-                index: index,
-                visibleCount: members.length.toDouble(),
-                child: SizedBox(
-                  height: _profileItemHeight,
-                  child: ProfileItem(
-                    key: ValueKey('bundle_member_${members[index].profile.id}'),
-                    profile: members[index].profile,
-                    subtitleDetail: members[index].proxies > 0
-                        ? context.appLocalizations.mergeProxiesCount(
-                            members[index].proxies,
-                          )
-                        : null,
-                    groupValue: widget.currentProfileId,
-                    onChanged: (profileId) {
-                      ref.read(currentProfileIdProvider.notifier).value =
-                          profileId;
-                    },
+        child: DecoratedBox(
+          decoration: ShapeDecoration(
+            color: SurfaceLevel.inset.colorOf(context.colorScheme),
+            shape: AppShape.all(AppCorner.xl),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(widget.spacing),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var index = 0; index < members.length; index++) ...[
+                  if (index > 0) SizedBox(height: widget.spacing),
+                  UnfoldEntryTransition(
+                    animation: _unfold,
+                    index: index,
+                    visibleCount: members.length.toDouble(),
+                    child: SizedBox(
+                      height: _profileItemHeight,
+                      child: ProfileItem(
+                        key: ValueKey('bundle_member_${members[index].id}'),
+                        profile: members[index],
+                        groupValue: widget.currentProfileId,
+                        onChanged: (profileId) {
+                          if (profileId != null) {
+                            widget.onSelect(profileId);
+                          }
+                        },
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
-          ],
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );
