@@ -1109,6 +1109,8 @@
   "mergeExpand": "Show subscriptions",
   "mergeMembersCount": "{count} subscriptions",
   "mergeProxiesCount": "{count} nodes",
+  "mergeSummary": "Merged {count} configs · {proxies} nodes",
+  "mergedBadge": "Merged",
   "mergedDeleteMemberTip": "This profile is merged into “{label}”. Deleting it takes it out of that merge.",
   "managedMode": "Hosted mode",
   "managedModeDesc": "Every subscription passes through this script before it joins a merge, so nodes and routing are handled one way.",

@@ -451,15 +451,6 @@ class _BundleMembersSection extends ConsumerWidget {
 
   final Profile profile;
 
-  String _usageOf(SubscriptionInfo info) {
-    final used = info.upload + info.download;
-    if (info.total <= 0) {
-      return used.traffic.show;
-    }
-    final percent = (used / info.total * 100).round();
-    return '$percent% · ${used.traffic.show} / ${info.total.traffic.show}';
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
@@ -484,9 +475,45 @@ class _BundleMembersSection extends ConsumerWidget {
               permanent: (member.subscriptionInfo?.total ?? 0) > 0,
             ),
             subtitle: switch (member.subscriptionInfo) {
-              final info? when info.hasUsage => Text(_usageOf(info)),
+              final info? when info.hasUsage => _MemberUsage(info: info),
               _ => null,
             },
+          ),
+      ],
+    );
+  }
+}
+
+/// One subscription's share of its own plan, as a bar rather than a number
+/// alone.
+class _MemberUsage extends StatelessWidget {
+  const _MemberUsage({required this.info});
+
+  final SubscriptionInfo info;
+
+  @override
+  Widget build(BuildContext context) {
+    final used = info.upload + info.download;
+    final share = info.total > 0
+        ? (used / info.total).clamp(0.0, 1.0).toDouble()
+        : 0.0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 6,
+      children: [
+        Text(
+          info.total > 0
+              ? '${(share * 100).round()}% · ${used.traffic.show} / '
+                    '${info.total.traffic.show}'
+              : used.traffic.show,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if (info.total > 0)
+          LinearProgressIndicator(
+            minHeight: 4,
+            value: share,
+            backgroundColor: context.colorScheme.primary.opacity15,
           ),
       ],
     );

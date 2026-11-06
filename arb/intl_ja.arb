@@ -1109,6 +1109,8 @@
   "mergeExpand": "サブスクリプションを表示",
   "mergeMembersCount": "{count} 件のサブスクリプション",
   "mergeProxiesCount": "{count} ノード",
+  "mergeSummary": "{count} 件の設定を統合 · {proxies} ノード",
+  "mergedBadge": "統合済み",
   "mergedDeleteMemberTip": "このプロファイルは「{label}」に統合されています。削除するとその統合から外れます。",
   "managedMode": "ホストモード",
   "managedModeDesc": "統合の前に各サブスクリプションがこのスクリプトを通るので、ノードと分流の扱いが揃います。",

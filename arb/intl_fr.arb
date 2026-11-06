@@ -1109,6 +1109,8 @@
   "mergeExpand": "Afficher les abonnements",
   "mergeMembersCount": "{count} abonnements",
   "mergeProxiesCount": "{count} nœuds",
+  "mergeSummary": "{count} configurations fusionnées · {proxies} nœuds",
+  "mergedBadge": "Fusionné",
   "mergedDeleteMemberTip": "Ce profil est fusionné dans « {label} ». Le supprimer le retire de cette fusion.",
   "managedMode": "Mode hébergé",
   "managedModeDesc": "Chaque abonnement passe par ce script avant de rejoindre une fusion, afin que nœuds et routage soient traités de la même façon.",

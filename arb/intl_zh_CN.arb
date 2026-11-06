@@ -1109,6 +1109,8 @@
   "mergeExpand": "显示订阅",
   "mergeMembersCount": "{count} 个订阅",
   "mergeProxiesCount": "{count} 个节点",
+  "mergeSummary": "合并 {count} 个配置 · {proxies} 个节点",
+  "mergedBadge": "已合并",
   "mergedDeleteMemberTip": "该订阅已合并到「{label}」，删除后会从该合并中移除。",
   "managedMode": "托管模式",
   "managedModeDesc": "合并订阅前统一处理每个订阅的节点与分流，让合并结果保持一致。",

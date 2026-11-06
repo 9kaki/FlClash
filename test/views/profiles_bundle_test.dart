@@ -183,6 +183,40 @@ void main() {
     expect(tester.takeException(), null);
   });
 
+  testWidgets('a merge that shows its members marks each one merged', (
+    tester,
+  ) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _bundle(
+        const [BundleMember(id: 1)],
+        collapsed: false,
+        report: const BundleReport(proxies: 10),
+      ),
+    ]);
+
+    await pumpProfiles(tester);
+
+    expect(find.text('机场甲'), findsOne);
+    expect(find.text(currentAppLocalizations.mergedBadge), findsOne);
+    expect(find.byTooltip(currentAppLocalizations.mergeExpand), findsNothing);
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('a folded merge hides its members and the mark', (tester) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _bundle(const [BundleMember(id: 1)], collapsed: true),
+    ]);
+
+    await pumpProfiles(tester);
+
+    expect(find.text('机场甲'), findsNothing);
+    expect(find.text(currentAppLocalizations.mergedBadge), findsNothing);
+    expect(find.byTooltip(currentAppLocalizations.mergeExpand), findsOne);
+    expect(tester.takeException(), null);
+  });
+
   testWidgets('a member in use sits under its merge, alone checked', (
     tester,
   ) async {

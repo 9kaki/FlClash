@@ -1109,6 +1109,8 @@
   "mergeExpand": "Mostrar suscripciones",
   "mergeMembersCount": "{count} suscripciones",
   "mergeProxiesCount": "{count} nodos",
+  "mergeSummary": "{count} configuraciones fusionadas · {proxies} nodos",
+  "mergedBadge": "Fusionado",
   "mergedDeleteMemberTip": "Este perfil está fusionado en «{label}». Al eliminarlo sale de esa fusión.",
   "managedMode": "Modo alojado",
   "managedModeDesc": "Cada suscripción pasa por este script antes de unirse a una fusión, así los nodos y el enrutado se tratan igual.",

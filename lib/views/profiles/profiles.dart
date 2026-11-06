@@ -292,6 +292,12 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
     );
   }
 
+  bool _isMergedVisible(Profile profile) => widget.profiles.any(
+    (item) =>
+        item.bundle?.collapsed == false &&
+        item.bundleMembers.any((member) => member.id == profile.id),
+  );
+
   void _toggleExpand(int? id) {
     setState(() => _expandedBundleId = _expandedBundleId == id ? null : id);
   }
@@ -333,6 +339,7 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
                                   key: ValueKey(rowProfiles[index].id),
                                   profile: rowProfiles[index],
                                   groupValue: widget.currentProfileId,
+                                  merged: _isMergedVisible(rowProfiles[index]),
                                   isExpanded:
                                       rowProfiles[index].id ==
                                       _expandedBundleId,
@@ -353,7 +360,7 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
                   ],
                 ),
                 for (final profile in rowProfiles)
-                  if (profile.isBundle)
+                  if (profile.isBundle && (profile.bundle?.collapsed ?? false))
                     BundleMembers(
                       key: ValueKey('bundle_members_${profile.id}'),
                       profile: profile,
@@ -386,6 +393,9 @@ class ProfileItem extends ConsumerWidget {
   /// A second line under the quota, for what a merge adds up to.
   final String? detail;
 
+  /// Marks a card that a merge also uses, when the merge shows its members.
+  final bool merged;
+
   const ProfileItem({
     super.key,
     required this.profile,
@@ -394,6 +404,7 @@ class ProfileItem extends ConsumerWidget {
     this.isExpanded = false,
     this.onToggleExpand,
     this.detail,
+    this.merged = false,
   });
 
   Future<void> _handleDeleteProfile(BuildContext context, WidgetRef ref) async {
@@ -458,10 +469,7 @@ class ProfileItem extends ConsumerWidget {
           ? '${(info.upload + info.download).traffic.show} / '
                 '${info.total.traffic.show}'
           : null;
-      return [
-        ?usage,
-        appLocalizations.mergeMembersCount(bundle.members.length),
-      ].join(' · ');
+      return usage ?? appLocalizations.mergeMembersCount(bundle.members.length);
     }
     final info = _subscriptionInfo;
     if (info != null && info.usage != null) {
@@ -477,15 +485,19 @@ class ProfileItem extends ConsumerWidget {
   }
 
   String? _detail(BuildContext context) {
-    final report = profile.bundle?.report;
-    if (report == null || report.proxies <= 0) {
+    final bundle = profile.bundle;
+    final report = bundle?.report;
+    if (bundle == null || report == null || report.proxies <= 0) {
       return null;
     }
-    return context.appLocalizations.mergeProxiesCount(report.proxies);
+    return context.appLocalizations.mergeSummary(
+      bundle.members.length,
+      report.proxies,
+    );
   }
 
   Widget _buildTrailing(BuildContext context, {required bool isUpdating}) {
-    if (profile.isBundle) {
+    if (profile.isBundle && (profile.bundle?.collapsed ?? false)) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         spacing: 4,
@@ -605,13 +617,6 @@ class ProfileItem extends ConsumerWidget {
             );
           },
         ),
-        PopupMenuItem(
-          glyph: AppGlyphs.eye,
-          label: appLocalizations.runtimeConfig,
-          onPressed: () {
-            _handlePreview(context);
-          },
-        ),
       ] else if (isCustom) ...[
         PopupMenuItem(
           glyph: AppGlyphs.textShort,
@@ -635,12 +640,7 @@ class ProfileItem extends ConsumerWidget {
             _handlePushGenProfilePage(context, profile.id);
           },
         ),
-      if (isBundle)
-        PopupMenuItem(
-          glyph: AppGlyphs.layers,
-          label: appLocalizations.mergeMembers,
-          onPressed: () => onToggleExpand?.call(),
-        ),
+
       if (isUrl)
         PopupMenuItem(
           glyph: AppGlyphs.sync,
@@ -737,6 +737,7 @@ class ProfileItem extends ConsumerWidget {
             permanent: (subscriptionInfo?.total ?? 0) > 0,
             subtitle: _subtitle(context),
             detail: _detail(context),
+            merged: merged,
           ),
         ),
       ),
@@ -751,6 +752,7 @@ class _ProfileCardTitle extends StatelessWidget {
     required this.permanent,
     required this.subtitle,
     this.detail,
+    this.merged = false,
   });
 
   final Profile profile;
@@ -758,6 +760,7 @@ class _ProfileCardTitle extends StatelessWidget {
   final bool permanent;
   final String subtitle;
   final String? detail;
+  final bool merged;
 
   @override
   Widget build(BuildContext context) {
@@ -772,11 +775,25 @@ class _ProfileCardTitle extends StatelessWidget {
           style: AppTextStyle.headline.of(context),
         ),
         const SizedBox(height: _infoGap),
-        Text(
-          subtitle,
-          style: AppTextStyle.footnote.of(context).toLighter,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 6,
+          children: [
+            Flexible(
+              child: Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyle.footnote.of(context).toLighter,
+              ),
+            ),
+            if (merged)
+              TonalChip(
+                label: context.appLocalizations.mergedBadge,
+                color: context.colorScheme.primary.opacity15,
+                foregroundColor: context.colorScheme.primary,
+              ),
+          ],
         ),
         if (detail case final detail?) ...[
           const SizedBox(height: _infoGap),
@@ -971,7 +988,7 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
         padding: EdgeInsets.only(top: widget.spacing),
         child: DecoratedBox(
           decoration: ShapeDecoration(
-            color: SurfaceLevel.inset.colorOf(context.colorScheme),
+            color: context.raisedSurfaceLevel.colorOf(context.colorScheme),
             shape: AppShape.all(AppCorner.xl),
           ),
           child: Padding(
