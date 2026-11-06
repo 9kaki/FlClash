@@ -1108,6 +1108,7 @@
   "mergeCollapseDesc": "La page des profils n’affiche que la fusion ; ouvrez sa carte pour voir les abonnements.",
   "mergeExpand": "Afficher les abonnements",
   "mergeMembersCount": "{count} abonnements",
+  "mergeProxiesCount": "{count} nœuds",
   "mergedDeleteMemberTip": "Ce profil est fusionné dans « {label} ». Le supprimer le retire de cette fusion.",
   "managedMode": "Mode hébergé",
   "managedModeDesc": "Chaque abonnement passe par ce script avant de rejoindre une fusion, afin que nœuds et routage soient traités de la même façon.",

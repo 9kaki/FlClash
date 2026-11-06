@@ -26,10 +26,15 @@ _BundleMember _$BundleMemberFromJson(Map<String, dynamic> json) =>
     _BundleMember(
       id: (json['id'] as num).toInt(),
       prefix: json['prefix'] as String?,
+      proxies: (json['proxies'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$BundleMemberToJson(_BundleMember instance) =>
-    <String, dynamic>{'id': instance.id, 'prefix': instance.prefix};
+    <String, dynamic>{
+      'id': instance.id,
+      'prefix': instance.prefix,
+      'proxies': instance.proxies,
+    };
 
 _BundleReport _$BundleReportFromJson(Map<String, dynamic> json) =>
     _BundleReport(

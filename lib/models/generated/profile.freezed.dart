@@ -297,7 +297,8 @@ mixin _$BundleMember {
 
  int get id;/// What this member's proxies are labelled with; null takes the label's
 /// own prefix, as the merge page shows it.
- String? get prefix;
+ String? get prefix;/// How many proxies the member contributed to the last merge.
+ int get proxies;
 /// Create a copy of BundleMember
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -311,20 +312,20 @@ $BundleMemberCopyWith<BundleMember> get copyWith => _$BundleMemberCopyWithImpl<B
 @override
 bool operator ==(Object other) {
   final _this = this as BundleMember;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BundleMember&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.prefix, _this.prefix) || other.prefix == _this.prefix));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BundleMember&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.prefix, _this.prefix) || other.prefix == _this.prefix)&&(identical(other.proxies, _this.proxies) || other.proxies == _this.proxies));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as BundleMember;
-  return Object.hash(runtimeType,_this.id,_this.prefix);
+  return Object.hash(runtimeType,_this.id,_this.prefix,_this.proxies);
 }
 
 @override
 String toString() {
   final _this = this as BundleMember;
-  return 'BundleMember(id: ${_this.id}, prefix: ${_this.prefix})';
+  return 'BundleMember(id: ${_this.id}, prefix: ${_this.prefix}, proxies: ${_this.proxies})';
 }
 
 
@@ -335,7 +336,7 @@ abstract mixin class $BundleMemberCopyWith<$Res>  {
   factory $BundleMemberCopyWith(BundleMember value, $Res Function(BundleMember) _then) = _$BundleMemberCopyWithImpl;
 @useResult
 $Res call({
- int id, String? prefix
+ int id, String? prefix, int proxies
 });
 
 
@@ -352,11 +353,12 @@ class _$BundleMemberCopyWithImpl<$Res>
 
 /// Create a copy of BundleMember
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? prefix = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? prefix = freezed,Object? proxies = null,}) {
   return _then(BundleMember(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,prefix: freezed == prefix ? _self.prefix : prefix // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,proxies: null == proxies ? _self.proxies : proxies // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -441,10 +443,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String? prefix)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String? prefix,  int proxies)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BundleMember() when $default != null:
-return $default(_that.id,_that.prefix);case _:
+return $default(_that.id,_that.prefix,_that.proxies);case _:
   return orElse();
 
 }
@@ -462,10 +464,10 @@ return $default(_that.id,_that.prefix);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String? prefix)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String? prefix,  int proxies)  $default,) {final _that = this;
 switch (_that) {
 case _BundleMember():
-return $default(_that.id,_that.prefix);case _:
+return $default(_that.id,_that.prefix,_that.proxies);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -482,10 +484,10 @@ return $default(_that.id,_that.prefix);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String? prefix)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String? prefix,  int proxies)?  $default,) {final _that = this;
 switch (_that) {
 case _BundleMember() when $default != null:
-return $default(_that.id,_that.prefix);case _:
+return $default(_that.id,_that.prefix,_that.proxies);case _:
   return null;
 
 }
@@ -497,13 +499,15 @@ return $default(_that.id,_that.prefix);case _:
 @JsonSerializable()
 
 class _BundleMember implements BundleMember {
-  const _BundleMember({required this.id, this.prefix});
+  const _BundleMember({required this.id, this.prefix, this.proxies = 0});
   factory _BundleMember.fromJson(Map<String, dynamic> json) => _$BundleMemberFromJson(json);
 
 @override final  int id;
 /// What this member's proxies are labelled with; null takes the label's
 /// own prefix, as the merge page shows it.
 @override final  String? prefix;
+/// How many proxies the member contributed to the last merge.
+@override@JsonKey() final  int proxies;
 
 /// Create a copy of BundleMember
 /// with the given fields replaced by the non-null parameter values.
@@ -518,18 +522,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BundleMember&&(identical(other.id, id) || other.id == id)&&(identical(other.prefix, prefix) || other.prefix == prefix));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BundleMember&&(identical(other.id, id) || other.id == id)&&(identical(other.prefix, prefix) || other.prefix == prefix)&&(identical(other.proxies, proxies) || other.proxies == proxies));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,prefix);
+    return Object.hash(runtimeType,id,prefix,proxies);
 }
 
 @override
 String toString() {
-    return 'BundleMember(id: $id, prefix: $prefix)';
+    return 'BundleMember(id: $id, prefix: $prefix, proxies: $proxies)';
 }
 
 
@@ -540,7 +544,7 @@ abstract mixin class _$BundleMemberCopyWith<$Res> implements $BundleMemberCopyWi
   factory _$BundleMemberCopyWith(_BundleMember value, $Res Function(_BundleMember) _then) = __$BundleMemberCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String? prefix
+ int id, String? prefix, int proxies
 });
 
 
@@ -557,11 +561,12 @@ class __$BundleMemberCopyWithImpl<$Res>
 
 /// Create a copy of BundleMember
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? prefix = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? prefix = freezed,Object? proxies = null,}) {
   return _then(_BundleMember(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,prefix: freezed == prefix ? _self.prefix : prefix // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,proxies: null == proxies ? _self.proxies : proxies // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

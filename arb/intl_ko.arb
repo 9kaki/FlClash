@@ -1108,6 +1108,7 @@
   "mergeCollapseDesc": "프로필 목록에는 병합만 보이며, 카드를 열면 포함된 구독이 보입니다.",
   "mergeExpand": "구독 표시",
   "mergeMembersCount": "구독 {count}개",
+  "mergeProxiesCount": "{count}개 노드",
   "mergedDeleteMemberTip": "이 프로필은 '{label}'에 병합되어 있습니다. 삭제하면 해당 병합에서 빠집니다.",
   "managedMode": "호스팅 모드",
   "managedModeDesc": "병합 전에 각 구독이 이 스크립트를 거치므로 노드와 라우팅 처리가 같아집니다.",

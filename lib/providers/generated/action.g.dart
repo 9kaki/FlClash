@@ -502,7 +502,7 @@ final class BundlesActionProvider
   }
 }
 
-String _$bundlesActionHash() => r'f588ab0fe7473cc3906a134e0e34fc11fb6aa49d';
+String _$bundlesActionHash() => r'16c029f641efa3862eb3d1a35dd7321a1e451b9b';
 
 abstract class _$BundlesAction extends $Notifier<void> {
   void build();
@@ -659,7 +659,7 @@ final class ClashProvidersActionProvider
 }
 
 String _$clashProvidersActionHash() =>
-    r'03877ca6677f0ee8ae7bb59408433a1d83916487';
+    r'23c0c62dda957cc526bc61c4522d9c5458d59752';
 
 abstract class _$ClashProvidersAction extends $Notifier<void> {
   void build();

@@ -9375,6 +9375,16 @@ class AppLocalizations {
     );
   }
 
+  /// `{count} nodes`
+  String mergeProxiesCount(Object count) {
+    return Intl.message(
+      '$count nodes',
+      name: 'mergeProxiesCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
   /// `This profile is merged into “{label}”. Deleting it takes it out of that merge.`
   String mergedDeleteMemberTip(Object label) {
     return Intl.message(

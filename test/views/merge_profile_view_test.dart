@@ -4,6 +4,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/merge.dart';
+import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -109,6 +110,49 @@ void main() {
     final l10n = currentAppLocalizations;
     expect(find.text(l10n.mergeLastGenerated), findsOne);
     expect(find.text(l10n.mergeReport(12, 3, 4)), findsOne);
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('a member row counts the nodes it adds', (tester) async {
+    final container = _containerFor(tester, [
+      _url('机场甲', 1),
+      _bundle(const [BundleMember(id: 1, proxies: 88)]),
+    ]);
+
+    await _pump(tester, container);
+
+    expect(
+      find.textContaining(currentAppLocalizations.mergeProxiesCount(88)),
+      findsOne,
+    );
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('dragging a member above another reorders the merge', (
+    tester,
+  ) async {
+    final container = _containerFor(tester, [
+      _url('机场甲', 1),
+      _url('机场乙', 2),
+      _bundle(const [BundleMember(id: 1), BundleMember(id: 2)]),
+    ]);
+
+    await _pump(tester, container);
+
+    final target = tester.getCenter(find.text('机场甲'));
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('机场乙')),
+    );
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
+    await gesture.moveTo(target);
+    await tester.pump(const Duration(milliseconds: 200));
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getTopLeft(find.text('机场乙')).dy,
+      lessThan(tester.getTopLeft(find.text('机场甲')).dy),
+    );
     expect(tester.takeException(), null);
   });
 }

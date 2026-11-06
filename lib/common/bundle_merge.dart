@@ -483,6 +483,11 @@ List<String> _strings(Object? value) {
 
 String _string(Object? value) => value is String ? value : '';
 
+/// How many proxies a member's own config holds, before the merge renames or
+/// drops any of them.
+int bundleProxyCount(Map<String, dynamic> config) =>
+    _list(config['proxies']).whereType<Map>().length;
+
 /// The leading run of a subscription's label, which its proxies are marked
 /// with: one or two Han characters, or the whole alphanumeric run before them.
 String bundlePrefixOf(String label) {

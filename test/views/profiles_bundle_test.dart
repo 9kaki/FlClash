@@ -27,12 +27,20 @@ Profile _url(int id, String label) => Profile(
   ),
 );
 
-Profile _bundle(List<BundleMember> members, {bool collapsed = true}) => Profile(
+Profile _bundle(
+  List<BundleMember> members, {
+  bool collapsed = true,
+  BundleReport report = const BundleReport(),
+}) => Profile(
   id: 9,
   label: '合并订阅1',
   autoUpdateDuration: defaultUpdateDuration,
   lastUpdateDate: DateTime(2026, 11, 5),
-  bundle: ProfileBundle(members: members, collapsed: collapsed),
+  bundle: ProfileBundle(
+    members: members,
+    collapsed: collapsed,
+    report: report,
+  ),
 );
 
 void main() {
@@ -137,6 +145,57 @@ void main() {
     await tester.pump();
 
     expect(container.read(currentProfileIdProvider), 2);
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('the merge card names the nodes the merge holds', (tester) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _bundle(const [BundleMember(id: 1)], report: const BundleReport(proxies: 292)),
+    ]);
+
+    await pumpProfiles(tester);
+
+    expect(
+      find.textContaining(
+        currentAppLocalizations.mergeProxiesCount(292),
+      ),
+      findsOne,
+    );
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('an expanded member card counts its own nodes', (tester) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _bundle(const [BundleMember(id: 1, proxies: 120)]),
+    ]);
+
+    await pumpProfiles(tester);
+    await tester.tap(find.byTooltip(currentAppLocalizations.mergeExpand));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining(currentAppLocalizations.mergeProxiesCount(120)),
+      findsOne,
+    );
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('long pressing a member opens the profile menu', (tester) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _bundle(const [BundleMember(id: 1)]),
+    ]);
+
+    await pumpProfiles(tester);
+    await tester.tap(find.byTooltip(currentAppLocalizations.mergeExpand));
+    await tester.pumpAndSettle();
+    await tester.longPress(find.text('机场甲'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(currentAppLocalizations.extend), findsOne);
+    expect(find.text(currentAppLocalizations.delete), findsOne);
     expect(tester.takeException(), null);
   });
 }

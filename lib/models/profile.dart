@@ -72,6 +72,9 @@ abstract class BundleMember with _$BundleMember {
     /// What this member's proxies are labelled with; null takes the label's
     /// own prefix, as the merge page shows it.
     String? prefix,
+
+    /// How many proxies the member contributed to the last merge.
+    @Default(0) int proxies,
   }) = _BundleMember;
 
   factory BundleMember.fromJson(Map<String, Object?> json) =>

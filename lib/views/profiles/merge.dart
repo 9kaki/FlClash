@@ -201,8 +201,29 @@ class _MergeProfileViewState extends ConsumerState<MergeProfileView> {
     }
   }
 
-  void _handleMove(int from, int to) {
-    setState(() => _members.insert(to, _members.removeAt(from)));
+  void _handleReorder(int oldIndex, int newIndex) {
+    if (oldIndex >= _members.length) {
+      return;
+    }
+    final target = newIndex.clamp(0, _members.length - 1);
+    if (oldIndex == target) {
+      return;
+    }
+    setState(() => _members.insert(target, _members.removeAt(oldIndex)));
+  }
+
+  String _memberSubtitle(BundleMember member, String prefix, String? failure) {
+    final appLocalizations = context.appLocalizations;
+    if (failure != null) {
+      return appLocalizations.mergeMemberFailed(failure);
+    }
+    final mark = prefix.isEmpty
+        ? appLocalizations.mergeNodePrefixNone
+        : appLocalizations.mergeNodePrefixValue(prefix);
+    if (member.proxies <= 0) {
+      return mark;
+    }
+    return '$mark · ${appLocalizations.mergeProxiesCount(member.proxies)}';
   }
 
   Widget _buildMemberRow(int index, List<Profile> profiles) {
@@ -211,82 +232,85 @@ class _MergeProfileViewState extends ConsumerState<MergeProfileView> {
     final prefix = member.prefix ?? bundlePrefixOf(label);
     final failure = _profile?.bundle?.failures[member.id];
     final appLocalizations = context.appLocalizations;
-    return ListItem(
+    return ReorderDragStartListener(
       key: ValueKey(member.id),
-      leading: IconButton(
-        onPressed: () => _handleEditPrefix(member, label),
-        icon: const GlyphIcon(AppGlyphs.layers, size: 18),
-        tooltip: appLocalizations.mergeNodePrefix,
-      ),
-      title: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Text(
-        failure != null
-            ? appLocalizations.mergeMemberFailed(failure)
-            : prefix.isEmpty
-            ? appLocalizations.mergeNodePrefixNone
-            : appLocalizations.mergeNodePrefixValue(prefix),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: failure == null
-            ? null
-            : TextStyle(color: context.colorScheme.error),
-      ),
-      trailing: PopupAnchor(
-        targetBuilder: (open) => IconButton(
-          onPressed: open,
-          icon: const GlyphIcon(AppGlyphs.moreCircle),
-          tooltip: appLocalizations.more,
-        ),
-        popupBuilder: (_) => PopupMenu(
-          items: [
-            PopupMenuItem(
-              glyph: AppGlyphs.layers,
-              label: appLocalizations.mergeNodePrefix,
-              onPressed: () => _handleEditPrefix(member, label),
+      index: index,
+      child: ItemPositionProvider(
+        position: ItemPosition.get(index, _members.length + 1),
+        child: ListItem(
+          leading: const GlyphIcon(AppGlyphs.sort),
+          title: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+          subtitle: Text(
+            _memberSubtitle(member, prefix, failure),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: failure == null
+                ? null
+                : TextStyle(color: context.colorScheme.error),
+          ),
+          trailing: PopupAnchor(
+            targetBuilder: (open) => IconButton(
+              onPressed: open,
+              icon: const GlyphIcon(AppGlyphs.moreCircle),
+              tooltip: appLocalizations.more,
             ),
-            if (index > 0)
-              PopupMenuItem(
-                glyph: AppGlyphs.arrowUp,
-                label: appLocalizations.mergeMoveUp,
-                onPressed: () => _handleMove(index, index - 1),
-              ),
-            if (index < _members.length - 1)
-              PopupMenuItem(
-                glyph: AppGlyphs.arrowDown,
-                label: appLocalizations.mergeMoveDown,
-                onPressed: () => _handleMove(index, index + 1),
-              ),
-            PopupMenuItem(
-              danger: true,
-              glyph: AppGlyphs.removeCircle,
-              label: appLocalizations.delete,
-              onPressed: () => setState(() => _members.removeAt(index)),
+            popupBuilder: (_) => PopupMenu(
+              items: [
+                PopupMenuItem(
+                  glyph: AppGlyphs.layers,
+                  label: appLocalizations.mergeNodePrefix,
+                  onPressed: () => _handleEditPrefix(member, label),
+                ),
+                PopupMenuItem(
+                  danger: true,
+                  glyph: AppGlyphs.removeCircle,
+                  label: appLocalizations.delete,
+                  onPressed: () => setState(() => _members.removeAt(index)),
+                ),
+              ],
             ),
-          ],
+          ),
+          onTap: () => _handleEditPrefix(member, label),
         ),
       ),
-      onTap: () => _handleEditPrefix(member, label),
     );
   }
 
-  Widget _buildMemberSection(List<Profile> profiles) {
+  Widget _buildMemberHeader() {
+    return ListHeader(title: context.appLocalizations.mergeMembers);
+  }
+
+  Widget _buildMemberFooter() {
+    return ListFooter(text: context.appLocalizations.mergeMembersDesc);
+  }
+
+  Widget _buildAddRow() {
     final appLocalizations = context.appLocalizations;
-    return generateSection(
-      title: appLocalizations.mergeMembers,
-      footer: appLocalizations.mergeMembersDesc,
-      items: [
-        if (_members.isEmpty)
-          ListItem(title: Text(appLocalizations.mergeNoMembers))
-        else
-          for (var index = 0; index < _members.length; index++)
-            _buildMemberRow(index, profiles),
-        ListItem(
-          leading: const GlyphIcon(AppGlyphs.link),
-          title: Text(appLocalizations.mergeAddUrl),
-          subtitle: Text(appLocalizations.mergeAddUrlDesc),
-          onTap: _handleAddUrl,
-        ),
-      ],
+    return ListItem(
+      leading: const GlyphIcon(AppGlyphs.link),
+      title: Text(appLocalizations.mergeAddUrl),
+      subtitle: Text(appLocalizations.mergeAddUrlDesc),
+      onTap: _handleAddUrl,
+    );
+  }
+
+  Widget _buildMemberSliver(List<Profile> profiles) {
+    return SliverPrismReorderableList(
+      itemCount: _members.length + 1,
+      itemBuilder: (context, index) => index == _members.length
+          ? KeyedSubtree(
+              key: const ValueKey('merge_add_link'),
+              child: ItemPositionProvider(
+                position: _members.isEmpty
+                    ? ItemPosition.startAndEnd
+                    : ItemPosition.end,
+                child: _buildAddRow(),
+              ),
+            )
+          : _buildMemberRow(index, profiles),
+      onReorderItem: _handleReorder,
+      proxyDecorator: (child, index, animation) =>
+          commonProxyDecorator(child, index, animation),
     );
   }
 
@@ -324,41 +348,68 @@ class _MergeProfileViewState extends ConsumerState<MergeProfileView> {
     );
   }
 
-  Widget _buildReport() {
+  Widget _buildIdentitySection() {
     final appLocalizations = context.appLocalizations;
-    final report = _profile?.bundle?.report;
-    final generated = _profile?.lastUpdateDate;
-    final profile = _profile;
-    if (report == null || generated == null || profile == null) {
-      return const SizedBox.shrink();
-    }
     return generateSection(
-      title: appLocalizations.mergeLastGenerated,
       items: [
-        ListItem(
-          title: Text(
+        FormRow(
+          title: appLocalizations.name,
+          trailing: FormRowTextField(
+            controller: _labelController,
+            hintText: _defaultLabel(),
+            textInputAction: TextInputAction.done,
+            inputFormatters: TextInputLimits.limit(TextInputLimits.name),
+            onChanged: (_) => setState(() {}),
+          ),
+        ),
+        ListItem.toggle(
+          title: Text(appLocalizations.mergeCollapse),
+          subtitle: Text(appLocalizations.mergeCollapseDesc),
+          value: _collapsed,
+          onChanged: (value) => setState(() => _collapsed = value),
+        ),
+        ?_buildReportRow(),
+      ],
+    );
+  }
+
+  Widget? _buildReportRow() {
+    final appLocalizations = context.appLocalizations;
+    final profile = _profile;
+    final report = profile?.bundle?.report;
+    final generated = profile?.lastUpdateDate;
+    if (profile == null || report == null || generated == null) {
+      return null;
+    }
+    return ListItem(
+      title: Text(appLocalizations.mergeLastGenerated),
+      subtitle: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
             appLocalizations.mergeReport(
               report.proxies,
               report.duplicates,
               report.groups,
             ),
           ),
-          subtitle: LastUpdateTimeText(lastUpdateDate: generated),
-          trailing: IconButton(
-            onPressed: () => unawaited(
-              globalState.loadingRun(
-                () => ref
-                    .read(bundlesActionProvider.notifier)
-                    .generateBundle(profile.id, refresh: true),
-                tag: LoadingTag.profiles,
-                title: appLocalizations.mergeRegenerate,
-              ),
-            ),
-            tooltip: appLocalizations.mergeRegenerate,
-            icon: const GlyphIcon(AppGlyphs.refresh),
+          LastUpdateTimeText(lastUpdateDate: generated),
+        ],
+      ),
+      trailing: IconButton(
+        onPressed: () => unawaited(
+          globalState.loadingRun(
+            () => ref
+                .read(bundlesActionProvider.notifier)
+                .generateBundle(profile.id, refresh: true),
+            tag: LoadingTag.profiles,
+            title: appLocalizations.sync,
           ),
         ),
-      ],
+        tooltip: appLocalizations.sync,
+        icon: const GlyphIcon(AppGlyphs.sync),
+      ),
     );
   }
 
@@ -376,37 +427,24 @@ class _MergeProfileViewState extends ConsumerState<MergeProfileView> {
         isLoading: _saving,
         onPressed: _saving ? null : _handleSave,
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
-          top: context.sectionsTopPadding,
-          bottom: 16 + context.bottomInset,
-        ),
-        children: [
-          generateSection(
-            items: [
-              FormRow(
-                title: appLocalizations.name,
-                trailing: FormRowTextField(
-                  controller: _labelController,
-                  hintText: _defaultLabel(),
-                  textInputAction: TextInputAction.done,
-                  inputFormatters: TextInputLimits.limit(TextInputLimits.name),
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
-              ListItem.toggle(
-                leading: const GlyphIcon(AppGlyphs.chevronDown),
-                title: Text(appLocalizations.mergeCollapse),
-                subtitle: Text(appLocalizations.mergeCollapseDesc),
-                value: _collapsed,
-                onChanged: (value) => setState(() => _collapsed = value),
-              ),
-            ],
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+              top: context.sectionsTopPadding,
+              bottom: 16 + context.bottomInset,
+            ),
+            sliver: SliverMainAxisGroup(
+              slivers: [
+                SliverToBoxAdapter(child: _buildIdentitySection()),
+                SliverToBoxAdapter(child: _buildMemberHeader()),
+                _buildMemberSliver(profiles),
+                SliverToBoxAdapter(child: _buildMemberFooter()),
+                SliverToBoxAdapter(child: _buildCandidateSection(profiles)),
+                const SliverToBoxAdapter(child: ManagedScriptSection()),
+              ],
+            ),
           ),
-          _buildReport(),
-          _buildMemberSection(profiles),
-          _buildCandidateSection(profiles),
-          const ManagedScriptSection(),
         ],
       ),
     );

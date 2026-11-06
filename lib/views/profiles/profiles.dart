@@ -48,11 +48,22 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
     _isUpdating = true;
     final appLocalizations = context.appLocalizations;
     final profilesAction = ref.read(profilesActionProvider.notifier);
+    final bundlesAction = ref.read(bundlesActionProvider.notifier);
     final List<UpdatingMessage> messages = [];
+    // A member rides on its bundle's sync, which updates it on the way.
+    final memberIds = {
+      for (final profile in profiles)
+        ...?profile.bundle?.members.map((m) => m.id),
+    };
     final updateProfiles = profiles.map<Future>((profile) async {
-      if (profile.type != ProfileType.url) return;
+      if (memberIds.contains(profile.id)) return;
+      if (!profile.isBundle && profile.type != ProfileType.url) return;
       try {
-        await profilesAction.updateProfile(profile, showLoading: true);
+        if (profile.isBundle) {
+          await bundlesAction.generateBundle(profile.id, refresh: true);
+        } else {
+          await profilesAction.updateProfile(profile, showLoading: true);
+        }
       } catch (e) {
         messages.add(
           UpdatingMessage(
@@ -266,7 +277,6 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
                 ? profiles.length
                 : start + columns;
             final rowProfiles = profiles.sublist(start, end);
-            final expanded = _expandedBundle(rowProfiles);
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -302,14 +312,15 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
                       ),
                   ],
                 ),
-                if (expanded != null) ...[
-                  SizedBox(height: widget.spacing),
-                  BundleMembers(
-                    profile: expanded,
-                    currentProfileId: widget.currentProfileId,
-                    onCollapse: () => _toggleExpand(expanded.id),
-                  ),
-                ],
+                for (final profile in rowProfiles)
+                  if (profile.isBundle)
+                    BundleMembers(
+                      key: ValueKey('bundle_members_${profile.id}'),
+                      profile: profile,
+                      expanded: profile.id == _expandedBundleId,
+                      currentProfileId: widget.currentProfileId,
+                      spacing: widget.spacing,
+                    ),
                 if (row != rows - 1) SizedBox(height: widget.spacing),
               ],
             );
@@ -317,18 +328,6 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
         );
       },
     );
-  }
-
-  Profile? _expandedBundle(List<Profile> rowProfiles) {
-    if (_expandedBundleId == null) {
-      return null;
-    }
-    for (final profile in rowProfiles) {
-      if (profile.id == _expandedBundleId) {
-        return profile;
-      }
-    }
-    return null;
   }
 }
 
@@ -339,6 +338,9 @@ class ProfileItem extends ConsumerWidget {
   final VoidCallback? onToggleExpand;
   final void Function(int? value) onChanged;
 
+  /// Follows the quota on a card that stands for several subscriptions.
+  final String? subtitleDetail;
+
   const ProfileItem({
     super.key,
     required this.profile,
@@ -346,6 +348,7 @@ class ProfileItem extends ConsumerWidget {
     required this.onChanged,
     this.isExpanded = false,
     this.onToggleExpand,
+    this.subtitleDetail,
   });
 
   Future<void> _handleDeleteProfile(BuildContext context, WidgetRef ref) async {
@@ -404,18 +407,24 @@ class ProfileItem extends ConsumerWidget {
   String _subtitle(BuildContext context) {
     final bundle = profile.bundle;
     if (bundle != null) {
+      final appLocalizations = context.appLocalizations;
       final info = profile.subscriptionInfo;
-      if (info != null && info.usage != null) {
-        final used = info.upload + info.download;
-        return '${used.traffic.show} / ${info.total.traffic.show} · '
-            '${context.appLocalizations.mergeMembersCount(bundle.members.length)}';
-      }
-      return context.appLocalizations.mergeMembersCount(bundle.members.length);
+      final usage = info != null && info.usage != null
+          ? '${(info.upload + info.download).traffic.show} / '
+                '${info.total.traffic.show}'
+          : null;
+      return [
+        ?usage,
+        appLocalizations.mergeMembersCount(bundle.members.length),
+        if (bundle.report.proxies > 0)
+          appLocalizations.mergeProxiesCount(bundle.report.proxies),
+      ].join(' · ');
     }
     final info = _subscriptionInfo;
     if (info != null && info.usage != null) {
       final used = info.upload + info.download;
-      return '${used.traffic.show} / ${info.total.traffic.show}';
+      final usage = '${used.traffic.show} / ${info.total.traffic.show}';
+      return subtitleDetail == null ? usage : '$usage · $subtitleDetail';
     }
     final appLocalizations = context.appLocalizations;
     return switch (profile.type) {
@@ -532,8 +541,8 @@ class ProfileItem extends ConsumerWidget {
       ),
       if (isBundle) ...[
         PopupMenuItem(
-          glyph: AppGlyphs.refresh,
-          label: appLocalizations.mergeRegenerate,
+          glyph: AppGlyphs.sync,
+          label: appLocalizations.sync,
           onPressed: () {
             unawaited(
               globalState.loadingRun(
@@ -541,7 +550,7 @@ class ProfileItem extends ConsumerWidget {
                     .read(bundlesActionProvider.notifier)
                     .generateBundle(profile.id, refresh: true),
                 tag: LoadingTag.profiles,
-                title: appLocalizations.mergeRegenerate,
+                title: appLocalizations.sync,
               ),
             );
           },
@@ -827,96 +836,108 @@ class _ReorderableProfilesSheetState
   }
 }
 
-/// The subscriptions a bundle merges, shown under its card.
-class BundleMembers extends ConsumerWidget {
+/// The subscriptions a bundle merges, unfolding under its card as a proxy
+/// group unfolds, with each member card selecting that subscription alone.
+class BundleMembers extends ConsumerStatefulWidget {
   const BundleMembers({
     super.key,
     required this.profile,
+    required this.expanded,
     required this.currentProfileId,
-    required this.onCollapse,
+    required this.spacing,
   });
 
   final Profile profile;
+  final bool expanded;
   final int? currentProfileId;
-  final VoidCallback onCollapse;
+  final double spacing;
 
-  String _usageOf(Profile member) {
-    final info = member.subscriptionInfo;
-    if (info == null || info.usage == null) {
-      return '';
-    }
-    return '${(info.upload + info.download).traffic.show} / '
-        '${info.total.traffic.show}';
+  @override
+  ConsumerState<BundleMembers> createState() => _BundleMembersState();
+}
+
+class _BundleMembersState extends ConsumerState<BundleMembers>
+    with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(
+    vsync: this,
+    value: widget.expanded ? 1 : 0,
+  );
+  late final _unfold = UnfoldEntryTransition.curveOf(_controller);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addStatusListener((_) => setState(() {}));
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final appLocalizations = context.appLocalizations;
+  void didUpdateWidget(BundleMembers oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.expanded == oldWidget.expanded) {
+      return;
+    }
+    _controller.duration = context.motionDuration(
+      UnfoldEntryTransition.duration,
+    );
+    widget.expanded ? _controller.forward() : _controller.reverse();
+  }
+
+  @override
+  void dispose() {
+    _unfold.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_controller.isDismissed) {
+      return const SizedBox.shrink();
+    }
     final profiles = ref.watch(profilesProvider);
     final members = [
-      for (final member in profile.bundleMembers)
-        ?profiles.getProfile(member.id),
+      for (final member in widget.profile.bundleMembers)
+        if (profiles.getProfile(member.id) case final profile?)
+          (profile: profile, proxies: member.proxies),
     ];
-    return Card(
-      radius: AppCorner.xl,
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListItem(
-            leading: const GlyphIcon(AppGlyphs.layers),
-            title: Text(
-              appLocalizations.mergeMembersCount(members.length),
-              style: AppTextStyle.subheadline.of(context).toLighter,
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 4,
-              children: [
-                IconButton(
-                  onPressed: () => unawaited(
-                    BaseNavigator.push<void>(
-                      context,
-                      MergeProfileView(profileId: profile.id),
-                    ),
+    if (members.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return SizeTransition(
+      sizeFactor: _unfold,
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: EdgeInsets.only(top: widget.spacing),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var index = 0; index < members.length; index++) ...[
+              if (index > 0) SizedBox(height: widget.spacing),
+              UnfoldEntryTransition(
+                animation: _unfold,
+                index: index,
+                visibleCount: members.length.toDouble(),
+                child: SizedBox(
+                  height: _profileItemHeight,
+                  child: ProfileItem(
+                    key: ValueKey('bundle_member_${members[index].profile.id}'),
+                    profile: members[index].profile,
+                    subtitleDetail: members[index].proxies > 0
+                        ? context.appLocalizations.mergeProxiesCount(
+                            members[index].proxies,
+                          )
+                        : null,
+                    groupValue: widget.currentProfileId,
+                    onChanged: (profileId) {
+                      ref.read(currentProfileIdProvider.notifier).value =
+                          profileId;
+                    },
                   ),
-                  icon: const GlyphIcon(AppGlyphs.edit, size: 18),
-                  tooltip: appLocalizations.edit,
                 ),
-                IconButton(
-                  onPressed: onCollapse,
-                  icon: const GlyphIcon(AppGlyphs.chevronUp, size: 18),
-                  tooltip: appLocalizations.mergeCollapseMembers,
-                ),
-              ],
-            ),
-          ),
-          if (members.isEmpty)
-            ListItem(title: Text(appLocalizations.mergeNoMembers))
-          else
-            for (final member in members)
-              ListItem(
-                key: ValueKey('bundle_member_${member.id}'),
-                leading: GlyphIcon(
-                  member.id == currentProfileId
-                      ? AppGlyphs.checkCircle
-                      : AppGlyphs.profiles,
-                ),
-                title: Text(
-                  member.realLabel,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  _usageOf(member),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                onTap: () {
-                  ref.read(currentProfileIdProvider.notifier).value = member.id;
-                },
               ),
-        ],
+            ],
+          ],
+        ),
       ),
     );
   }

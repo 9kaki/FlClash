@@ -57,16 +57,19 @@ class BundlesAction extends _$BundlesAction {
     final options = await ManagedScript.options();
     final inputs = <MergeMember>[];
     final failures = <int, String>{};
+    final counts = <int, int>{};
     for (final member in bundle.members) {
       final target = profiles.getProfile(member.id);
       if (target == null || target.type == ProfileType.custom) {
         continue;
       }
       try {
+        final config = await _memberConfig(target, script, options);
+        counts[member.id] = bundleProxyCount(config);
         inputs.add((
           prefix: member.prefix ?? bundlePrefixOf(target.realLabel),
           label: target.realLabel,
-          config: await _memberConfig(target, script, options),
+          config: config,
         ));
       } catch (error) {
         failures[member.id] = compactError(error);
@@ -103,6 +106,11 @@ class BundlesAction extends _$BundlesAction {
             bundle: item.bundle?.copyWith(
               report: result.report,
               failures: failures,
+              members: [
+                for (final member
+                    in item.bundle?.members ?? const <BundleMember>[])
+                  member.copyWith(proxies: counts[member.id] ?? 0),
+              ],
             ),
           ),
         );
