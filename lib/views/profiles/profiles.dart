@@ -707,17 +707,24 @@ class ProfileItem extends ConsumerWidget {
     ];
   }
 
-  /// A flat row on a surface of its own, clipped to its corners so a press
-  /// never spills past them.
   Widget _buildFlat(Widget row) {
     final decoration = this.decoration;
-    if (decoration == null) {
-      return row;
-    }
-    return ClipPath(
-      clipper: ShapeBorderClipper(shape: decoration.shape),
-      clipBehavior: Clip.antiAlias,
-      child: DecoratedBox(decoration: decoration, child: row),
+    final shape = decoration?.shape;
+    return PressSurface(
+      fill: decoration?.color ?? Colors.transparent,
+      shape: shape is OutlinedBorder ? shape : AppShape.all(AppCorner.none),
+      onPressed: () => onChanged(profile.id),
+      child: row,
+    );
+  }
+
+  Widget _buildHeader(Widget row) {
+    final height = headerHeight;
+    return PressSurface(
+      fill: Colors.transparent,
+      shape: AppShape.top(radius),
+      onPressed: () => onChanged(profile.id),
+      child: height == null ? row : SizedBox(height: height, child: row),
     );
   }
 
@@ -732,7 +739,7 @@ class ProfileItem extends ConsumerWidget {
       minTileHeight: flat ? 0 : _profileItemHeight,
       minVerticalPadding: flat ? 0 : listRowVerticalPadding,
       padding: padding ?? const EdgeInsets.symmetric(horizontal: 16),
-      onTap: flat ? () => onChanged(profile.id) : null,
+      onTap: null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         spacing: 8,
@@ -762,21 +769,13 @@ class ProfileItem extends ConsumerWidget {
               enterActionsOnRight: true,
               radius: radius,
               isSelected: isSelected,
-              onPressed: () {
-                onChanged(profile.id);
-              },
+              inert: true,
               child: ClipPath(
                 clipper: ShapeBorderClipper(shape: AppShape.all(radius)),
                 clipBehavior: Clip.antiAlias,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (headerHeight case final height?)
-                      SizedBox(height: height, child: row)
-                    else
-                      row,
-                    ?footer,
-                  ],
+                  children: [_buildHeader(row), ?footer],
                 ),
               ),
             ),
