@@ -718,13 +718,16 @@ class ProfileItem extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(Widget row) {
+  Widget _buildHeader(Widget row, List<PopupMenuItem>? menuItems) {
     final height = headerHeight;
-    return PressSurface(
-      fill: Colors.transparent,
-      shape: AppShape.top(radius),
-      onPressed: () => onChanged(profile.id),
-      child: height == null ? row : SizedBox(height: height, child: row),
+    return ContextMenuRegion(
+      menuItems: menuItems,
+      child: PressSurface(
+        fill: Colors.transparent,
+        shape: AppShape.all(radius),
+        onPressed: () => onChanged(profile.id),
+        child: height == null ? row : SizedBox(height: height, child: row),
+      ),
     );
   }
 
@@ -761,24 +764,26 @@ class ProfileItem extends ConsumerWidget {
         compact: compact,
       ),
     );
-    return ContextMenuRegion(
-      menuItems: isUpdating ? null : _menuItems(context, ref),
-      child: flat
-          ? _buildFlat(row)
-          : Card(
-              enterActionsOnRight: true,
-              radius: radius,
-              isSelected: isSelected,
-              inert: true,
-              child: ClipPath(
-                clipper: ShapeBorderClipper(shape: AppShape.all(radius)),
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [_buildHeader(row), ?footer],
-                ),
-              ),
-            ),
+    final menuItems = isUpdating ? null : _menuItems(context, ref);
+    if (flat) {
+      return ContextMenuRegion(
+        menuItems: menuItems,
+        child: _buildFlat(row),
+      );
+    }
+    return Card(
+      enterActionsOnRight: true,
+      radius: radius,
+      isSelected: isSelected,
+      inert: true,
+      child: ClipPath(
+        clipper: ShapeBorderClipper(shape: AppShape.all(radius)),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [_buildHeader(row, menuItems), ?footer],
+        ),
+      ),
     );
   }
 }
