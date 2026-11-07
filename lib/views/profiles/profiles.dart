@@ -303,33 +303,15 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
     setState(() => _expandedBundleId = _expandedBundleId == id ? null : id);
   }
 
-  /// One column: the card, and under it the panel a merged one unfolds.
+  /// One column: the card itself, whose own body grows when a merge opens.
   Widget _buildCell(List<Profile> rowProfiles, int index, double rowHeight) {
     if (index >= rowProfiles.length) {
       return const SizedBox.shrink();
     }
     final profile = rowProfiles[index];
     final expanded = profile.id == _expandedBundleId;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          height: rowHeight,
-          child: ProfileItem(
-            key: ValueKey(profile.id),
-            profile: profile,
-            groupValue: widget.currentProfileId,
-            merged: _isMergedVisible(profile),
-            isExpanded: expanded,
-            attachedBelow: expanded,
-            onToggleExpand: () => _toggleExpand(profile.id),
-            onChanged: (profileId) {
-              ref.read(currentProfileIdProvider.notifier).value = profileId;
-            },
-          ),
-        ),
-        if (profile.isBundle && (profile.bundle?.collapsed ?? false))
-          BundleMembers(
+    final panel = profile.isBundle && (profile.bundle?.collapsed ?? false)
+        ? BundleMembers(
             key: ValueKey('bundle_members_${profile.id}'),
             profile: profile,
             expanded: expanded,
@@ -338,8 +320,20 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
               setState(() => _expandedBundleId = null);
               ref.read(currentProfileIdProvider.notifier).value = profileId;
             },
-          ),
-      ],
+          )
+        : null;
+    return ProfileItem(
+      key: ValueKey(profile.id),
+      profile: profile,
+      groupValue: widget.currentProfileId,
+      merged: _isMergedVisible(profile),
+      isExpanded: expanded,
+      headerHeight: rowHeight,
+      footer: panel,
+      onToggleExpand: () => _toggleExpand(profile.id),
+      onChanged: (profileId) {
+        ref.read(currentProfileIdProvider.notifier).value = profileId;
+      },
     );
   }
 
@@ -403,11 +397,12 @@ class ProfileItem extends ConsumerWidget {
   /// Draws the row on the surface below it, as a merge lists its members.
   final bool flat;
 
-  /// Squares the bottom corners so the panel under it joins without a seam.
-  final bool attachedBelow;
-
   /// Draws a row inside a merge a little smaller than a card of its own.
   final bool compact;
+
+  final double? headerHeight;
+  final Widget? footer;
+  final Widget? leading;
 
   final double radius;
 
@@ -421,8 +416,10 @@ class ProfileItem extends ConsumerWidget {
     this.detail,
     this.merged = false,
     this.flat = false,
-    this.attachedBelow = false,
     this.compact = false,
+    this.headerHeight,
+    this.footer,
+    this.leading,
     this.radius = AppCorner.xl,
   });
 
@@ -733,9 +730,10 @@ class ProfileItem extends ConsumerWidget {
     final isSelected = profile.id == groupValue;
     final row = ListItem(
       key: Key(profile.id.toString()),
+      leading: leading,
       minTileHeight: flat ? null : _profileItemHeight,
       minVerticalPadding: listRowVerticalPadding,
-      padding: EdgeInsets.symmetric(horizontal: flat ? 14 : 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       onTap: flat ? () => onChanged(profile.id) : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -765,12 +763,24 @@ class ProfileItem extends ConsumerWidget {
           : Card(
               enterActionsOnRight: true,
               radius: radius,
-              shape: attachedBelow ? AppShape.vertical(top: radius) : null,
               isSelected: isSelected,
               onPressed: () {
                 onChanged(profile.id);
               },
-              child: row,
+              child: ClipPath(
+                clipper: ShapeBorderClipper(shape: AppShape.all(radius)),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (headerHeight case final height?)
+                      SizedBox(height: height, child: row)
+                    else
+                      row,
+                    ?footer,
+                  ],
+                ),
+              ),
             ),
     );
   }
@@ -937,7 +947,7 @@ class _ReorderableProfilesSheetState
   }
 }
 
-/// The subscriptions a merge folds away, continued on the merge's own card.
+/// The subscriptions a merge folds away, drawn inside the merge's own card.
 class BundleMembers extends ConsumerStatefulWidget {
   const BundleMembers({
     super.key,
@@ -958,15 +968,21 @@ class BundleMembers extends ConsumerStatefulWidget {
 
 class _BundleMembersState extends ConsumerState<BundleMembers>
     with SingleTickerProviderStateMixin {
-  static const _expand = Duration(milliseconds: 300);
-  static const _collapse = Duration(milliseconds: 230);
+  static const _duration = Duration(milliseconds: 260);
 
   late final _controller = AnimationController(
     vsync: this,
-    duration: _expand,
+    duration: _duration,
     value: widget.expanded ? 1 : 0,
   );
-  late final _unfold = UnfoldEntryTransition.curveOf(_controller);
+  late final _size = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.fastOutSlowIn,
+  );
+  late final _fade = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.25, 1, curve: Curves.easeOut),
+  );
 
   @override
   void initState() {
@@ -980,37 +996,44 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
     if (widget.expanded == oldWidget.expanded) {
       return;
     }
-    _controller.duration = context.motionDuration(
-      widget.expanded ? _expand : _collapse,
-    );
+    _controller.duration = context.motionDuration(_duration);
     widget.expanded ? _controller.forward() : _controller.reverse();
   }
 
   @override
   void dispose() {
-    _unfold.dispose();
+    _size.dispose();
+    _fade.dispose();
     _controller.dispose();
     super.dispose();
   }
 
-  Widget _buildMember(Profile profile) {
-    return DecoratedBox(
-      decoration: ShapeDecoration(
-        color: SurfaceLevel.block.colorOf(context.colorScheme),
-        shape: AppShape.all(12),
+  Widget _buildGuide(BuildContext context) {
+    return SizedBox(
+      width: 3.5,
+      height: 32,
+      child: DecoratedBox(
+        decoration: ShapeDecoration(
+          color: context.colorScheme.primary.withValues(alpha: 0.55),
+          shape: AppShape.xs,
+        ),
       ),
-      child: ProfileItem(
-        key: ValueKey('bundle_member_${profile.id}'),
-        profile: profile,
-        groupValue: widget.currentProfileId,
-        flat: true,
-        compact: true,
-        onChanged: (profileId) {
-          if (profileId != null) {
-            widget.onSelect(profileId);
-          }
-        },
-      ),
+    );
+  }
+
+  Widget _buildMember(BuildContext context, Profile profile) {
+    return ProfileItem(
+      key: ValueKey('bundle_member_${profile.id}'),
+      profile: profile,
+      groupValue: widget.currentProfileId,
+      flat: true,
+      compact: true,
+      leading: _buildGuide(context),
+      onChanged: (profileId) {
+        if (profileId != null) {
+          widget.onSelect(profileId);
+        }
+      },
     );
   }
 
@@ -1027,32 +1050,40 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
     if (members.isEmpty) {
       return const SizedBox.shrink();
     }
-    return ClipRect(
-      child: SizeTransition(
-        sizeFactor: _unfold,
-        alignment: Alignment.topCenter,
-        child: DecoratedBox(
-          decoration: ShapeDecoration(
-            color: context.raisedSurfaceLevel.colorOf(context.colorScheme),
-            shape: AppShape.vertical(bottom: AppCorner.xl),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var index = 0; index < members.length; index++) ...[
-                  if (index > 0) const SizedBox(height: 6),
-                  UnfoldEntryTransition(
-                    animation: _unfold,
-                    index: index,
-                    visibleCount: members.length.toDouble(),
-                    child: _buildMember(members[index]),
-                  ),
-                ],
-              ],
-            ),
-          ),
+    return SizeTransition(
+      sizeFactor: _size,
+      alignment: Alignment.topCenter,
+      child: FadeTransition(
+        opacity: _fade,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const _Hairline(indent: 16),
+            for (var index = 0; index < members.length; index++) ...[
+              if (index > 0) const _Hairline(indent: 30),
+              _buildMember(context, members[index]),
+            ],
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Hairline extends StatelessWidget {
+  const _Hairline({required this.indent});
+
+  final double indent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsetsDirectional.only(start: indent, end: 16),
+      child: SizedBox(
+        height: 0.6,
+        child: ColoredBox(
+          color: context.colorScheme.outlineVariant.withValues(alpha: 0.35),
         ),
       ),
     );
