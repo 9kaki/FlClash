@@ -406,6 +406,9 @@ class ProfileItem extends ConsumerWidget {
   /// Squares the bottom corners so the panel under it joins without a seam.
   final bool attachedBelow;
 
+  /// Draws a row inside a merge a little smaller than a card of its own.
+  final bool compact;
+
   final double radius;
 
   const ProfileItem({
@@ -419,6 +422,7 @@ class ProfileItem extends ConsumerWidget {
     this.merged = false,
     this.flat = false,
     this.attachedBelow = false,
+    this.compact = false,
     this.radius = AppCorner.xl,
   });
 
@@ -524,7 +528,8 @@ class ProfileItem extends ConsumerWidget {
         children: [
           AnimatedRotation(
             turns: isExpanded ? 0.5 : 0,
-            duration: context.motionDuration(commonDuration),
+            duration: context.motionDuration(const Duration(milliseconds: 250)),
+            curve: Curves.easeOutBack,
             child: IconButton(
               onPressed: onToggleExpand,
               icon: const GlyphIcon(AppGlyphs.chevronDown, size: 18),
@@ -728,11 +733,9 @@ class ProfileItem extends ConsumerWidget {
     final isSelected = profile.id == groupValue;
     final row = ListItem(
       key: Key(profile.id.toString()),
-      minTileHeight: _profileItemHeight,
+      minTileHeight: flat ? null : _profileItemHeight,
       minVerticalPadding: listRowVerticalPadding,
-      padding: flat
-          ? const EdgeInsets.only(left: 28, right: 16)
-          : const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: flat ? 14 : 16),
       onTap: flat ? () => onChanged(profile.id) : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -742,7 +745,7 @@ class ProfileItem extends ConsumerWidget {
             _GroupsCountChip(profileId: profile.id)
           else
             _buildTrailing(context, isUpdating: isUpdating),
-          if (isSelected && !flat) const SelectionBadge(size: 24),
+          if (isSelected) const SelectionBadge(size: 24),
         ],
       ),
       title: _ProfileCardTitle(
@@ -752,6 +755,7 @@ class ProfileItem extends ConsumerWidget {
         permanent: (subscriptionInfo?.total ?? 0) > 0,
         subtitle: _subtitle(context),
         detail: _detail(context),
+        compact: compact,
       ),
     );
     return ContextMenuRegion(
@@ -779,6 +783,7 @@ class _ProfileCardTitle extends StatelessWidget {
     required this.permanent,
     required this.subtitle,
     this.detail,
+    this.compact = false,
   });
 
   final Profile profile;
@@ -786,6 +791,7 @@ class _ProfileCardTitle extends StatelessWidget {
   final bool permanent;
   final String subtitle;
   final String? detail;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -797,7 +803,14 @@ class _ProfileCardTitle extends StatelessWidget {
           title: profile.realLabel,
           expire: expire,
           permanent: permanent,
-          style: AppTextStyle.headline.of(context),
+          style: compact
+              ? AppTextStyle.custom(
+                  context,
+                  size: AppTextStyle.headline.size - 1.5,
+                  leading: AppTextStyle.headline.leading - 2,
+                  weight: FontWeight.w600,
+                )
+              : AppTextStyle.headline.of(context),
         ),
         const SizedBox(height: _infoGap),
         Text(
@@ -945,8 +958,12 @@ class BundleMembers extends ConsumerStatefulWidget {
 
 class _BundleMembersState extends ConsumerState<BundleMembers>
     with SingleTickerProviderStateMixin {
+  static const _expand = Duration(milliseconds: 300);
+  static const _collapse = Duration(milliseconds: 230);
+
   late final _controller = AnimationController(
     vsync: this,
+    duration: _expand,
     value: widget.expanded ? 1 : 0,
   );
   late final _unfold = UnfoldEntryTransition.curveOf(_controller);
@@ -964,7 +981,7 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
       return;
     }
     _controller.duration = context.motionDuration(
-      UnfoldEntryTransition.duration,
+      widget.expanded ? _expand : _collapse,
     );
     widget.expanded ? _controller.forward() : _controller.reverse();
   }
@@ -974,6 +991,27 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
     _unfold.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  Widget _buildMember(Profile profile) {
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        color: SurfaceLevel.block.colorOf(context.colorScheme),
+        shape: AppShape.all(12),
+      ),
+      child: ProfileItem(
+        key: ValueKey('bundle_member_${profile.id}'),
+        profile: profile,
+        groupValue: widget.currentProfileId,
+        flat: true,
+        compact: true,
+        onChanged: (profileId) {
+          if (profileId != null) {
+            widget.onSelect(profileId);
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -989,76 +1027,34 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
     if (members.isEmpty) {
       return const SizedBox.shrink();
     }
-    final colorScheme = context.colorScheme;
-    return SizeTransition(
-      sizeFactor: _unfold,
-      alignment: Alignment.topCenter,
-      child: DecoratedBox(
-        decoration: ShapeDecoration(
-          color: context.raisedSurfaceLevel.colorOf(colorScheme),
-          shape: AppShape.vertical(bottom: AppCorner.xl),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              left: 17,
-              top: 8,
-              bottom: 8,
-              child: SizedBox(
-                width: 2,
-                child: DecoratedBox(
-                  decoration: ShapeDecoration(
-                    color: colorScheme.primary.opacity30,
-                    shape: AppShape.all(1),
-                  ),
-                ),
-              ),
-            ),
-            Column(
+    return ClipRect(
+      child: SizeTransition(
+        sizeFactor: _unfold,
+        alignment: Alignment.topCenter,
+        child: DecoratedBox(
+          decoration: ShapeDecoration(
+            color: context.raisedSurfaceLevel.colorOf(context.colorScheme),
+            shape: AppShape.vertical(bottom: AppCorner.xl),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const _BundleDivider(),
                 for (var index = 0; index < members.length; index++) ...[
-                  if (index > 0) const _BundleDivider(),
+                  if (index > 0) const SizedBox(height: 6),
                   UnfoldEntryTransition(
                     animation: _unfold,
                     index: index,
                     visibleCount: members.length.toDouble(),
-                    child: SizedBox(
-                      height: _profileItemHeight,
-                      child: ProfileItem(
-                        key: ValueKey('bundle_member_${members[index].id}'),
-                        profile: members[index],
-                        groupValue: widget.currentProfileId,
-                        flat: true,
-                        onChanged: (profileId) {
-                          if (profileId != null) {
-                            widget.onSelect(profileId);
-                          }
-                        },
-                      ),
-                    ),
+                    child: _buildMember(members[index]),
                   ),
                 ],
-                const SizedBox(height: 8),
               ],
             ),
-          ],
+          ),
         ),
       ),
-    );
-  }
-}
-
-/// The hairline a merge draws between the rows it holds.
-class _BundleDivider extends StatelessWidget {
-  const _BundleDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      child: Divider(height: 1, thickness: 1),
     );
   }
 }

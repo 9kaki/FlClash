@@ -270,6 +270,30 @@ void main() {
     expect(tester.takeException(), null);
   });
 
+  testWidgets('the member in use is checked inside the panel', (tester) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _url(2, '机场乙'),
+      _bundle(const [BundleMember(id: 1), BundleMember(id: 2)]),
+    ]);
+
+    await pumpProfiles(tester);
+    container.read(currentProfileIdProvider.notifier).value = 1;
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(currentAppLocalizations.mergeExpand));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('bundle_member_1')),
+        matching: find.byType(SelectionBadge),
+      ),
+      findsOne,
+    );
+    expect(find.byType(SelectionBadge), findsOne);
+    expect(tester.takeException(), null);
+  });
+
   testWidgets('long pressing a member opens the profile menu', (tester) async {
     setUpProfiles(tester, [
       _url(1, '机场甲'),
