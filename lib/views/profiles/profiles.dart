@@ -225,55 +225,32 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
   );
 
   /// The profiles the grid draws. A collapsed merge stands for its members,
-  /// except the one in use, which stays beside it as its own card.
+  /// even the one in use, which stays inside the merge's own card.
   List<Profile> get _visibleProfiles {
-    final currentProfileId = widget.currentProfileId;
     final collapsed = widget.profiles.collapsedMemberIds;
-    // A member the open panel already lists would otherwise appear twice.
-    final shownInPanel =
-        _expandedBundleId != null &&
-        widget.profiles.any(
-          (profile) =>
-              profile.id == _expandedBundleId &&
-              profile.bundleMembers.any(
-                (member) => member.id == currentProfileId,
-              ),
-        );
-    final visible = [
+    return [
       for (final profile in widget.profiles)
-        if (!collapsed.contains(profile.id) ||
-            (profile.id == currentProfileId && !shownInPanel))
-          profile,
+        if (!collapsed.contains(profile.id)) profile,
     ];
-    if (currentProfileId == null) {
-      return visible;
-    }
-    final memberIndex = visible.indexWhere(
-      (profile) => profile.id == currentProfileId,
-    );
-    final ownerIndex = visible.indexWhere(
-      (profile) =>
-          profile.bundle?.collapsed == true &&
-          profile.bundleMembers.any((member) => member.id == currentProfileId),
-    );
-    if (memberIndex == -1 ||
-        ownerIndex == -1 ||
-        memberIndex == ownerIndex + 1) {
-      return visible;
-    }
-    final member = visible.removeAt(memberIndex);
-    final target = memberIndex > ownerIndex ? ownerIndex + 1 : ownerIndex;
-    visible.insert(target.clamp(0, visible.length), member);
-    return visible;
   }
 
   void _revealSelected() {
     if (!mounted || !_controller.hasClients) {
       return;
     }
-    final index = _visibleProfiles.indexWhere(
+    var index = _visibleProfiles.indexWhere(
       (profile) => profile.id == widget.currentProfileId,
     );
+    // A member in use hides inside its merge's card, so reveal that instead.
+    if (index == -1) {
+      index = _visibleProfiles.indexWhere(
+        (profile) =>
+            profile.bundle?.collapsed == true &&
+            profile.bundleMembers.any(
+              (member) => member.id == widget.currentProfileId,
+            ),
+      );
+    }
     if (index == -1) {
       return;
     }
@@ -319,7 +296,6 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
             expanded: expanded,
             currentProfileId: widget.currentProfileId,
             onSelect: (profileId) {
-              setState(() => _expandedBundleId = null);
               ref.read(currentProfileIdProvider.notifier).value = profileId;
             },
           )
@@ -995,10 +971,16 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
     with SingleTickerProviderStateMixin {
   static const _duration = Duration(milliseconds: 260);
 
+  bool get _panelShown =>
+      widget.expanded ||
+      widget.profile.bundleMembers.any(
+        (member) => member.id == widget.currentProfileId,
+      );
+
   late final _controller = AnimationController(
     vsync: this,
     duration: _duration,
-    value: widget.expanded ? 1 : 0,
+    value: _panelShown ? 1 : 0,
   );
   late final _size = CurvedAnimation(
     parent: _controller,
@@ -1018,11 +1000,17 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
   @override
   void didUpdateWidget(BundleMembers oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.expanded == oldWidget.expanded) {
+    if (_panelShown) {
+      if (!_controller.isCompleted) {
+        _controller.duration = context.motionDuration(_duration);
+        _controller.forward();
+      }
       return;
     }
-    _controller.duration = context.motionDuration(_duration);
-    widget.expanded ? _controller.forward() : _controller.reverse();
+    if (!_controller.isDismissed) {
+      _controller.duration = context.motionDuration(_duration);
+      _controller.reverse();
+    }
   }
 
   @override
@@ -1040,10 +1028,10 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
       groupValue: widget.currentProfileId,
       flat: true,
       compact: true,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: ShapeDecoration(
-        color: context.colorScheme.surfaceContainerLow,
-        shape: AppShape.md,
+        color: SurfaceLevel.block.colorOf(context.colorScheme),
+        shape: AppShape.all(AppCorner.xl),
       ),
       onChanged: (profileId) {
         if (profileId != null) {
@@ -1055,9 +1043,6 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
 
   @override
   Widget build(BuildContext context) {
-    if (_controller.isDismissed) {
-      return const SizedBox.shrink();
-    }
     final profiles = ref.watch(profilesProvider);
     final members = [
       for (final member in widget.profile.bundleMembers)
@@ -1066,19 +1051,38 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
     if (members.isEmpty) {
       return const SizedBox.shrink();
     }
+    // Folded, the panel keeps only the member in use; folding away holds the
+    // rows until the shrink animation has played out.
+    final visible = switch (widget.expanded) {
+      true => members,
+      false => _panelShown
+          ? [
+              for (final member in members)
+                if (member.id == widget.currentProfileId) member,
+            ]
+          : _controller.isDismissed ? const <Profile>[] : members,
+    };
+    if (visible.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return SizeTransition(
       sizeFactor: _size,
       alignment: Alignment.topCenter,
       child: FadeTransition(
         opacity: _fade,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 8,
-            children: [
-              for (final member in members) _buildMember(context, member),
-            ],
+          padding: const EdgeInsets.fromLTRB(10, 4, 10, 12),
+          child: AnimatedSize(
+            duration: context.motionDuration(_duration),
+            curve: Curves.fastOutSlowIn,
+            alignment: Alignment.topCenter,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 8,
+              children: [
+                for (final member in visible) _buildMember(context, member),
+              ],
+            ),
           ),
         ),
       ),

@@ -223,7 +223,7 @@ void main() {
     expect(tester.takeException(), null);
   });
 
-  testWidgets('a member in use sits under its merge, alone checked', (
+  testWidgets('a member in use stays in the open panel, alone checked', (
     tester,
   ) async {
     setUpProfiles(tester, [
@@ -239,9 +239,57 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(container.read(currentProfileIdProvider), 2);
+    expect(find.text('机场甲'), findsOne);
     expect(find.text('机场乙'), findsOne);
-    expect(find.text('机场甲'), findsNothing);
     expect(find.byType(SelectionBadge), findsOne);
+  });
+
+  testWidgets('a folded merge keeps the member in use in its card', (
+    tester,
+  ) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _url(2, '机场乙'),
+      _bundle(const [BundleMember(id: 1), BundleMember(id: 2)]),
+    ]);
+
+    await pumpProfiles(tester);
+    container.read(currentProfileIdProvider.notifier).value = 2;
+    await tester.pumpAndSettle();
+
+    expect(find.text('机场甲'), findsNothing);
+    expect(find.text('机场乙'), findsOne);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('bundle_member_2')),
+        matching: find.byType(SelectionBadge),
+      ),
+      findsOne,
+    );
+    expect(find.byTooltip(currentAppLocalizations.mergeExpand), findsOne);
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('folding a merge in use keeps only that member', (
+    tester,
+  ) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _url(2, '机场乙'),
+      _bundle(const [BundleMember(id: 1), BundleMember(id: 2)]),
+    ]);
+
+    await pumpProfiles(tester);
+    container.read(currentProfileIdProvider.notifier).value = 2;
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(currentAppLocalizations.mergeExpand));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(currentAppLocalizations.mergeExpand));
+    await tester.pumpAndSettle();
+
+    expect(find.text('机场甲'), findsNothing);
+    expect(find.text('机场乙'), findsOne);
+    expect(tester.takeException(), null);
   });
 
   testWidgets('using a member keeps the order the profiles were in', (
