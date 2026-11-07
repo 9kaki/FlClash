@@ -20,6 +20,8 @@ import 'preview.dart';
 
 const _infoGap = 4.0;
 
+const _memberGap = 2.0;
+
 double get _profileItemDetailHeight {
   final measure = globalState.measure;
   return measure.textHeight(AppTextStyle.footnote) + _infoGap;
@@ -397,6 +399,10 @@ class ProfileItem extends ConsumerWidget {
   /// Draws the row on the surface below it, as a merge lists its members.
   final bool flat;
 
+  final ShapeDecoration? decoration;
+
+  final EdgeInsets? padding;
+
   /// Draws a row inside a merge a little smaller than a card of its own.
   final bool compact;
 
@@ -417,6 +423,8 @@ class ProfileItem extends ConsumerWidget {
     this.merged = false,
     this.flat = false,
     this.compact = false,
+    this.decoration,
+    this.padding,
     this.headerHeight,
     this.footer,
     this.leading,
@@ -723,6 +731,20 @@ class ProfileItem extends ConsumerWidget {
     ];
   }
 
+  /// A flat row on a surface of its own, clipped to its corners so a press
+  /// never spills past them.
+  Widget _buildFlat(Widget row) {
+    final decoration = this.decoration;
+    if (decoration == null) {
+      return row;
+    }
+    return ClipPath(
+      clipper: ShapeBorderClipper(shape: decoration.shape),
+      clipBehavior: Clip.antiAlias,
+      child: DecoratedBox(decoration: decoration, child: row),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
@@ -731,9 +753,9 @@ class ProfileItem extends ConsumerWidget {
     final row = ListItem(
       key: Key(profile.id.toString()),
       leading: leading,
-      minTileHeight: flat ? null : _profileItemHeight,
-      minVerticalPadding: listRowVerticalPadding,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      minTileHeight: flat ? 0 : _profileItemHeight,
+      minVerticalPadding: flat ? 0 : listRowVerticalPadding,
+      padding: padding ?? const EdgeInsets.symmetric(horizontal: 16),
       onTap: flat ? () => onChanged(profile.id) : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -759,7 +781,7 @@ class ProfileItem extends ConsumerWidget {
     return ContextMenuRegion(
       menuItems: isUpdating ? null : _menuItems(context, ref),
       child: flat
-          ? row
+          ? _buildFlat(row)
           : Card(
               enterActionsOnRight: true,
               radius: radius,
@@ -813,16 +835,19 @@ class _ProfileCardTitle extends StatelessWidget {
           title: profile.realLabel,
           expire: expire,
           permanent: permanent,
+          expireStyle: compact
+              ? AppTextStyle.caption2.of(context, emphasized: true)
+              : null,
           style: compact
               ? AppTextStyle.custom(
                   context,
-                  size: AppTextStyle.headline.size - 1.5,
-                  leading: AppTextStyle.headline.leading - 2,
+                  size: AppTextStyle.headline.size - 2.5,
+                  leading: AppTextStyle.headline.leading - 3,
                   weight: FontWeight.w600,
                 )
               : AppTextStyle.headline.of(context),
         ),
-        const SizedBox(height: _infoGap),
+        SizedBox(height: compact ? _memberGap : _infoGap),
         Text(
           subtitle,
           style: AppTextStyle.footnote.of(context).toLighter,
@@ -1008,19 +1033,6 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
     super.dispose();
   }
 
-  Widget _buildGuide(BuildContext context) {
-    return SizedBox(
-      width: 3.5,
-      height: 32,
-      child: DecoratedBox(
-        decoration: ShapeDecoration(
-          color: context.colorScheme.primary.withValues(alpha: 0.55),
-          shape: AppShape.xs,
-        ),
-      ),
-    );
-  }
-
   Widget _buildMember(BuildContext context, Profile profile) {
     return ProfileItem(
       key: ValueKey('bundle_member_${profile.id}'),
@@ -1028,7 +1040,11 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
       groupValue: widget.currentProfileId,
       flat: true,
       compact: true,
-      leading: _buildGuide(context),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: ShapeDecoration(
+        color: context.colorScheme.surfaceContainerLow,
+        shape: AppShape.md,
+      ),
       onChanged: (profileId) {
         if (profileId != null) {
           widget.onSelect(profileId);
@@ -1055,35 +1071,15 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
       alignment: Alignment.topCenter,
       child: FadeTransition(
         opacity: _fade,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const _Hairline(indent: 16),
-            for (var index = 0; index < members.length; index++) ...[
-              if (index > 0) const _Hairline(indent: 30),
-              _buildMember(context, members[index]),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 8,
+            children: [
+              for (final member in members) _buildMember(context, member),
             ],
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Hairline extends StatelessWidget {
-  const _Hairline({required this.indent});
-
-  final double indent;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsDirectional.only(start: indent, end: 16),
-      child: SizedBox(
-        height: 0.6,
-        child: ColoredBox(
-          color: context.colorScheme.outlineVariant.withValues(alpha: 0.35),
+          ),
         ),
       ),
     );

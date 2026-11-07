@@ -11,7 +11,9 @@ class ExpireChip extends StatelessWidget {
   /// The wording for a subscription that has no expiry to show.
   final String? label;
 
-  const ExpireChip({super.key, this.expire, this.label});
+  final TextStyle? style;
+
+  const ExpireChip({super.key, this.expire, this.label, this.style});
 
   static const _padding = EdgeInsets.symmetric(horizontal: 8, vertical: 2);
 
@@ -21,12 +23,23 @@ class ExpireChip extends StatelessWidget {
     String? label,
   ) => expire?.show ?? label ?? context.appLocalizations.infiniteTime;
 
+  static TextStyle _styleOf(BuildContext context, TextStyle? style) =>
+      style ?? AppTextStyle.caption1.of(context, emphasized: true);
+
   static double widthOf(
     BuildContext context,
     DateTime? expire, [
     String? label,
+    TextStyle? style,
   ]) =>
-      chipLabelWidth(context, _labelOf(context, expire, label)) +
+      MeasureScope.of(context)
+          .computeTextSize(
+            Text(
+              _labelOf(context, expire, label),
+              style: _styleOf(context, style),
+            ),
+          )
+          .width +
       _padding.horizontal;
 
   @override
@@ -48,9 +61,7 @@ class ExpireChip extends StatelessWidget {
           child: Text(
             _labelOf(context, expire, label),
             maxLines: 1,
-            style: AppTextStyle.caption1
-                .of(context, emphasized: true)
-                .copyWith(color: color),
+            style: _styleOf(context, style).copyWith(color: color),
           ),
         ),
       ),
@@ -71,6 +82,9 @@ class ChipTitle extends StatelessWidget {
 
   final TextStyle? style;
 
+  /// The style of the expiry chip alone, for a row that needs it smaller.
+  final TextStyle? expireStyle;
+
   const ChipTitle({
     super.key,
     required this.title,
@@ -78,6 +92,7 @@ class ChipTitle extends StatelessWidget {
     this.expire,
     this.permanent = false,
     this.style,
+    this.expireStyle,
   });
 
   static const _gap = 8.0;
@@ -98,7 +113,12 @@ class ChipTitle extends StatelessWidget {
         .width;
     final chipsWidth =
         (chip == null ? 0 : TonalChip.widthOf(context, chip) + _gap) +
-        ExpireChip.widthOf(context, expire, _longTermLabel(context)) +
+        ExpireChip.widthOf(
+          context,
+          expire,
+          _longTermLabel(context),
+          expireStyle,
+        ) +
         _gap;
     return maxWidth - chipsWidth >= min(titleWidth, maxWidth / 2);
   }
@@ -134,7 +154,11 @@ class ChipTitle extends StatelessWidget {
             foregroundColor: colorScheme.onSurfaceVariant,
           ),
         if (showExpire)
-          ExpireChip(expire: expire, label: _longTermLabel(context)),
+          ExpireChip(
+            expire: expire,
+            label: _longTermLabel(context),
+            style: expireStyle,
+          ),
       ],
     );
     if (!_showsExpiry) {
