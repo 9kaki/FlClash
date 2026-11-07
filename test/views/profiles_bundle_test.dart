@@ -292,6 +292,39 @@ void main() {
     expect(tester.takeException(), null);
   });
 
+  testWidgets('switching back to the merge shrinks without a jump', (
+    tester,
+  ) async {
+    setUpProfiles(tester, [
+      _url(1, '机场甲'),
+      _url(2, '机场乙'),
+      _bundle(const [BundleMember(id: 1), BundleMember(id: 2)]),
+    ]);
+
+    await pumpProfiles(tester);
+    container.read(currentProfileIdProvider.notifier).value = 2;
+    await tester.pumpAndSettle();
+
+    final card = find.byKey(const ValueKey(9));
+    final before = tester.getSize(card).height;
+    expect(find.text('机场乙'), findsOne);
+
+    await tester.tap(find.text('合并订阅1'));
+    await tester.pump();
+    expect(find.text('机场甲'), findsNothing);
+
+    var last = before;
+    for (var frame = 0; frame < 24; frame++) {
+      final height = tester.getSize(card).height;
+      expect(height, lessThanOrEqualTo(last + 0.5));
+      last = height;
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await tester.pumpAndSettle();
+    expect(find.text('机场乙'), findsNothing);
+    expect(tester.takeException(), null);
+  });
+
   testWidgets('using a member keeps the order the profiles were in', (
     tester,
   ) async {

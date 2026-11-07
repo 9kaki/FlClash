@@ -977,15 +977,16 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
         (member) => member.id == widget.currentProfileId,
       );
 
+  /// The rows the last frame drew. Folding away keeps them, so the card only
+  /// ever shrinks from what it showed rather than jumping to the full list.
+  List<int> _shownIds = const [];
+
   late final _controller = AnimationController(
     vsync: this,
     duration: _duration,
     value: _panelShown ? 1 : 0,
   );
-  late final _size = CurvedAnimation(
-    parent: _controller,
-    curve: Curves.fastOutSlowIn,
-  );
+  late final _size = UnfoldEntryTransition.curveOf(_controller);
   late final _fade = CurvedAnimation(
     parent: _controller,
     curve: const Interval(0.25, 1, curve: Curves.easeOut),
@@ -1022,6 +1023,7 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
   }
 
   Widget _buildMember(BuildContext context, Profile profile) {
+    final colorScheme = context.colorScheme;
     return ProfileItem(
       key: ValueKey('bundle_member_${profile.id}'),
       profile: profile,
@@ -1030,7 +1032,9 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
       compact: true,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: ShapeDecoration(
-        color: SurfaceLevel.block.colorOf(context.colorScheme),
+        color: colorScheme.brightness == Brightness.dark
+            ? SurfaceLevel.block.colorOf(colorScheme)
+            : colorScheme.surfaceContainerLow,
         shape: AppShape.all(AppCorner.xl),
       ),
       onChanged: (profileId) {
@@ -1039,6 +1043,17 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
         }
       },
     );
+  }
+
+  List<int> _idsToShow(List<Profile> members) {
+    if (widget.expanded) {
+      return [for (final member in members) member.id];
+    }
+    final active = widget.currentProfileId;
+    if (members.any((member) => member.id == active)) {
+      return [active!];
+    }
+    return _controller.isDismissed ? const [] : _shownIds;
   }
 
   @override
@@ -1051,20 +1066,15 @@ class _BundleMembersState extends ConsumerState<BundleMembers>
     if (members.isEmpty) {
       return const SizedBox.shrink();
     }
-    // Folded, the panel keeps only the member in use; folding away holds the
-    // rows until the shrink animation has played out.
-    final visible = switch (widget.expanded) {
-      true => members,
-      false => _panelShown
-          ? [
-              for (final member in members)
-                if (member.id == widget.currentProfileId) member,
-            ]
-          : _controller.isDismissed ? const <Profile>[] : members,
-    };
-    if (visible.isEmpty) {
+    final ids = _idsToShow(members);
+    _shownIds = ids;
+    if (ids.isEmpty) {
       return const SizedBox.shrink();
     }
+    final visible = [
+      for (final member in members)
+        if (ids.contains(member.id)) member,
+    ];
     return SizeTransition(
       sizeFactor: _size,
       alignment: Alignment.topCenter,
